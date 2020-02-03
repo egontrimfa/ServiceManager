@@ -5,8 +5,11 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 
+import com.license.Szerviz.Entities.Auto_pieces;
 import com.license.Szerviz.Entities.Client;
 import com.license.Szerviz.Entities.Company;
+import com.license.Szerviz.Entities.Replaced;
+import com.license.Szerviz.Entities.replacePK;
 
 
 public class HibernateUtil {
@@ -21,6 +24,9 @@ public class HibernateUtil {
 
             configuration.addAnnotatedClass(Client.class);
             configuration.addAnnotatedClass(Company.class);
+            configuration.addAnnotatedClass(Auto_pieces.class);
+            configuration.addAnnotatedClass(Replaced.class);
+            configuration.addAnnotatedClass(replacePK.class);
 
             configuration.configure("hibernate.cfg.xml");
 

@@ -1,6 +1,5 @@
 package com.license.Szerviz.Pages;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -18,8 +17,6 @@ import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -28,6 +25,7 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 
 import com.license.HibernateUtil.HibernateUtil;
+import com.license.Szerviz.Entities.Auto_pieces;
 import com.license.Szerviz.Entities.Client;
 import com.license.Szerviz.Entities.Company;
 
@@ -39,8 +37,15 @@ import java.awt.Cursor;
 import java.awt.CardLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class MainFrame extends JFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3195004581454923665L;
 
 	static MainFrame mainFrame = new MainFrame();
 	
@@ -50,12 +55,15 @@ public class MainFrame extends JFrame {
 	static private JPanel panelLPR;
 	static private JPanel panelNPR;
 	static private JPanel panelCL;
+	static private JPanel panelAPL;
 	
 	static private TableRowSorter<TableModel> rowSorter;
 	private Client selectedClient;
 	private Company selectedCompany;
 	
 	private static JTable clientsTable;
+	private static JTable pieceTable;
+	
 	private JTextField clientName;
 	private JTextField clientPhone;
 	private JTextField isCompany;
@@ -72,10 +80,17 @@ public class MainFrame extends JFrame {
 	private JTextField txtNumeleClientuluiN;
 	private JTextField txtNumarulDeTelefonN;
 	
+	private JTextField pieceID;
+	private JTextField pieceName;
+	private JTextField pieceUnit;
+	
 	int xx,xy;
 	private int selectedID;
 	
-	private JTextField textFilter;
+	private JTextField clientFilter;
+	private JTextField partsFilter;
+	
+	
 	private JTextField companyName;
 	private JTextField companyAddress;
 	private JTextField companyPhone;
@@ -187,6 +202,21 @@ public class MainFrame extends JFrame {
 		listClients.setBounds(178, 109, 154, 154);
 		panelDB.add(listClients);
 		
+		JLabel lblNewLabel_1 = new JLabel("");
+		lblNewLabel_1.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		lblNewLabel_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				panelDB.setVisible(false);
+				panelAPL.setVisible(true);
+				
+				LoadPieces();
+			}
+		});
+		lblNewLabel_1.setIcon(new ImageIcon(MainFrame.class.getResource("/images/list_parts0.png")));
+		lblNewLabel_1.setBounds(178, 276, 154, 154);
+		panelDB.add(lblNewLabel_1);
+		
 		////////////////////////////////////////////////////
 		//--------//Client Registration Section//--------//
 		///////////////////////////////////////////////////
@@ -297,7 +327,7 @@ public class MainFrame extends JFrame {
 				panelLPR.setVisible(false);
 			}
 		});
-		btnSaveLegale.setIcon(new ImageIcon(LegalPersonRegistration.class.getResource("/images/save-button.png")));
+		btnSaveLegale.setIcon(new ImageIcon(MainFrame.class.getResource("/images/save-button.png")));
 		btnSaveLegale.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnSaveLegale.setBounds(792, 493, 197, 41);
 		panelLPR.add(btnSaveLegale);
@@ -454,7 +484,7 @@ public class MainFrame extends JFrame {
 				panelNPR.setVisible(false);
 			}
 		});
-		btnSaveNatural.setIcon(new ImageIcon(NaturalPersonRegistrtation.class.getResource("/images/save-button.png")));
+		btnSaveNatural.setIcon(new ImageIcon(MainFrame.class.getResource("/images/save-button.png")));
 		btnSaveNatural.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnSaveNatural.setBounds(810, 253, 197, 41);
 		panelNPR.add(btnSaveNatural);
@@ -496,9 +526,9 @@ public class MainFrame extends JFrame {
 		contentPane.add(panelCL, "name_1108453295279800");
 		panelCL.setLayout(null);
 		
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(436, 140, 849, 445);
-		panelCL.add(scrollPane);
+		JScrollPane scrollPaneCL = new JScrollPane();
+		scrollPaneCL.setBounds(436, 140, 849, 445);
+		panelCL.add(scrollPaneCL);
 		
 		clientsTable = new JTable();
 		clientsTable.addMouseListener(new MouseAdapter() {
@@ -537,39 +567,39 @@ public class MainFrame extends JFrame {
 		clientsTable.setRowHeight(30);
 		clientsTable.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 21));
 		clientsTable.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		scrollPane.setViewportView(clientsTable);
+		scrollPaneCL.setViewportView(clientsTable);
 		
 		JPanel infoPanel = new JPanel();
 		infoPanel.setBounds(12, 97, 412, 488);
 		panelCL.add(infoPanel);
 		infoPanel.setLayout(null);
 		
-		JLabel lblNumele = new JLabel("Numele:");
-		lblNumele.setBounds(12, 56, 48, 16);
-		infoPanel.add(lblNumele);
+		JLabel clientNameInfo = new JLabel("Numele:");
+		clientNameInfo.setBounds(12, 56, 48, 16);
+		infoPanel.add(clientNameInfo);
 		
-		JLabel lblDetaliiClientului = new JLabel("Detalii clientului");
-		lblDetaliiClientului.setBounds(100, 13, 134, 20);
-		lblDetaliiClientului.setFont(new Font("Tahoma", Font.BOLD, 16));
-		infoPanel.add(lblDetaliiClientului);
+		JLabel clientDetails = new JLabel("Detalii clientului");
+		clientDetails.setBounds(100, 13, 134, 20);
+		clientDetails.setFont(new Font("Tahoma", Font.BOLD, 16));
+		infoPanel.add(clientDetails);
 		
 		clientName = new JTextField();
 		clientName.setBounds(131, 53, 269, 22);
 		infoPanel.add(clientName);
 		clientName.setColumns(10);
 		
-		JLabel lblNumarulDeTelefonInfo = new JLabel("Numarul de telefon:");
-		lblNumarulDeTelefonInfo.setBounds(12, 85, 116, 16);
-		infoPanel.add(lblNumarulDeTelefonInfo);
+		JLabel clientPhoneInfo = new JLabel("Numarul de telefon:");
+		clientPhoneInfo.setBounds(12, 85, 116, 16);
+		infoPanel.add(clientPhoneInfo);
 		
 		clientPhone = new JTextField();
 		clientPhone.setBounds(131, 82, 269, 22);
 		infoPanel.add(clientPhone);
 		clientPhone.setColumns(10);
 		
-		JLabel lblStatutulClientului = new JLabel("Statutul clientului:");
-		lblStatutulClientului.setBounds(12, 114, 103, 16);
-		infoPanel.add(lblStatutulClientului);
+		JLabel clientStatusInfo = new JLabel("Statutul clientului:");
+		clientStatusInfo.setBounds(12, 114, 103, 16);
+		infoPanel.add(clientStatusInfo);
 		
 		isCompany = new JTextField();
 		isCompany.setEditable(false);
@@ -665,8 +695,12 @@ public class MainFrame extends JFrame {
 		branchInfo.setBounds(12, 394, 103, 16);
 		infoPanel.add(branchInfo);
 		
-		JButton btnUpdate = new JButton("Update");
-		btnUpdate.addMouseListener(new MouseAdapter() {
+		JButton updateClient = new JButton("Update");
+		updateClient.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			}
+		});
+		updateClient.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				if(selectedID>0) {
@@ -681,11 +715,11 @@ public class MainFrame extends JFrame {
 				}
 			}
 		});
-		btnUpdate.setBounds(69, 426, 116, 37);
-		infoPanel.add(btnUpdate);
+		updateClient.setBounds(69, 426, 116, 37);
+		infoPanel.add(updateClient);
 		
-		JButton btnDelete = new JButton("Delete");
-		btnDelete.addMouseListener(new MouseAdapter() {
+		JButton deleteClient = new JButton("Delete");
+		deleteClient.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				if(selectedID>0) {
@@ -695,8 +729,8 @@ public class MainFrame extends JFrame {
 				}
 			}
 		});
-		btnDelete.setBounds(239, 426, 116, 37);
-		infoPanel.add(btnDelete);
+		deleteClient.setBounds(239, 426, 116, 37);
+		infoPanel.add(deleteClient);
 		
 		JLabel exitCL = new JLabel("");
 		exitCL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -745,26 +779,185 @@ public class MainFrame extends JFrame {
 		panelCL.add(searchPanel);
 		searchPanel.setLayout(null);
 		
-		JLabel lblNewLabel = new JLabel("Căutare:");
-		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		lblNewLabel.setBounds(12, 13, 60, 16);
-		searchPanel.add(lblNewLabel);
+		JLabel searchCL = new JLabel("Căutare:");
+		searchCL.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		searchCL.setBounds(12, 13, 60, 16);
+		searchPanel.add(searchCL);
 		
-		textFilter = new JTextField();
+		clientFilter = new JTextField();
 		
 		//Quick search method
 		
-		textFilter.addKeyListener(new KeyAdapter() {
+		clientFilter.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent arg0) {
-				String querry = textFilter.getText();
+				String querry = clientFilter.getText();
 				filterClients(querry);
 			}
 		});
 		
-		textFilter.setBounds(84, 11, 753, 22);
-		searchPanel.add(textFilter);
-		textFilter.setColumns(10);
+		clientFilter.setBounds(84, 11, 753, 22);
+		searchPanel.add(clientFilter);
+		clientFilter.setColumns(10);
+		
+		/////////////////////////////////////////////
+		//--------//Auto Piece List Sectio//--------//
+		///////////////////////////////////////////
+		
+		panelAPL = new JPanel();
+		contentPane.add(panelAPL, "name_1653769756360800");
+		panelAPL.setLayout(null);
+		
+		JScrollPane scrollPaneAPL = new JScrollPane();
+		scrollPaneAPL.setBounds(436, 140, 849, 445);
+		panelAPL.add(scrollPaneAPL);
+		
+		pieceTable = new JTable();
+		pieceTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				int index = pieceTable.getSelectedRow();
+				TableModel model = pieceTable.getModel();
+				pieceID.setText(model.getValueAt(index, 0).toString());
+				pieceName.setText(model.getValueAt(index, 1)!=null?model.getValueAt(index, 1).toString():"");
+				pieceUnit.setText(model.getValueAt(index, 2)!=null?model.getValueAt(index, 2).toString():"");
+			}
+		});
+		pieceTable.setRowHeight(30);
+		pieceTable.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 21));
+		pieceTable.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		scrollPaneAPL.setViewportView(pieceTable);
+		
+		JPanel infoPanelAPL = new JPanel();
+		infoPanelAPL.setBounds(12, 97, 412, 488);
+		panelAPL.add(infoPanelAPL);
+		infoPanelAPL.setLayout(null);
+		
+		JLabel pieceDetails = new JLabel("Detalii piesului:");
+		pieceDetails.setBounds(100, 13, 134, 20);
+		pieceDetails.setFont(new Font("Tahoma", Font.BOLD, 16));
+		infoPanelAPL.add(pieceDetails);
+		
+		JLabel pieceIDInfo = new JLabel("Piece ID:");
+		pieceIDInfo.setBounds(12, 56, 107, 16);
+		infoPanelAPL.add(pieceIDInfo);
+		
+		pieceID = new JTextField();
+		pieceID.setEditable(false);
+		pieceID.setBounds(131, 53, 269, 22);
+		infoPanelAPL.add(pieceID);
+		pieceID.setColumns(10);
+		
+		JLabel pieceNameInfo = new JLabel("Numele piecei:");
+		pieceNameInfo.setBounds(12, 85, 107, 16);
+		infoPanelAPL.add(pieceNameInfo);
+		
+		pieceName = new JTextField();
+		pieceName.setBounds(131, 82, 269, 22);
+		infoPanelAPL.add(pieceName);
+		pieceName.setColumns(10);
+		
+		JLabel pieceUnitInfo = new JLabel("Unit:");
+		pieceUnitInfo.setBounds(12, 114, 103, 16);
+		infoPanelAPL.add(pieceUnitInfo);
+		
+		pieceUnit = new JTextField();
+		pieceUnit.setBounds(131, 111, 269, 22);
+		infoPanelAPL.add(pieceUnit);
+		pieceUnit.setColumns(10);
+		
+		JButton updatePiece = new JButton("Update");
+		updatePiece.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if(pieceID!=null) {
+					updateAutoPiece(pieceID.getText(), pieceName.getText(), pieceUnit.getText());
+				}else {
+					System.out.println("Please select an auto piece first!");
+				}
+			}
+		});
+		updatePiece.setBounds(69, 426, 116, 37);
+		infoPanelAPL.add(updatePiece);
+		
+		JButton deletePiece = new JButton("Delete");
+		deletePiece.setEnabled(false);
+		deletePiece.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				deleteAutoPiece(pieceID.getText());
+			}
+		});
+		deletePiece.setBounds(239, 426, 116, 37);
+		infoPanelAPL.add(deletePiece);
+		
+		JLabel reloadPiecesTable = new JLabel("");
+		reloadPiecesTable.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		reloadPiecesTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				LoadPieces();
+			}
+		});
+		reloadPiecesTable.setToolTipText("Reload table");
+		reloadPiecesTable.setIcon(new ImageIcon(MainFrame.class.getResource("/images/reload0.png")));
+		reloadPiecesTable.setBounds(1179, 13, 45, 32);
+		panelAPL.add(reloadPiecesTable);
+		
+		JPanel searchPanelAPL = new JPanel();
+		searchPanelAPL.setBounds(436, 97, 849, 37);
+		panelAPL.add(searchPanelAPL);
+		searchPanelAPL.setLayout(null);
+		
+		JLabel searchAPL = new JLabel("Căutare:");
+		searchAPL.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		searchAPL.setBounds(12, 13, 60, 16);
+		searchPanelAPL.add(searchAPL);
+		
+		partsFilter = new JTextField();
+		
+		//Quick search method
+		
+		partsFilter.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				String querry = partsFilter.getText();
+				filterAutoPieces(querry);
+			}
+		});
+		
+		partsFilter.setBounds(84, 11, 753, 22);
+		searchPanelAPL.add(partsFilter);
+		partsFilter.setColumns(10);
+		
+		JLabel exitAPL = new JLabel("");
+		exitAPL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitAPL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				System.exit(0);
+			}
+		});
+		exitAPL.setToolTipText("EXIT");
+		exitAPL.setHorizontalAlignment(SwingConstants.CENTER);
+		exitAPL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		exitAPL.setBounds(1236, 13, 59, 32);
+		panelAPL.add(exitAPL);
+		
+		JLabel backAPL = new JLabel("");
+		backAPL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				panelAPL.setVisible(false);
+				panelDB.setVisible(true);
+			}
+		});
+		backAPL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backAPL.setToolTipText("BACK");
+		backAPL.setHorizontalAlignment(SwingConstants.CENTER);
+		backAPL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		backAPL.setBounds(12, 13, 52, 32);
+		panelAPL.add(backAPL);
 		
 		//On Creation
 		panelDB.setVisible(true);
@@ -772,6 +965,7 @@ public class MainFrame extends JFrame {
 		panelLPR.setVisible(false);
 		panelNPR.setVisible(false);
 		panelCL.setVisible(false);
+		panelAPL.setVisible(false);
 		
 	}
 	
@@ -808,6 +1002,41 @@ public class MainFrame extends JFrame {
 	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
+	    
+	    //Clear search filter
+	    clientFilter.setText(null);
+	}
+	
+	private void LoadPieces() {
+		//Creating session
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		//Begin transaction
+		session.beginTransaction();
+	    
+		List<Auto_pieces> pieces = (List<Auto_pieces>) session.createQuery("from Auto_pieces").list();
+		String[] cols = { "Cod", "Nume", "Unitate/Masura" };
+
+		DefaultTableModel dtm = new DefaultTableModel(cols, 0);
+
+		for (Auto_pieces a : pieces) {
+			String[] row = { a.getId(), a.getAutopiecename(), a.getAutopieceunitename() };
+			dtm.addRow(row);
+		}
+
+		pieceTable.setModel(dtm);
+		pieceTable.setAutoCreateRowSorter(true);
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
+	    
+	    //Closing the session
+	    session.close();
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
+	    
+	    //Clear search filter
+	    partsFilter.setText(null);
 	}
 	
 	private void SaveLegalPerson() {
@@ -885,6 +1114,14 @@ public class MainFrame extends JFrame {
 		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry));
 	}
 
+	private void filterAutoPieces(String querry) {
+		rowSorter = new TableRowSorter<TableModel>(pieceTable.getModel());
+		
+		pieceTable.setRowSorter(rowSorter);
+		
+		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry));
+	}
+	
 	private void getClientByID(int id) {	
 		//Creating session
 		Session session = HibernateUtil.getSessionFactory().openSession();
@@ -934,6 +1171,12 @@ public class MainFrame extends JFrame {
 		branchInfo.setVisible(state);
 	}
 
+	private void pieceDataResetter() {
+		pieceID.setText(null);
+		pieceName.setText(null);
+		pieceUnit.setText(null);
+	}
+	
 	private void updateNaturalClient(int id, String cname, String cphone) {
 		//Creating session
 		Session session = HibernateUtil.getSessionFactory().openSession();
@@ -943,6 +1186,30 @@ public class MainFrame extends JFrame {
 		Client client = (Client) session.get(Client.class, id);
 		client.setContactname(cname);
 		client.setContactphone(cphone);
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
+	    
+	    System.out.println("Updated Successfully");
+	    
+	    //Closing the session
+	    session.close();
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
+	}
+
+	private void updateAutoPiece(String pid, String pname, String punit) {
+		//Creating session
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		//Begin transaction
+		session.beginTransaction();
+	    
+		Auto_pieces auto_piece = (Auto_pieces) session.get(Auto_pieces.class, pid);
+		auto_piece.setId(pid);
+		auto_piece.setAutopiecename(pname);
+		auto_piece.setAutopieceunitname(punit);
+		
 	      
 	    //Committing the transaction
 	    session.getTransaction().commit();
@@ -999,6 +1266,29 @@ public class MainFrame extends JFrame {
 		}
 		session.remove(client);
 		selectedID = 0;
+		companyDataSetter(false);
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
+	    
+	    System.out.println("Deleted Successfully");
+	    
+	    //Closing the session
+	    session.close();
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
+	}
+
+	private void deleteAutoPiece(String pid) {
+		//Creating session
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		//Begin transaction
+		session.beginTransaction();
+	    
+		Auto_pieces auto_piece = (Auto_pieces)session.load(Auto_pieces.class, pid);
+		session.remove(auto_piece);
+		pieceDataResetter();
 	      
 	    //Committing the transaction
 	    session.getTransaction().commit();
