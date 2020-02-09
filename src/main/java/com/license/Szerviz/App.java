@@ -1,10 +1,13 @@
 package com.license.Szerviz;
 
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 
 import com.license.HibernateUtil.HibernateUtil;
+import com.license.Szerviz.Entities.Auto_pieces;
 import com.license.Szerviz.Entities.Client;
 import com.license.Szerviz.Entities.Company;
+import com.license.Szerviz.Entities.Replaced;
 
 /**
  * Hello world
@@ -17,18 +20,22 @@ public class App {
 		//System.out.println(session);
 		session.beginTransaction();
 	    
-	    //Create new Client object
-	    Client newClient = new Client("ForKeyTest5", "+410", true);
-	    
-	    //Save Client
-	    session.save(newClient);
-	    
-		//Create new Company object
-		Company newCompany = new Company(newClient.getId(), "F", "F", "F", "F","F", "F", "F", "F");
-	    
-	    //Save Company
-	    newCompany.setClients(newClient);
-	    session.save(newCompany);
+		Query<Auto_pieces> querry;
+		querry = session.createQuery("from Auto_pieces where id=:id");
+		querry.setParameter("id", "A");
+		
+		Auto_pieces selectedPiece = (Auto_pieces) querry.uniqueResult();
+		Auto_pieces replacablePiece;
+		
+		for (Replaced rep : selectedPiece.getReplaceables()) 
+		{
+			querry = session.createQuery("from Auto_pieces where id=:id");
+			querry.setParameter("id", rep.getAutopiecesidto());
+			
+			replacablePiece = (Auto_pieces) querry.uniqueResult();
+			
+			System.out.println(replacablePiece.getId() + ", " + replacablePiece.getAutopiecename() + ", " + replacablePiece.getAutopieceunitename() + ".");
+		}
 	       
 	    session.getTransaction().commit();    
 	    HibernateUtil.shutDown();
