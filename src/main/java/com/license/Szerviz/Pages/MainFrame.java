@@ -17,6 +17,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -32,10 +34,13 @@ import com.license.Szerviz.Entities.Company;
 import com.license.Szerviz.Entities.Replaced;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.CardLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -149,6 +154,9 @@ public class MainFrame extends JFrame {
 				try {
 					mainFrame.setUndecorated(true);
 					mainFrame.setVisible(true);
+					
+					//Global settings
+					UIManager.put("OptionPane.minimumSize", new Dimension(350,75)); 
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -156,9 +164,6 @@ public class MainFrame extends JFrame {
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
 	public MainFrame() {
 		setBackground(Color.WHITE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -191,20 +196,6 @@ public class MainFrame extends JFrame {
 		panelDB = new JPanel();
 		contentPane.add(panelDB, "name_1108443134470599");
 		panelDB.setLayout(null);
-		
-		JLabel exitDB = new JLabel("");
-		exitDB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		exitDB.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				System.exit(0);
-			}
-		});
-		exitDB.setToolTipText("EXIT");
-		exitDB.setHorizontalAlignment(SwingConstants.CENTER);
-		exitDB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
-		exitDB.setBounds(1236, 13, 59, 32);
-		panelDB.add(exitDB);
 		
 		JLabel MCard_newClient_DB = new JLabel("");
 		MCard_newClient_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -268,6 +259,20 @@ public class MainFrame extends JFrame {
 		MCard_addReplace_DB.setBounds(344, 276, 154, 154);
 		panelDB.add(MCard_addReplace_DB);
 		
+		JLabel exitDB = new JLabel("");
+		exitDB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitDB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitDB.setToolTipText("EXIT");
+		exitDB.setHorizontalAlignment(SwingConstants.CENTER);
+		exitDB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		exitDB.setBounds(1236, 13, 59, 32);
+		panelDB.add(exitDB);
+		
 		////////////////////////////////////////////////////
 		//--------//Client Registration Section//--------//
 		///////////////////////////////////////////////////
@@ -311,7 +316,7 @@ public class MainFrame extends JFrame {
 		exitCR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				System.exit(0);
+				exitDialog();
 			}
 		});
 		exitCR.setToolTipText("EXIT");
@@ -349,6 +354,14 @@ public class MainFrame extends JFrame {
 		panelLPR.add(HCard_legalClient_LPR);
 		
 		JTF_clientName_LPR = new JTextField();
+		JTF_clientName_LPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_clientName_LPR.getBorder()!=null) {
+					JTF_clientName_LPR.setBorder(null);
+				}
+			}
+		});
 		JTF_clientName_LPR.setBounds(896, 138, 365, 22);
 		panelLPR.add(JTF_clientName_LPR);
 		JTF_clientName_LPR.setColumns(10);
@@ -364,6 +377,14 @@ public class MainFrame extends JFrame {
 		panelLPR.add(JL_clientPhone_LPR);
 		
 		JTF_clientPhone_LPR = new JTextField();
+		JTF_clientPhone_LPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_clientPhone_LPR.getBorder()!=null) {
+					JTF_clientPhone_LPR.setBorder(null);
+				}
+			}
+		});
 		JTF_clientPhone_LPR.setColumns(10);
 		JTF_clientPhone_LPR.setBounds(896, 218, 365, 22);
 		panelLPR.add(JTF_clientPhone_LPR);
@@ -372,11 +393,6 @@ public class MainFrame extends JFrame {
 		JB_saveClient_LPR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				SaveLegalPerson();
-				
-				panelCR.setVisible(true);
-				panelLPR.setVisible(false);
-				
 				List<JTextField> jtf_list = new ArrayList<JTextField>();
 				jtf_list.add(JTF_clientName_LPR);
 				jtf_list.add(JTF_clientPhone_LPR);
@@ -389,7 +405,17 @@ public class MainFrame extends JFrame {
 				jtf_list.add(JTF_companyIBAN_LPR);
 				jtf_list.add(JTF_companyBranchOffice_LPR);
 				
-				GeneralResetter(jtf_list, null, null, true, null);
+				if(InputValidation(jtf_list)) {
+					SaveLegalPerson();
+					
+					panelCR.setVisible(true);
+					panelLPR.setVisible(false);
+									
+					GeneralResetter(jtf_list, null, null, true, null);	
+				}else {
+					//Set warning pop-up here
+					unsavedInformer();
+				}
 			}
 		});
 		JB_saveClient_LPR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/save-button.png")));
@@ -403,6 +429,14 @@ public class MainFrame extends JFrame {
 		panelLPR.add(JL_companyName_LPR);
 		
 		JTF_companyName_LPR = new JTextField();
+		JTF_companyName_LPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_companyName_LPR.getBorder()!=null) {
+					JTF_companyName_LPR.setBorder(null);
+				}
+			}
+		});
 		JTF_companyName_LPR.setColumns(10);
 		JTF_companyName_LPR.setBounds(519, 138, 365, 22);
 		panelLPR.add(JTF_companyName_LPR);
@@ -413,6 +447,14 @@ public class MainFrame extends JFrame {
 		panelLPR.add(JL_companyPhone_LPR);
 		
 		JTF_companyPhone_LPR = new JTextField();
+		JTF_companyPhone_LPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_companyPhone_LPR.getBorder()!=null) {
+					JTF_companyPhone_LPR.setBorder(null);
+				}
+			}
+		});
 		JTF_companyPhone_LPR.setColumns(10);
 		JTF_companyPhone_LPR.setBounds(519, 218, 365, 22);
 		panelLPR.add(JTF_companyPhone_LPR);
@@ -423,6 +465,14 @@ public class MainFrame extends JFrame {
 		panelLPR.add(JL_companyAddress_LPR);
 		
 		JTF_companyAddress_LPR = new JTextField();
+		JTF_companyAddress_LPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_companyAddress_LPR.getBorder()!=null) {
+					JTF_companyAddress_LPR.setBorder(null);
+				}
+			}
+		});
 		JTF_companyAddress_LPR.setColumns(10);
 		JTF_companyAddress_LPR.setBounds(519, 298, 365, 22);
 		panelLPR.add(JTF_companyAddress_LPR);
@@ -433,6 +483,14 @@ public class MainFrame extends JFrame {
 		panelLPR.add(JL_companyCIF_LPR);
 		
 		JTF_companyCIF_LPR = new JTextField();
+		JTF_companyCIF_LPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_companyCIF_LPR.getBorder()!=null) {
+					JTF_companyCIF_LPR.setBorder(null);
+				}
+			}
+		});
 		JTF_companyCIF_LPR.setColumns(10);
 		JTF_companyCIF_LPR.setBounds(519, 378, 365, 22);
 		panelLPR.add(JTF_companyCIF_LPR);
@@ -443,6 +501,14 @@ public class MainFrame extends JFrame {
 		panelLPR.add(JL_companyRegNR_LPR);
 		
 		JTF_companyRegNR_LPR = new JTextField();
+		JTF_companyRegNR_LPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_companyRegNR_LPR.getBorder()!=null) {
+					JTF_companyRegNR_LPR.setBorder(null);
+				}
+			}
+		});
 		JTF_companyRegNR_LPR.setColumns(10);
 		JTF_companyRegNR_LPR.setBounds(519, 458, 365, 22);
 		panelLPR.add(JTF_companyRegNR_LPR);
@@ -453,6 +519,14 @@ public class MainFrame extends JFrame {
 		panelLPR.add(JL_companyBank_LPR);
 		
 		JTF_companyBank_LPR = new JTextField();
+		JTF_companyBank_LPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_companyBank_LPR.getBorder()!=null) {
+					JTF_companyBank_LPR.setBorder(null);
+				}
+			}
+		});
 		JTF_companyBank_LPR.setColumns(10);
 		JTF_companyBank_LPR.setBounds(896, 298, 365, 22);
 		panelLPR.add(JTF_companyBank_LPR);
@@ -463,6 +537,14 @@ public class MainFrame extends JFrame {
 		panelLPR.add(JL_companyIBAN_LPR);
 		
 		JTF_companyIBAN_LPR = new JTextField();
+		JTF_companyIBAN_LPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_companyIBAN_LPR.getBorder()!=null) {
+					JTF_companyIBAN_LPR.setBorder(null);
+				}
+			}
+		});
 		JTF_companyIBAN_LPR.setColumns(10);
 		JTF_companyIBAN_LPR.setBounds(896, 378, 365, 22);
 		panelLPR.add(JTF_companyIBAN_LPR);
@@ -473,6 +555,14 @@ public class MainFrame extends JFrame {
 		panelLPR.add(JL_companyBranchOffice_LPR);
 		
 		JTF_companyBranchOffice_LPR = new JTextField();
+		JTF_companyBranchOffice_LPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_companyBranchOffice_LPR.getBorder()!=null) {
+					JTF_companyBranchOffice_LPR.setBorder(null);
+				}
+			}
+		});
 		JTF_companyBranchOffice_LPR.setColumns(10);
 		JTF_companyBranchOffice_LPR.setBounds(896, 458, 365, 22);
 		panelLPR.add(JTF_companyBranchOffice_LPR);
@@ -482,7 +572,7 @@ public class MainFrame extends JFrame {
 		exitLPR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				System.exit(0);
+				exitDialog();
 			}
 		});
 		exitLPR.setToolTipText("EXIT");
@@ -494,10 +584,7 @@ public class MainFrame extends JFrame {
 		JLabel backLPR = new JLabel("");
 		backLPR.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				panelCR.setVisible(true);
-				panelLPR.setVisible(false);
-				
+			public void mouseClicked(MouseEvent e) {				
 				List<JTextField> jtf_list = new ArrayList<JTextField>();
 				jtf_list.add(JTF_clientName_LPR);
 				jtf_list.add(JTF_clientPhone_LPR);
@@ -510,7 +597,23 @@ public class MainFrame extends JFrame {
 				jtf_list.add(JTF_companyIBAN_LPR);
 				jtf_list.add(JTF_companyBranchOffice_LPR);
 				
-				GeneralResetter(jtf_list, null, null, true, null);
+				//I can reduce the condition tree to one branch but then the confirmation to go back will be displayed if all text fields are empty as well
+				//not just when there is some text in them, and I did not want that
+				
+				if(unsavedChecker(jtf_list)) {
+					if(backDialog()) {
+						panelCR.setVisible(true);
+						panelLPR.setVisible(false);
+						
+						TextFieldBorderResetter(jtf_list);
+						GeneralResetter(jtf_list, null, null, true, null);
+					}
+				}else {
+					panelCR.setVisible(true);
+					panelLPR.setVisible(false);
+					
+					TextFieldBorderResetter(jtf_list);
+				}
 			}
 		});
 		backLPR.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -534,6 +637,14 @@ public class MainFrame extends JFrame {
 		panelNPR.add(HCrad_naturalClient_NPR);
 		
 		JTF_clientName_NPR = new JTextField();
+		JTF_clientName_NPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				if(JTF_clientName_NPR.getBorder()!=null) {
+					JTF_clientName_NPR.setBorder(null);
+				}
+			}
+		});
 		JTF_clientName_NPR.setBounds(732, 144, 365, 22);
 		panelNPR.add(JTF_clientName_NPR);
 		JTF_clientName_NPR.setColumns(10);
@@ -549,6 +660,14 @@ public class MainFrame extends JFrame {
 		panelNPR.add(JB_clientPhone_NPR);
 		
 		JTF_clientPhone_NPR = new JTextField();
+		JTF_clientPhone_NPR.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				if(JTF_clientPhone_NPR.getBorder()!=null) {
+					JTF_clientPhone_NPR.setBorder(null);
+				}
+			}
+		});
 		JTF_clientPhone_NPR.setColumns(10);
 		JTF_clientPhone_NPR.setBounds(732, 218, 365, 22);
 		panelNPR.add(JTF_clientPhone_NPR);
@@ -556,17 +675,21 @@ public class MainFrame extends JFrame {
 		JButton JB_saveClient_NPR = new JButton("Salveaza");
 		JB_saveClient_NPR.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				SaveNaturalClient();
-				
-				panelCR.setVisible(true);
-				panelNPR.setVisible(false);
-				
+			public void mouseClicked(MouseEvent arg0) {				
 				List<JTextField> jtf_list = new ArrayList<JTextField>();
 				jtf_list.add(JTF_clientName_NPR);
 				jtf_list.add(JTF_clientPhone_NPR);
 				
-				GeneralResetter(jtf_list, null, null, true, null);
+				if(InputValidation(jtf_list)) {
+					SaveNaturalClient();
+					
+					panelCR.setVisible(true);
+					panelNPR.setVisible(false);
+									
+					GeneralResetter(jtf_list, null, null, true, null);	
+				}else {
+					unsavedInformer();
+				}
 			}
 		});
 		JB_saveClient_NPR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/save-button.png")));
@@ -579,7 +702,7 @@ public class MainFrame extends JFrame {
 		exitNPR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				System.exit(0);
+				exitDialog();
 			}
 		});
 		exitNPR.setToolTipText("EXIT");
@@ -591,15 +714,25 @@ public class MainFrame extends JFrame {
 		JLabel backNPR = new JLabel("");
 		backNPR.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				panelCR.setVisible(true);
-				panelNPR.setVisible(false);
-				
+			public void mouseClicked(MouseEvent e) {			
 				List<JTextField> jtf_list = new ArrayList<JTextField>();
 				jtf_list.add(JTF_clientName_NPR);
 				jtf_list.add(JTF_clientPhone_NPR);
 				
-				GeneralResetter(jtf_list, null, null, true, null);
+				if(unsavedChecker(jtf_list)) {
+					if(backDialog()) {
+						panelCR.setVisible(true);
+						panelNPR.setVisible(false);
+						
+						TextFieldBorderResetter(jtf_list);
+						GeneralResetter(jtf_list, null, null, true, null);
+					}
+				}else {
+					panelCR.setVisible(true);
+					panelNPR.setVisible(false);
+					
+					TextFieldBorderResetter(jtf_list);
+				}
 			}
 		});
 		backNPR.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -816,7 +949,9 @@ public class MainFrame extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				if(selectedID>0) {
-					deleteClient(selectedID);
+					if(DeleteConfirmation()) {
+						deleteClient(selectedID);
+					}
 				}else {
 					System.out.println("You have to select a client first!");
 				}
@@ -830,7 +965,7 @@ public class MainFrame extends JFrame {
 		exitCL.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				System.exit(0);
+				exitDialog();
 			}
 		});
 		exitCL.setToolTipText("EXIT");
@@ -990,7 +1125,13 @@ public class MainFrame extends JFrame {
 		JB_deletePiece_APL.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				deleteAutoPiece(JTF_pieceIDInfo_APL.getText());
+				if(!JTF_pieceIDInfo_APL.getText().isEmpty()) {
+					if(DeleteConfirmation()) {
+						deleteAutoPiece(JTF_pieceIDInfo_APL.getText());
+					}
+				}else {
+					System.out.println("You have to select an auto piece before.");
+				}
 			}
 		});
 		JB_deletePiece_APL.setBounds(239, 426, 116, 37);
@@ -1065,7 +1206,7 @@ public class MainFrame extends JFrame {
 		exitAPL.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				System.exit(0);
+				exitDialog();
 			}
 		});
 		exitAPL.setToolTipText("EXIT");
@@ -1190,6 +1331,18 @@ public class MainFrame extends JFrame {
 		JTF_pieceUnitNameInfo_AR.setColumns(10);
 		
 		JB_deleteReplacable_AR = new JButton("Ștergere");
+		JB_deleteReplacable_AR.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if(!JTF_pieceIDInfo_AR.getText().isEmpty()) {
+					if(DeleteConfirmation()) {
+						DeleteFromReplaced(JTF_pieceIDInfo_AR.getText());
+					}
+				}else {
+					System.out.println("You have to select an auto pice before.");
+				}
+			}
+		});
 		JB_deleteReplacable_AR.setEnabled(false);
 		JB_deleteReplacable_AR.setBounds(101, 181, 160, 43);
 		JP_pieceInfo_AR.add(JB_deleteReplacable_AR);
@@ -1280,7 +1433,7 @@ public class MainFrame extends JFrame {
 		exitAR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				System.exit(0);
+				exitDialog();
 			}
 		});
 		panelAR.setLayout(null);
@@ -1349,7 +1502,6 @@ public class MainFrame extends JFrame {
 		DefaultTableModel dtm = new DefaultTableModel(cols, 0);
 		table.setModel(dtm);
 	}
-
 	private void GeneralResetter(List<JTextField> jtf_list, List<JLabel> jl_list, List<JButton> jb_list, Boolean jtf_state, Boolean jb_state) {
 		if(jtf_list!=null) {
 			for(JTextField jtf: jtf_list) {
@@ -1367,6 +1519,13 @@ public class MainFrame extends JFrame {
 			for(JButton jb: jb_list) {
 				jb.setEnabled(jb_state);
 			}
+		}
+	}
+	
+	
+	private void TextFieldBorderResetter(List<JTextField> jtf_list) {
+		for(JTextField jtf: jtf_list) {
+			jtf.setBorder(null);
 		}
 	}
 	
@@ -1824,7 +1983,6 @@ public class MainFrame extends JFrame {
 	    
 		Auto_pieces auto_piece = (Auto_pieces)session.load(Auto_pieces.class, pid);
 		session.remove(auto_piece);
-		pieceDataResetter();
 	      
 	    //Committing the transaction
 	    session.getTransaction().commit();
@@ -1840,4 +1998,84 @@ public class MainFrame extends JFrame {
 	    //HibernateUtil.shutDown();
 	}
 	
+	private void DeleteFromReplaced(String piece) {
+		//Creating session
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		//Begin transaction
+		session.beginTransaction();
+	    
+		Query query = session.createSQLQuery("DELETE FROM replaced WHERE autopiecesidfrom=:piece OR autopiecesidto=:piece")
+				.setParameter("piece", piece);
+		
+		query.executeUpdate();
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
+	    
+	    //Closing the session
+	    session.close();
+	    
+	    //Reload modified table
+	    System.out.println("Deleted Successfully");
+	    LoadReplacables(JTF_newReplacable_AR.getText());
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();	
+	}
+	
+	//Is there unsaved (not empty) textfields
+	private Boolean unsavedChecker(List<JTextField> jtf_list) {
+		for(JTextField jtf: jtf_list) {
+			if(!jtf.getText().isEmpty()) return true;
+		}
+		return false;
+	}
+	
+	private void unsavedInformer() {
+		JOptionPane.showMessageDialog(mainFrame, "Unele câmpuri nu sunt completate corect.", "Warning", JOptionPane.WARNING_MESSAGE);
+	}
+
+	//Return true if all inputs are valid, else false
+	private Boolean InputValidation(List<JTextField> jtf_list) {
+		int invalids = 0;
+		for(JTextField jtf: jtf_list) {
+			if(jtf.getText().isEmpty()) {
+				Border border = BorderFactory.createLineBorder(Color.RED, 2);
+				jtf.setBorder(border);
+				
+				invalids++;
+			}
+		}
+		if(invalids>0) {
+			return false;
+		}
+		return true;
+	}
+
+	//return true if the user truly wants to delete the document
+	private Boolean DeleteConfirmation() {
+		int i = JOptionPane.showConfirmDialog(mainFrame, "Sigur doriți să ștergeți?",  "Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		if(i == JOptionPane.YES_OPTION) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+ 	private Boolean backDialog() {
+		int i = JOptionPane.showConfirmDialog(mainFrame, "Ești sigur că vrei să faci un pas înapoi? Datele dvs. nesalvate vor fi pierdute.",  "Back", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		if(i == JOptionPane.YES_OPTION) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+	private void exitDialog() {
+		int i = JOptionPane.showConfirmDialog(mainFrame, "Ești sigur că vrei să renunți?",  "Exit", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+		if(i == JOptionPane.OK_OPTION) {
+			System.exit(0);
+		}
+	}
+
 }
