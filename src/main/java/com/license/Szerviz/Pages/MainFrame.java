@@ -31,6 +31,8 @@ import com.license.HibernateUtil.HibernateUtil;
 import com.license.Szerviz.Entities.Auto_pieces;
 import com.license.Szerviz.Entities.Client;
 import com.license.Szerviz.Entities.Company;
+import com.license.Szerviz.Entities.Reception;
+import com.license.Szerviz.Entities.Receptions_auto_pieces;
 import com.license.Szerviz.Entities.Replaced;
 
 import javax.swing.JLabel;
@@ -46,6 +48,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import com.toedter.calendar.JDateChooser;
+import javax.swing.JSplitPane;
+import java.awt.BorderLayout;
+import javax.swing.JSeparator;
 
 public class MainFrame extends JFrame {
 	
@@ -58,7 +64,9 @@ public class MainFrame extends JFrame {
 	//>>>Natural Person Registration Section: 493
 	//>>>Client List Section: 570
 	//>>>Auto Piece List Section: 854
-	//>>>Add Replace Section: 10509
+	//>>>Add Replace Section: 1050
+	//>>>Add New Supplie Section: 1488
+	//>>>Add New Auto Piece: 1639
 	//>>>CRUD & Other Methods Section: 1289
 
 	/////////////////////////////////////////////////////////////////////
@@ -71,11 +79,14 @@ public class MainFrame extends JFrame {
 	
 	//DEFINED
 	private int xx,xy;
-	private int selectedID;
+	private int selectedClientID;
+	private String selectedPieceID;
 	private String selectPiece;	
 	static private TableRowSorter<TableModel> rowSorter;
 	private Client selectedClient;
 	private Company selectedCompany;
+	private Auto_pieces selectedAutoPiece;
+	private String previousPanel = "panelDB";
 	
 	//contentPane	
 	private JPanel contentPane;
@@ -86,6 +97,9 @@ public class MainFrame extends JFrame {
 	static private JPanel panelCL;
 	static private JPanel panelAPL;
 	static private JPanel panelAR;
+	static private JPanel panelANS;
+	static private JPanel panelAAP;
+	static private JPanel panelANJ;
 	
 	//panelNPR
 	private JTextField JTF_clientName_NPR;
@@ -108,7 +122,7 @@ public class MainFrame extends JFrame {
 	private JTextField JTF_clientNameInfo_CL;
 	private JTextField JTF_clientPhoneInfo_CL;
 	private JTextField JTF_clientCompanyInfo_CL;
-	private JTextField JTF_clientQuickSearch_CL;
+	private JTextField JTF_clientQuickSearchByName_CL;
 	private JTextField JTF_companyNameInfo_CL;
 	private JTextField JTF_companyAddressInfo_CL;
 	private JTextField JTF_companyPhoneInfo_CL;
@@ -126,7 +140,8 @@ public class MainFrame extends JFrame {
 	private JLabel JL_companyIBANInfo_CL;
 	private JLabel JL_companyBranchOfficeInfo_CL;
 	private JButton JB_updateClient_CL;
-	private JButton JB_deleteClient;
+	private JButton JB_deleteClient_CL;
+	private JButton JB_selectClient_CL;
 	
 	//panelAPL
 	private static JTable JT_pieces_APL;
@@ -148,6 +163,24 @@ public class MainFrame extends JFrame {
 	private JTextField JTF_pieceNameTo_AR;
 	private JButton JB_deleteReplacable_AR;
 	
+	//panelAR
+	private JTextField JTL_pieceID_ANS;
+	private JTextField JTF_clientName_ANS;
+	private JTextField JTF_invoiceNR_ANS;
+	private JTable JT_pieces_ANS;
+	private JTextField JTF_autoPieceID_AAP;
+	private JTextField JTF_autoPieceName_AAP;
+	private JTextField JTF_autoPieceUniteName_AAP;
+	private JTextField JTF_clientQuickSearchByPhone_CL;
+	private JTextField JTF_clientQuickSearchByStatus_CL;
+	private JTextField JTF_selectedClientName_ANS;
+	private JTextField JTF_pieceQuantity_ANS;
+	private JTextField JTF_piecePriceOUT_ANS;
+	private JTextField JTF_piecePriceIN_ANS;
+	private JTextField JTF_pieceVAT_ANS;
+	private JTextField JTF_jobName_ANJ;
+	private JTextField JTF_jobPrice_ANJ;
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -156,7 +189,7 @@ public class MainFrame extends JFrame {
 					mainFrame.setVisible(true);
 					
 					//Global settings
-					UIManager.put("OptionPane.minimumSize", new Dimension(350,75)); 
+					UIManager.put("OptionPane.minimumSize", new Dimension(350,75));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -194,6 +227,7 @@ public class MainFrame extends JFrame {
 		///////////////////////////////////////
 		
 		panelDB = new JPanel();
+		panelDB.setName("panelDB");
 		contentPane.add(panelDB, "name_1108443134470599");
 		panelDB.setLayout(null);
 		
@@ -202,13 +236,12 @@ public class MainFrame extends JFrame {
 		MCard_newClient_DB.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				panelCR.setVisible(true);
-				panelDB.setVisible(false);
+				PanelNavigationHelper(panelDB, panelCR);
 			}
 		});
 		MCard_newClient_DB.setToolTipText("Adaugă client nou");
 		MCard_newClient_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/new_client1.png")));
-		MCard_newClient_DB.setBounds(12, 109, 154, 154);
+		MCard_newClient_DB.setBounds(12, 88, 154, 154);
 		panelDB.add(MCard_newClient_DB);
 		
 		JLabel MCard_listClients_DB = new JLabel("");
@@ -216,15 +249,15 @@ public class MainFrame extends JFrame {
 		MCard_listClients_DB.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				panelCL.setVisible(true);
-				panelDB.setVisible(false);
+				PanelNavigationHelper(panelDB, panelCL);
 				
+				SetDefaultTable(JT_clients_CL, new String[]{"ID", "Numele clientului", "Numarul de telefon", "Firm?"});				
 				LoadClients();
 			}
 		});
 		MCard_listClients_DB.setToolTipText("Clienţii");
 		MCard_listClients_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/list_clients1.png")));
-		MCard_listClients_DB.setBounds(178, 109, 154, 154);
+		MCard_listClients_DB.setBounds(12, 255, 154, 154);
 		panelDB.add(MCard_listClients_DB);
 		
 		JLabel MCard_listPieces_DB = new JLabel("");
@@ -233,22 +266,21 @@ public class MainFrame extends JFrame {
 		MCard_listPieces_DB.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				panelDB.setVisible(false);
-				panelAPL.setVisible(true);
+				PanelNavigationHelper(panelDB, panelAPL);
 				
+				SetDefaultTable(JT_pieces_APL, new String[]{"COD", "Nume", "Unitate/Masura"});
 				LoadPieces();
 			}
 		});
 		MCard_listPieces_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/list_parts0.png")));
-		MCard_listPieces_DB.setBounds(178, 276, 154, 154);
+		MCard_listPieces_DB.setBounds(178, 255, 154, 154);
 		panelDB.add(MCard_listPieces_DB);
 		
 		JLabel MCard_addReplace_DB = new JLabel("");
 		MCard_addReplace_DB.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				panelAR.setVisible(true);
-				panelDB.setVisible(false);
+				PanelNavigationHelper(panelDB, panelAR);
 				
 				SetDefaultTable(JT_pieces_AR, new String[]{"COD", "Nume", "Unitate/Masura"});
 			}
@@ -256,8 +288,34 @@ public class MainFrame extends JFrame {
 		MCard_addReplace_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		MCard_addReplace_DB.setToolTipText("Piese de schimb");
 		MCard_addReplace_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/part_switch0.png")));
-		MCard_addReplace_DB.setBounds(344, 276, 154, 154);
+		MCard_addReplace_DB.setBounds(178, 422, 154, 154);
 		panelDB.add(MCard_addReplace_DB);
+		
+		JLabel MCard_addSupplie_DB = new JLabel("");
+		MCard_addSupplie_DB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				PanelNavigationHelper(panelDB, panelANS);
+				
+				SetDefaultTable(JT_pieces_ANS, new String[]{"COD", "Nume", "Unitate/Masura", "Quantity", "IN", "OUT", "TVA"});
+			}
+		});
+		MCard_addSupplie_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		MCard_addSupplie_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/supplier2.png")));
+		MCard_addSupplie_DB.setBounds(343, 88, 154, 154);
+		panelDB.add(MCard_addSupplie_DB);
+		
+		JLabel MCard_addPieces_DB = new JLabel("");
+		MCard_addPieces_DB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				PanelNavigationHelper(panelDB, panelAAP);
+			}
+		});
+		MCard_addPieces_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		MCard_addPieces_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/addPiece0.png")));
+		MCard_addPieces_DB.setBounds(178, 88, 154, 154);
+		panelDB.add(MCard_addPieces_DB);
 		
 		JLabel exitDB = new JLabel("");
 		exitDB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -273,11 +331,25 @@ public class MainFrame extends JFrame {
 		exitDB.setBounds(1236, 13, 59, 32);
 		panelDB.add(exitDB);
 		
+		JLabel MCard_addJob_DB = new JLabel("");
+		MCard_addJob_DB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				PanelNavigationHelper(panelDB, panelANJ);
+			}
+		});
+		MCard_addJob_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/addjob0.png")));
+		MCard_addJob_DB.setToolTipText("Adauga job nou");
+		MCard_addJob_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		MCard_addJob_DB.setBounds(509, 88, 154, 154);
+		panelDB.add(MCard_addJob_DB);
+		
 		////////////////////////////////////////////////////
 		//--------//Client Registration Section//--------//
 		///////////////////////////////////////////////////
 		
 		panelCR = new JPanel();
+		panelCR.setName("panelCR");
 		contentPane.add(panelCR, "name_1108447015053600");
 		panelCR.setLayout(null);
 		
@@ -286,8 +358,7 @@ public class MainFrame extends JFrame {
 		BCard_naturalRegistration_CR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelCR.setVisible(false);
-				panelNPR.setVisible(true);
+				PanelNavigationHelper(panelCR, panelNPR);
 			}
 		});
 		BCard_naturalRegistration_CR.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -301,8 +372,7 @@ public class MainFrame extends JFrame {
 		BCard_legalRegistration_CR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelCR.setVisible(false);
-				panelLPR.setVisible(true);
+				PanelNavigationHelper(panelCR, panelLPR);
 			}
 		});
 		BCard_legalRegistration_CR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/PERSJUR0.png")));
@@ -329,8 +399,7 @@ public class MainFrame extends JFrame {
 		backCR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelCR.setVisible(false);
-				panelDB.setVisible(true);
+				PanelNavigationHelper(panelCR, panelDB);
 			}
 		});
 		backCR.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -345,6 +414,7 @@ public class MainFrame extends JFrame {
 		////////////////////////////////////////////////////////
 		
 		panelLPR = new JPanel();
+		panelLPR.setName("panelLPR");
 		contentPane.add(panelLPR, "name_1108449335953499");
 		panelLPR.setLayout(null);
 		
@@ -408,8 +478,7 @@ public class MainFrame extends JFrame {
 				if(InputValidation(jtf_list)) {
 					SaveLegalPerson();
 					
-					panelCR.setVisible(true);
-					panelLPR.setVisible(false);
+					PanelNavigationHelper(panelLPR, panelCR);
 									
 					GeneralResetter(jtf_list, null, null, true, null);	
 				}else {
@@ -602,15 +671,13 @@ public class MainFrame extends JFrame {
 				
 				if(unsavedChecker(jtf_list)) {
 					if(backDialog()) {
-						panelCR.setVisible(true);
-						panelLPR.setVisible(false);
+						PanelNavigationHelper(panelLPR, panelCR);
 						
 						TextFieldBorderResetter(jtf_list);
 						GeneralResetter(jtf_list, null, null, true, null);
 					}
 				}else {
-					panelCR.setVisible(true);
-					panelLPR.setVisible(false);
+					PanelNavigationHelper(panelLPR, panelCR);
 					
 					TextFieldBorderResetter(jtf_list);
 				}
@@ -628,6 +695,7 @@ public class MainFrame extends JFrame {
 		///////////////////////////////////////////////////////////
 		
 		panelNPR = new JPanel();
+		panelNPR.setName("panelNPR");
 		contentPane.add(panelNPR, "name_1108451248100400");
 		panelNPR.setLayout(null);
 		
@@ -683,8 +751,7 @@ public class MainFrame extends JFrame {
 				if(InputValidation(jtf_list)) {
 					SaveNaturalClient();
 					
-					panelCR.setVisible(true);
-					panelNPR.setVisible(false);
+					PanelNavigationHelper(panelNPR, panelCR);
 									
 					GeneralResetter(jtf_list, null, null, true, null);	
 				}else {
@@ -721,15 +788,13 @@ public class MainFrame extends JFrame {
 				
 				if(unsavedChecker(jtf_list)) {
 					if(backDialog()) {
-						panelCR.setVisible(true);
-						panelNPR.setVisible(false);
+						PanelNavigationHelper(panelNPR, panelCR);
 						
 						TextFieldBorderResetter(jtf_list);
 						GeneralResetter(jtf_list, null, null, true, null);
 					}
 				}else {
-					panelCR.setVisible(true);
-					panelNPR.setVisible(false);
+					PanelNavigationHelper(panelNPR, panelCR);
 					
 					TextFieldBorderResetter(jtf_list);
 				}
@@ -747,6 +812,7 @@ public class MainFrame extends JFrame {
 		///////////////////////////////////////////
 		
 		panelCL = new JPanel();
+		panelCL.setName("panelCL");
 		contentPane.add(panelCL, "name_1108453295279800");
 		panelCL.setLayout(null);
 		
@@ -763,14 +829,14 @@ public class MainFrame extends JFrame {
 				JTF_clientNameInfo_CL.setText(model.getValueAt(index, 1).toString());
 				JTF_clientPhoneInfo_CL.setText(model.getValueAt(index, 2).toString());
 				JTF_clientCompanyInfo_CL.setText(model.getValueAt(index, 3).toString());
-				selectedID = Integer.parseInt(model.getValueAt(index, 0).toString());
+				selectedClientID = Integer.parseInt(model.getValueAt(index, 0).toString());
 				
 				if(JTF_clientCompanyInfo_CL.getText().equals("true")) {
 					//setting company parameters to visible and empty, and labels to visible as well					
 					companyDataSetter(true, true);
 					
 					//Getting the selected company by ID
-					getClientByID(selectedID);
+					getClientByID(selectedClientID);
 					selectedCompany = selectedClient.getCompany();
 					
 					//Load data into the company's parameters					
@@ -786,11 +852,13 @@ public class MainFrame extends JFrame {
 				}else {
 					companyDataSetter(false, true);
 				}
+				
+				if(previousPanel.equals("panelANS")) {
+					JB_selectClient_CL.setEnabled(true);
+				}
 			}
 		});
-		JT_clients_CL.setRowHeight(30);
-		JT_clients_CL.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 21));
-		JT_clients_CL.setFont(new Font("Tahoma", Font.PLAIN, 18));
+
 		JSP_clients_CL.setViewportView(JT_clients_CL);
 		
 		JPanel JP_clientInfo_CL = new JPanel();
@@ -928,12 +996,12 @@ public class MainFrame extends JFrame {
 		JB_updateClient_CL.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				if(selectedID>0) {
+				if(selectedClientID>0) {
 					if(JTF_clientCompanyInfo_CL.getText().equals("true")) {
-						updateLegalClient(selectedID, JTF_clientNameInfo_CL.getText(), JTF_clientPhoneInfo_CL.getText(), JTF_companyNameInfo_CL.getText(), JTF_companyAddressInfo_CL.getText(), 
+						updateLegalClient(selectedClientID, JTF_clientNameInfo_CL.getText(), JTF_clientPhoneInfo_CL.getText(), JTF_companyNameInfo_CL.getText(), JTF_companyAddressInfo_CL.getText(), 
 								JTF_companyPhoneInfo_CL.getText(), JTF_companyCIFInfo_CL.getText(), JTF_companyRegNRInfo_CL.getText(), JTF_companyBankInfo_CL.getText(), JTF_companyIBANInfo_CL.getText(), JTF_companyBranchOfficeInfo_CL.getText());
 					}else {
-						updateNaturalClient(selectedID, JTF_clientNameInfo_CL.getText(), JTF_clientPhoneInfo_CL.getText());
+						updateNaturalClient(selectedClientID, JTF_clientNameInfo_CL.getText(), JTF_clientPhoneInfo_CL.getText());
 					}
 				}else {
 					System.out.println("You have to select a client first!");
@@ -943,22 +1011,88 @@ public class MainFrame extends JFrame {
 		JB_updateClient_CL.setBounds(69, 426, 116, 37);
 		JP_clientInfo_CL.add(JB_updateClient_CL);
 		
-		JB_deleteClient = new JButton("Delete");
-		JB_deleteClient.setEnabled(false);
-		JB_deleteClient.addMouseListener(new MouseAdapter() {
+		JB_deleteClient_CL = new JButton("Delete");
+		JB_deleteClient_CL.setEnabled(false);
+		JB_deleteClient_CL.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				if(selectedID>0) {
+				if(selectedClientID>0) {
 					if(DeleteConfirmation()) {
-						deleteClient(selectedID);
+						deleteClient(selectedClientID);
 					}
 				}else {
 					System.out.println("You have to select a client first!");
 				}
 			}
 		});
-		JB_deleteClient.setBounds(239, 426, 116, 37);
-		JP_clientInfo_CL.add(JB_deleteClient);
+		JB_deleteClient_CL.setBounds(239, 426, 116, 37);
+		JP_clientInfo_CL.add(JB_deleteClient_CL);
+		
+		JB_selectClient_CL = new JButton("Selectare");
+		JB_selectClient_CL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				PanelNavigationHelper(panelCL, panelANS);
+				
+				JTF_clientName_ANS.setText(JTF_clientNameInfo_CL.getText());
+				
+				JB_selectClient_CL.setVisible(false);
+				JB_updateClient_CL.setVisible(true);
+				JB_deleteClient_CL.setVisible(true);			
+			}
+		});
+		JB_selectClient_CL.setEnabled(false);
+		JB_selectClient_CL.setVisible(false);
+		JB_selectClient_CL.setBounds(69, 426, 286, 49);
+		JP_clientInfo_CL.add(JB_selectClient_CL);
+		
+		JPanel JP_clientQuickSearch_CL = new JPanel();
+		JP_clientQuickSearch_CL.setBounds(436, 97, 849, 37);
+		panelCL.add(JP_clientQuickSearch_CL);
+		JP_clientQuickSearch_CL.setLayout(null);
+		
+		JTF_clientQuickSearchByName_CL = new JTextField();
+		
+		//Quick search methods
+		
+		JTF_clientQuickSearchByName_CL.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				filterTable(JT_clients_CL,  
+						new String[]{JTF_clientQuickSearchByName_CL.getText(), JTF_clientQuickSearchByPhone_CL.getText(), JTF_clientQuickSearchByStatus_CL.getText()}, 
+						new int[] {1, 2, 3});
+			}
+		});
+		
+		JTF_clientQuickSearchByName_CL.setBounds(0, 13, 275, 22);
+		JP_clientQuickSearch_CL.add(JTF_clientQuickSearchByName_CL);
+		JTF_clientQuickSearchByName_CL.setColumns(10);
+		
+		JTF_clientQuickSearchByPhone_CL = new JTextField();
+		JTF_clientQuickSearchByPhone_CL.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				filterTable(JT_clients_CL,  
+						new String[]{JTF_clientQuickSearchByName_CL.getText(), JTF_clientQuickSearchByPhone_CL.getText(), JTF_clientQuickSearchByStatus_CL.getText()}, 
+						new int[] {1, 2, 3});
+			}
+		});
+		JTF_clientQuickSearchByPhone_CL.setColumns(10);
+		JTF_clientQuickSearchByPhone_CL.setBounds(287, 13, 275, 22);
+		JP_clientQuickSearch_CL.add(JTF_clientQuickSearchByPhone_CL);
+		
+		JTF_clientQuickSearchByStatus_CL = new JTextField();
+		JTF_clientQuickSearchByStatus_CL.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				filterTable(JT_clients_CL,  
+						new String[]{JTF_clientQuickSearchByName_CL.getText(), JTF_clientQuickSearchByPhone_CL.getText(), JTF_clientQuickSearchByStatus_CL.getText()}, 
+						new int[] {1, 2, 3});
+			}
+		});
+		JTF_clientQuickSearchByStatus_CL.setColumns(10);
+		JTF_clientQuickSearchByStatus_CL.setBounds(574, 13, 275, 22);
+		JP_clientQuickSearch_CL.add(JTF_clientQuickSearchByStatus_CL);
 		
 		JLabel exitCL = new JLabel("");
 		exitCL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -978,8 +1112,21 @@ public class MainFrame extends JFrame {
 		backCL.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelCL.setVisible(false);
-				panelDB.setVisible(true);
+				JPanel nextPanel = null;
+				
+				if(previousPanel.equals("panelANS")) {
+					nextPanel = panelANS;
+					
+					JB_selectClient_CL.setVisible(false);
+					JB_updateClient_CL.setVisible(true);
+					JB_deleteClient_CL.setVisible(true);
+				}else {
+					nextPanel = panelDB;
+				}
+				
+				//add textfield clears
+				
+				PanelNavigationHelper(panelCL, nextPanel);
 			}
 		});
 		backCL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -994,6 +1141,8 @@ public class MainFrame extends JFrame {
 		reloadTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				JT_clients_CL.setRowSorter(null);
+				SetDefaultTable(JT_clients_CL, new String[]{"ID", "Numele clientului", "Numarul de telefon", "Firm?"});	
 				LoadClients();
 			}
 		});
@@ -1002,37 +1151,12 @@ public class MainFrame extends JFrame {
 		reloadTable.setBounds(1179, 13, 45, 32);
 		panelCL.add(reloadTable);
 		
-		JPanel JP_clientQuickSearch_CL = new JPanel();
-		JP_clientQuickSearch_CL.setBounds(436, 97, 849, 37);
-		panelCL.add(JP_clientQuickSearch_CL);
-		JP_clientQuickSearch_CL.setLayout(null);
-		
-		JLabel JL_clientQuickSearch_CL = new JLabel("Căutare:");
-		JL_clientQuickSearch_CL.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		JL_clientQuickSearch_CL.setBounds(12, 13, 60, 16);
-		JP_clientQuickSearch_CL.add(JL_clientQuickSearch_CL);
-		
-		JTF_clientQuickSearch_CL = new JTextField();
-		
-		//Quick search method
-		
-		JTF_clientQuickSearch_CL.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent arg0) {
-				String querry = JTF_clientQuickSearch_CL.getText();
-				filterClients(querry);
-			}
-		});
-		
-		JTF_clientQuickSearch_CL.setBounds(84, 11, 753, 22);
-		JP_clientQuickSearch_CL.add(JTF_clientQuickSearch_CL);
-		JTF_clientQuickSearch_CL.setColumns(10);
-		
 		///////////////////////////////////////////////
 		//--------//Auto Piece List Section//--------//
 		//////////////////////////////////////////////
 		
 		panelAPL = new JPanel();
+		panelAPL.setName("panelAPL");
 		contentPane.add(panelAPL, "name_1653769756360800");
 		panelAPL.setLayout(null);
 		
@@ -1049,22 +1173,20 @@ public class MainFrame extends JFrame {
 				JTF_pieceIDInfo_APL.setText(model.getValueAt(index, 0).toString());
 				JTF_pieceNameInfo_APL.setText(model.getValueAt(index, 1)!=null?model.getValueAt(index, 1).toString():"");
 				JTF_pieceUnitNameInfo_APL.setText(model.getValueAt(index, 2)!=null?model.getValueAt(index, 2).toString():"");
+				selectedPieceID = JTF_pieceIDInfo_APL.getText();
 				
-				if(selectPiece!=null) {
-					JB_selectPiece_APL.setEnabled(true);
-				}else {
+				if(previousPanel.equals("panelDB")) {
 				    List<JButton> jb_list = new ArrayList<JButton>();
 				    jb_list.add(JB_updatePiece_APL);
 				    jb_list.add(JB_deletePiece_APL);
 				    
 				    GeneralResetter(null, null, jb_list, null, true);
+				}else {
+					JB_selectPiece_APL.setEnabled(true);
 				}
 	
 			}
 		});
-		JT_pieces_APL.setRowHeight(30);
-		JT_pieces_APL.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 21));
-		JT_pieces_APL.setFont(new Font("Tahoma", Font.PLAIN, 18));
 		JSP_pieces_APL.setViewportView(JT_pieces_APL);
 		
 		JPanel JP_pieceInfo_APL = new JPanel();
@@ -1138,19 +1260,28 @@ public class MainFrame extends JFrame {
 		JP_pieceInfo_APL.add(JB_deletePiece_APL);
 		
 		JB_selectPiece_APL = new JButton("Selectare");
+		JB_selectPiece_APL.setVisible(false);
 		JB_selectPiece_APL.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelAR.setVisible(true);
-				panelAPL.setVisible(false);
-				
-				if(selectPiece.equals("from")) {
-					JTF_pieceNameFrom_AR.setText(JTF_pieceIDInfo_APL.getText());
-				}else if(selectPiece.equals("to")) {
-					JTF_pieceNameTo_AR.setText(JTF_pieceIDInfo_APL.getText());
+				JPanel nextPanel = null;
+				if(previousPanel.equals("panelANS")) {
+					nextPanel = panelANS;
+					
+					JTL_pieceID_ANS.setText(JTF_pieceIDInfo_APL.getText());
+				}else if(previousPanel.equals("panelAR")) {
+					nextPanel = panelAR;
+					
+					if(selectPiece.equals("from")) {
+						JTF_pieceNameFrom_AR.setText(JTF_pieceIDInfo_APL.getText());
+					}else if(selectPiece.equals("to")) {
+						JTF_pieceNameTo_AR.setText(JTF_pieceIDInfo_APL.getText());
+					}
+					
+					selectPiece=null;
 				}
 				
-				selectPiece=null;
+				PanelNavigationHelper(panelAPL, nextPanel);
 				
 				JB_selectPiece_APL.setVisible(false);
 				JB_updatePiece_APL.setVisible(true);
@@ -1158,7 +1289,6 @@ public class MainFrame extends JFrame {
 			}
 		});
 		JB_selectPiece_APL.setEnabled(false);
-		JB_selectPiece_APL.setVisible(false);
 		JB_selectPiece_APL.setBounds(69, 185, 286, 71);
 		JP_pieceInfo_APL.add(JB_selectPiece_APL);
 		
@@ -1219,17 +1349,23 @@ public class MainFrame extends JFrame {
 		backAPL.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelAPL.setVisible(false);
-				if(selectPiece!=null) {
-					panelAR.setVisible(true);
-					
-					selectPiece = null;
-					JB_selectPiece_APL.setVisible(false);
-					JB_updatePiece_APL.setVisible(true);
-					JB_deletePiece_APL.setVisible(true);
+				JPanel nextPanel = null;
+				if(previousPanel.equals("panelDB")) {
+					nextPanel = panelDB;
 				}else {
-					panelDB.setVisible(true);
-				}
+					if(previousPanel.equals("panelANS") || previousPanel.equals("panelAR")){ //Optimize IT
+						if(previousPanel.equals("panelANS")) {
+							nextPanel = panelANS;
+						}else if(previousPanel.equals("panelAR")) {
+							nextPanel = panelAR;		
+							selectPiece = null;
+						}
+						JB_selectPiece_APL.setVisible(false);
+						JB_updatePiece_APL.setVisible(true);
+						JB_deletePiece_APL.setVisible(true);
+					}
+				}			
+				PanelNavigationHelper(panelAPL, nextPanel);
 			}
 		});
 		backAPL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -1244,6 +1380,7 @@ public class MainFrame extends JFrame {
 		///////////////////////////////////////////
 		
 		panelAR = new JPanel();
+		panelAR.setName("panelAR");
 		contentPane.add(panelAR, "name_1892004559992900");
 		
 		JPanel JP_chosePieceFrom_AR = new JPanel();
@@ -1265,9 +1402,9 @@ public class MainFrame extends JFrame {
 		JB_pieceNameFromSearch_AR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				panelAR.setVisible(false);
-				panelAPL.setVisible(true);
+				PanelNavigationHelper(panelAR, panelAPL);
 				
+				SetDefaultTable(JT_pieces_APL, new String[]{"COD", "Nume", "Unitate/Masura"});
 				LoadPieces();
 				
 				selectPiece = "from";
@@ -1412,9 +1549,9 @@ public class MainFrame extends JFrame {
 		JB_pieceNameToSearch_AR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelAR.setVisible(false);
-				panelAPL.setVisible(true);
+				PanelNavigationHelper(panelAR, panelAPL);
 				
+				SetDefaultTable(JT_pieces_APL, new String[]{"COD", "Nume", "Unitate/Masura"});
 				LoadPieces();
 				
 				selectPiece = "to";
@@ -1460,8 +1597,7 @@ public class MainFrame extends JFrame {
 		backAR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelAR.setVisible(false);
-				panelDB.setVisible(true);
+				PanelNavigationHelper(panelAR, panelDB);
 				
 				List<JTextField> jtf_list = new ArrayList<JTextField>();
 				jtf_list.add(JTF_pieceIDInfo_AR);
@@ -1483,6 +1619,463 @@ public class MainFrame extends JFrame {
 		backAR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
 		panelAR.add(backAR);
 		
+		///////////////////////////////////////////////
+		//--------//Add New Supplie Section//--------//
+		//////////////////////////////////////////////
+		
+		panelANS = new JPanel();
+		panelANS.setName("panelANS");
+		contentPane.add(panelANS, "name_452027607461600");
+		panelANS.setLayout(null);
+		
+		JLabel MLCard_newSupplie_ANS = new JLabel("");
+		MLCard_newSupplie_ANS.setIcon(new ImageIcon(MainFrame.class.getResource("/images/cart.png")));
+		MLCard_newSupplie_ANS.setBounds(12, 58, 256, 256);
+		panelANS.add(MLCard_newSupplie_ANS);
+		
+		JLabel JB_pieceText_ANS = new JLabel("Piece ID:");
+		JB_pieceText_ANS.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JB_pieceText_ANS.setBounds(280, 221, 140, 26);
+		panelANS.add(JB_pieceText_ANS);
+		
+		JTL_pieceID_ANS = new JTextField();
+		JTL_pieceID_ANS.setBounds(432, 223, 300, 22);
+		panelANS.add(JTL_pieceID_ANS);
+		JTL_pieceID_ANS.setColumns(10);
+		
+		JButton JB_pieceSearch_ANS = new JButton("Căutare");
+		JB_pieceSearch_ANS.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				PanelNavigationHelper(panelANS, panelAPL);
+				
+				SetDefaultTable(JT_pieces_APL, new String[]{"COD", "Nume", "Unitate/Masura"});
+				LoadPieces();
+				
+				JB_selectPiece_APL.setVisible(true);
+				JB_updatePiece_APL.setVisible(false);
+				JB_deletePiece_APL.setVisible(false);
+			}
+		});
+		JB_pieceSearch_ANS.setBounds(280, 256, 220, 25);
+		panelANS.add(JB_pieceSearch_ANS);
+		
+		JButton JB_addPieceToList_ANS = new JButton("Adauga pe list");
+		JB_addPieceToList_ANS.setFont(new Font("Tahoma", Font.BOLD, 16));
+		JB_addPieceToList_ANS.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if(getPieceByID(JTL_pieceID_ANS.getText())) {
+					List<JTextField> jtf_list = new ArrayList<JTextField>();
+					jtf_list.add(JTL_pieceID_ANS);
+					jtf_list.add(JTF_pieceQuantity_ANS);
+					jtf_list.add(JTF_piecePriceIN_ANS);
+					jtf_list.add(JTF_piecePriceOUT_ANS);
+					jtf_list.add(JTF_pieceVAT_ANS);
+					
+					AddNewAutoPieceToReception(jtf_list);
+				}else {
+					System.out.println("Auto piece with this ID is not found.");
+				}
+			}
+		});
+		JB_addPieceToList_ANS.setBounds(1008, 220, 180, 94);
+		panelANS.add(JB_addPieceToList_ANS);
+		
+		JLabel JL_clientName_ANS = new JLabel("Furnizor:");
+		JL_clientName_ANS.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_clientName_ANS.setBounds(280, 58, 140, 24);
+		panelANS.add(JL_clientName_ANS);
+		
+		JTF_clientName_ANS = new JTextField();
+		JTF_clientName_ANS.setColumns(10);
+		JTF_clientName_ANS.setBounds(432, 60, 300, 22);
+		panelANS.add(JTF_clientName_ANS);
+		
+		JButton JB_clientSelect_ANS = new JButton("Selecteaza");
+		JB_clientSelect_ANS.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(getClientIDByName(JTF_clientName_ANS.getText())) {
+					getClientByID(selectedClientID);
+					JTF_selectedClientName_ANS.setVisible(true);
+					JTF_selectedClientName_ANS.setText(selectedClient.getContactname());
+				}
+			}
+		});
+		JB_clientSelect_ANS.setBounds(744, 58, 140, 25);
+		panelANS.add(JB_clientSelect_ANS);
+		
+		JButton JB_addNewLegalClient_ANS = new JButton("Adauga nou");
+		JB_addNewLegalClient_ANS.setBounds(1048, 58, 140, 25);
+		panelANS.add(JB_addNewLegalClient_ANS);
+		
+		JLabel JB_invoiceNR_ANS = new JLabel("NR de factura:");
+		JB_invoiceNR_ANS.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JB_invoiceNR_ANS.setBounds(280, 145, 140, 25);
+		panelANS.add(JB_invoiceNR_ANS);
+		
+		JTF_invoiceNR_ANS = new JTextField();
+		JTF_invoiceNR_ANS.setBounds(432, 148, 756, 22);
+		panelANS.add(JTF_invoiceNR_ANS);
+		JTF_invoiceNR_ANS.setColumns(10);
+		
+		final JDateChooser JDC_dateIN_ANS = new JDateChooser();
+		JDC_dateIN_ANS.setBounds(432, 186, 300, 22);
+		panelANS.add(JDC_dateIN_ANS);
+		
+		final JDateChooser JDC_dueDate_ANS = new JDateChooser();
+		JDC_dueDate_ANS.setBounds(896, 186, 292, 22);
+		panelANS.add(JDC_dueDate_ANS);
+		
+		JLabel JL_dateIN_ANS = new JLabel("Date in:");
+		JL_dateIN_ANS.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_dateIN_ANS.setBounds(280, 183, 140, 25);
+		panelANS.add(JL_dateIN_ANS);
+		
+		JLabel JL_dueDate_ANS = new JLabel("Due date:");
+		JL_dueDate_ANS.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_dueDate_ANS.setBounds(744, 186, 140, 22);
+		panelANS.add(JL_dueDate_ANS);
+		
+		JButton JB_addNewPiece_ANS = new JButton("Adauga nou");
+		JB_addNewPiece_ANS.setBounds(512, 256, 220, 25);
+		panelANS.add(JB_addNewPiece_ANS);
+		
+		JScrollPane SP_pieces_ANS = new JScrollPane();
+		SP_pieces_ANS.setBounds(12, 327, 1176, 248);
+		panelANS.add(SP_pieces_ANS);
+		
+		JT_pieces_ANS = new JTable();
+		SP_pieces_ANS.setViewportView(JT_pieces_ANS);
+		
+		JButton JB_saveSupplie_ANS = new JButton("OK");
+		JB_saveSupplie_ANS.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				List<JTextField> jtf_list = new ArrayList<JTextField>();
+				jtf_list.add(JTF_clientName_ANS);
+				jtf_list.add(JTF_invoiceNR_ANS);
+				jtf_list.add(JTF_pieceQuantity_ANS);
+				jtf_list.add(JTF_piecePriceIN_ANS);
+				jtf_list.add(JTF_piecePriceOUT_ANS);
+				jtf_list.add(JTF_pieceVAT_ANS);
+				
+				List<JDateChooser> jdc_list = new ArrayList<JDateChooser>();
+				jdc_list.add(JDC_dateIN_ANS);
+				jdc_list.add(JDC_dueDate_ANS);
+				
+				SaveReception(jtf_list, jdc_list);
+			}
+		});
+		JB_saveSupplie_ANS.setFont(new Font("Tahoma", Font.BOLD, 18));
+		JB_saveSupplie_ANS.setBounds(1200, 327, 85, 248);
+		panelANS.add(JB_saveSupplie_ANS);
+		
+		JButton JB_clientSearch_ANS = new JButton("Căutare");
+		JB_clientSearch_ANS.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				PanelNavigationHelper(panelANS, panelCL);
+				
+				JT_clients_CL.setRowSorter(null);
+				SetDefaultTable(JT_clients_CL, new String[]{"ID", "Numele clientului", "Numarul de telefon", "Firm?"});				
+				LoadClients();
+				
+				JTF_clientQuickSearchByStatus_CL.setText("true");
+				
+				filterTable(JT_clients_CL,  
+						new String[]{JTF_clientQuickSearchByName_CL.getText(), JTF_clientQuickSearchByPhone_CL.getText(), JTF_clientQuickSearchByStatus_CL.getText()}, 
+						new int[] {1, 2, 3});
+				
+				JB_selectClient_CL.setVisible(true);
+				JB_updateClient_CL.setVisible(false);
+				JB_deleteClient_CL.setVisible(false);
+			}
+		});
+		JB_clientSearch_ANS.setBounds(896, 58, 140, 25);
+		panelANS.add(JB_clientSearch_ANS);
+		
+		JTF_selectedClientName_ANS = new JTextField();
+		JTF_selectedClientName_ANS.setForeground(Color.BLACK);
+		JTF_selectedClientName_ANS.setHorizontalAlignment(SwingConstants.CENTER);
+		JTF_selectedClientName_ANS.setFont(new Font("Tahoma", Font.BOLD, 22));
+		JTF_selectedClientName_ANS.setEditable(false);
+		JTF_selectedClientName_ANS.setVisible(false);
+		JTF_selectedClientName_ANS.setColumns(10);
+		JTF_selectedClientName_ANS.setBounds(280, 97, 908, 35);
+		panelANS.add(JTF_selectedClientName_ANS);
+		
+		JLabel JB_pieceQuantity_ANS = new JLabel("Quantity:");
+		JB_pieceQuantity_ANS.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JB_pieceQuantity_ANS.setBounds(280, 288, 140, 26);
+		panelANS.add(JB_pieceQuantity_ANS);
+		
+		JTF_pieceQuantity_ANS = new JTextField();
+		JTF_pieceQuantity_ANS.setColumns(10);
+		JTF_pieceQuantity_ANS.setBounds(432, 290, 300, 22);
+		panelANS.add(JTF_pieceQuantity_ANS);
+		
+		JLabel JB_piecePriceOUT_ANS = new JLabel("Price OUT:");
+		JB_piecePriceOUT_ANS.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JB_piecePriceOUT_ANS.setBounds(744, 256, 140, 26);
+		panelANS.add(JB_piecePriceOUT_ANS);
+		
+		JTF_piecePriceOUT_ANS = new JTextField();
+		JTF_piecePriceOUT_ANS.setColumns(10);
+		JTF_piecePriceOUT_ANS.setBounds(896, 257, 100, 22);
+		panelANS.add(JTF_piecePriceOUT_ANS);
+		
+		JLabel JB_piecePriceIN_ANS = new JLabel("Price IN:");
+		JB_piecePriceIN_ANS.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JB_piecePriceIN_ANS.setBounds(744, 221, 91, 26);
+		panelANS.add(JB_piecePriceIN_ANS);
+		
+		JTF_piecePriceIN_ANS = new JTextField();
+		JTF_piecePriceIN_ANS.setColumns(10);
+		JTF_piecePriceIN_ANS.setBounds(896, 221, 100, 22);
+		panelANS.add(JTF_piecePriceIN_ANS);
+		
+		JLabel exitANS = new JLabel("");
+		exitANS.setBounds(1236, 13, 59, 32);
+		exitANS.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitANS.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitANS.setToolTipText("EXIT");
+		exitANS.setHorizontalAlignment(SwingConstants.CENTER);
+		exitANS.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		panelANS.add(exitANS);
+		
+		JLabel backANS = new JLabel("");
+		backANS.setBounds(12, 13, 52, 32);
+		backANS.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				PanelNavigationHelper(panelANS, panelDB);
+			}
+		});
+		backANS.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backANS.setToolTipText("BACK");
+		backANS.setHorizontalAlignment(SwingConstants.CENTER);
+		backANS.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		panelANS.add(backANS);
+		
+		JLabel JB_pieceTVA_ANS = new JLabel("TVA:");
+		JB_pieceTVA_ANS.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JB_pieceTVA_ANS.setBounds(744, 288, 140, 26);
+		panelANS.add(JB_pieceTVA_ANS);
+		
+		JTF_pieceVAT_ANS = new JTextField();
+		JTF_pieceVAT_ANS.setColumns(10);
+		JTF_pieceVAT_ANS.setBounds(896, 293, 100, 22);
+		panelANS.add(JTF_pieceVAT_ANS);
+		
+		///////////////////////////////////////////////
+		//--------//Add New Auto Piece//--------///////
+		///////////////////////////////////////////////
+		
+		panelAAP = new JPanel();
+		panelAAP.setName("panelAAP");
+		contentPane.add(panelAAP, "name_874772029786500");
+		panelAAP.setLayout(null);
+		
+		JLabel MLCard_newPiece_AAP = new JLabel("");
+		MLCard_newPiece_AAP.setIcon(new ImageIcon(MainFrame.class.getResource("/images/autoPiece0.png")));
+		MLCard_newPiece_AAP.setBounds(12, 58, 254, 254);
+		panelAAP.add(MLCard_newPiece_AAP);
+		
+		JLabel JL_autoPieceID_AAP = new JLabel("ID:");
+		JL_autoPieceID_AAP.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_autoPieceID_AAP.setBounds(278, 58, 140, 24);
+		panelAAP.add(JL_autoPieceID_AAP);
+		
+		JTF_autoPieceID_AAP = new JTextField();
+		JTF_autoPieceID_AAP.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				if(JTF_autoPieceID_AAP.getBorder()!=null) {
+					JTF_autoPieceID_AAP.setBorder(null);
+				}
+			}
+		});
+		JTF_autoPieceID_AAP.setColumns(10);
+		JTF_autoPieceID_AAP.setBounds(430, 60, 300, 22);
+		panelAAP.add(JTF_autoPieceID_AAP);
+		
+		JLabel JL_autoPieceName_AAP = new JLabel("Nume:");
+		JL_autoPieceName_AAP.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_autoPieceName_AAP.setBounds(278, 95, 140, 24);
+		panelAAP.add(JL_autoPieceName_AAP);
+		
+		JTF_autoPieceName_AAP = new JTextField();
+		JTF_autoPieceName_AAP.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_autoPieceName_AAP.getBorder()!=null) {
+					JTF_autoPieceName_AAP.setBorder(null);
+				}
+			}
+		});
+		JTF_autoPieceName_AAP.setColumns(10);
+		JTF_autoPieceName_AAP.setBounds(430, 97, 300, 22);
+		panelAAP.add(JTF_autoPieceName_AAP);
+		
+		JLabel JL_autoPieceUniteName_AAP = new JLabel("Unitate:");
+		JL_autoPieceUniteName_AAP.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_autoPieceUniteName_AAP.setBounds(278, 132, 140, 24);
+		panelAAP.add(JL_autoPieceUniteName_AAP);
+		
+		JTF_autoPieceUniteName_AAP = new JTextField();
+		JTF_autoPieceUniteName_AAP.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_autoPieceUniteName_AAP.getBorder()!=null) {
+					JTF_autoPieceUniteName_AAP.setBorder(null);
+				}
+			}
+		});
+		JTF_autoPieceUniteName_AAP.setColumns(10);
+		JTF_autoPieceUniteName_AAP.setBounds(430, 134, 300, 22);
+		panelAAP.add(JTF_autoPieceUniteName_AAP);
+		
+		JButton JB_savePiece_AAP = new JButton("Salveaza");
+		JB_savePiece_AAP.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				List<JTextField> jtf_list = new ArrayList<JTextField>();
+				jtf_list.add(JTF_autoPieceID_AAP);
+				jtf_list.add(JTF_autoPieceName_AAP);
+				jtf_list.add(JTF_autoPieceUniteName_AAP);
+				
+				if(InputValidation(jtf_list)) {
+					SaveAutoPiece(jtf_list);
+					
+					PanelNavigationHelper(panelAAP, panelDB);
+									
+					GeneralResetter(jtf_list, null, null, true, null);	
+				}else {
+					//Set warning pop-up here
+					unsavedInformer();
+				}
+			}
+		});
+		JB_savePiece_AAP.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JB_savePiece_AAP.setBounds(430, 169, 197, 41);
+		panelAAP.add(JB_savePiece_AAP);
+		
+		JLabel exitAAP = new JLabel("");
+		exitAAP.setBounds(1236, 13, 59, 32);
+		exitAAP.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitAAP.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitAAP.setToolTipText("EXIT");
+		exitAAP.setHorizontalAlignment(SwingConstants.CENTER);
+		exitAAP.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		panelAAP.add(exitAAP);
+		
+		JLabel backAAP = new JLabel("");
+		backAAP.setBounds(12, 13, 52, 32);
+		backAAP.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				List<JTextField> jtf_list = new ArrayList<JTextField>();
+				jtf_list.add(JTF_autoPieceID_AAP);
+				jtf_list.add(JTF_autoPieceName_AAP);
+				jtf_list.add(JTF_autoPieceUniteName_AAP);
+				
+				//I can reduce the condition tree to one branch but then the confirmation to go back will be displayed if all text fields are empty as well
+				//not just when there is some text in them, and I did not want that
+				
+				if(unsavedChecker(jtf_list)) {
+					if(backDialog()) {
+						PanelNavigationHelper(panelAAP, panelDB);
+						
+						TextFieldBorderResetter(jtf_list);
+						GeneralResetter(jtf_list, null, null, true, null);
+					}
+				}else {
+					PanelNavigationHelper(panelAAP, panelDB);
+					
+					TextFieldBorderResetter(jtf_list);
+				}
+			}
+		});
+		backAAP.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backAAP.setToolTipText("BACK");
+		backAAP.setHorizontalAlignment(SwingConstants.CENTER);
+		backAAP.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		panelAAP.add(backAAP);
+		
+		panelANJ = new JPanel();
+		contentPane.add(panelANJ, "name_1325770650059500");
+		panelANJ.setLayout(null);
+		
+		JLabel exitANJ = new JLabel("");
+		exitANJ.setBounds(1236, 13, 59, 32);
+		exitANJ.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitANJ.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitANJ.setToolTipText("EXIT");
+		exitANJ.setHorizontalAlignment(SwingConstants.CENTER);
+		exitANJ.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		panelANJ.add(exitANJ);
+		
+		JLabel backANJ = new JLabel("");
+		backANJ.setBounds(12, 13, 52, 32);
+		backANJ.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				PanelNavigationHelper(panelANJ, panelDB);
+			}
+		});
+		backANJ.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backANJ.setToolTipText("BACK");
+		backANJ.setHorizontalAlignment(SwingConstants.CENTER);
+		backANJ.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		panelANJ.add(backANJ);
+		
+		JLabel MLCard_newJob_ANJ = new JLabel("");
+		MLCard_newJob_ANJ.setIcon(new ImageIcon(MainFrame.class.getResource("/images/addJob1.png")));
+		MLCard_newJob_ANJ.setBounds(12, 58, 512, 512);
+		panelANJ.add(MLCard_newJob_ANJ);
+		
+		JLabel JL_jobName_ANJ = new JLabel("Denumirea lucrarii:");
+		JL_jobName_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_jobName_ANJ.setBounds(536, 58, 180, 24);
+		panelANJ.add(JL_jobName_ANJ);
+		
+		JTF_jobName_ANJ = new JTextField();
+		JTF_jobName_ANJ.setColumns(10);
+		JTF_jobName_ANJ.setBounds(728, 58, 300, 22);
+		panelANJ.add(JTF_jobName_ANJ);
+		
+		JLabel JB_jobPrice_ANJ = new JLabel("Tarifa lucrarii:");
+		JB_jobPrice_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JB_jobPrice_ANJ.setBounds(536, 95, 180, 24);
+		panelANJ.add(JB_jobPrice_ANJ);
+		
+		JTF_jobPrice_ANJ = new JTextField();
+		JTF_jobPrice_ANJ.setColumns(10);
+		JTF_jobPrice_ANJ.setBounds(728, 95, 300, 22);
+		panelANJ.add(JTF_jobPrice_ANJ);
+		
+		JButton JB_saveJob_ANJ = new JButton("Salveaza");
+		JB_saveJob_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JB_saveJob_ANJ.setBounds(728, 130, 197, 41);
+		panelANJ.add(JB_saveJob_ANJ);
+		
 		//On Creation
 		panelDB.setVisible(true);
 		panelCR.setVisible(false);
@@ -1491,17 +2084,32 @@ public class MainFrame extends JFrame {
 		panelCL.setVisible(false);
 		panelAPL.setVisible(false);
 		panelAR.setVisible(false);
+		panelANS.setVisible(false);
+		panelAAP.setVisible(false);
+		panelANJ.setVisible(false);
 		
 	}
 	
 	////////////////////////////////////////////////////
 	//--------//CRUD & Other Methods Section//--------//
 	///////////////////////////////////////////////////
-
-	private void SetDefaultTable(JTable table, String[] cols) {
-		DefaultTableModel dtm = new DefaultTableModel(cols, 0);
-		table.setModel(dtm);
+	
+	private void PanelNavigationHelper(JPanel from, JPanel to) {
+		from.setVisible(false);
+		to.setVisible(true);
+		
+		previousPanel = from.getName();
 	}
+	
+	private void SetDefaultTable(JTable table, String[] cols) {
+			table.setRowHeight(30);
+			table.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 21));
+			table.setFont(new Font("Tahoma", Font.PLAIN, 18));
+			
+			DefaultTableModel dtm = new DefaultTableModel(cols, 0);
+			table.setModel(dtm);
+	}
+	
 	private void GeneralResetter(List<JTextField> jtf_list, List<JLabel> jl_list, List<JButton> jb_list, Boolean jtf_state, Boolean jb_state) {
 		if(jtf_list!=null) {
 			for(JTextField jtf: jtf_list) {
@@ -1521,8 +2129,7 @@ public class MainFrame extends JFrame {
 			}
 		}
 	}
-	
-	
+		
 	private void TextFieldBorderResetter(List<JTextField> jtf_list) {
 		for(JTextField jtf: jtf_list) {
 			jtf.setBorder(null);
@@ -1536,9 +2143,12 @@ public class MainFrame extends JFrame {
 		session.beginTransaction();
 	    
 		List<Client> clients= (List<Client>)session.createQuery("from Client").list();
-		String[] cols= {"ID", "Numele clientului", "Numarul de telefon", "Firm?"};
 		
-		DefaultTableModel dtm = new DefaultTableModel(cols, 0);
+		System.out.println(clients);
+		
+		DefaultTableModel dtm = (DefaultTableModel) JT_clients_CL.getModel();
+		
+		System.out.println(dtm.getColumnCount());
 		
 		for(Client c:clients) 
 		{
@@ -1548,7 +2158,6 @@ public class MainFrame extends JFrame {
 
 		JT_clients_CL.setModel(dtm);
 		JT_clients_CL.removeColumn(JT_clients_CL.getColumnModel().getColumn(0));
-		JT_clients_CL.setAutoCreateRowSorter(true);
 	      
 	    //Committing the transaction
 	    session.getTransaction().commit();
@@ -1563,8 +2172,8 @@ public class MainFrame extends JFrame {
 		JTF_clientNameInfo_CL.setText(null);
 		JTF_clientPhoneInfo_CL.setText(null);
 		JTF_clientCompanyInfo_CL.setText(null);
-		selectedID = 0;
-	    JTF_clientQuickSearch_CL.setText(null);
+		selectedClientID = 0;
+	    JTF_clientQuickSearchByName_CL.setText(null);
 	    companyDataSetter(false, false);
 	}
 	
@@ -1585,7 +2194,6 @@ public class MainFrame extends JFrame {
 		}
 
 		JT_pieces_APL.setModel(dtm);
-		JT_pieces_APL.setAutoCreateRowSorter(true);
 	      
 	    //Committing the transaction
 	    session.getTransaction().commit();
@@ -1731,6 +2339,86 @@ public class MainFrame extends JFrame {
 	    //HibernateUtil.shutDown();
 	}
 
+	private void SaveAutoPiece(List<JTextField> jtf_list) {
+		//Creating session
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		//Begin transaction
+		session.beginTransaction();
+	    
+	    //Create new Client object
+	    Auto_pieces auto_piece = new Auto_pieces(jtf_list.get(0).getText(), jtf_list.get(1).getText(), jtf_list.get(2).getText());
+	    
+	    //Save Client
+	    session.save(auto_piece);
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
+	    
+	    //Closing the session
+	    session.close();
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
+	}
+	
+	private void SaveReception(List<JTextField> jtf_list, List<JDateChooser> jdc_list) {
+		//Creating session
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		//Begin transaction
+		session.beginTransaction();
+		
+		Reception reception = null;
+		Receptions_auto_pieces receptions_auto_pieces = null;
+		
+		try {
+		    //Create new Reception object
+			if(selectedClient!=null) {
+			    reception = new Reception(selectedClient.getId(), jtf_list.get(1).getText(), jdc_list.get(0).getDate(), jdc_list.get(1).getDate());	    
+			    
+			    //Save Reception
+			    session.save(reception);
+			}else {
+				System.out.println("You have to slect a client first!");
+			}
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
+	    //Starting new transaction
+	    session.beginTransaction();
+	    
+		try {
+			TableModel model = JT_pieces_ANS.getModel();
+		    for(int i=0; i<model.getRowCount(); i++) {
+		    	System.out.println(model.getValueAt(i, 3).toString().isEmpty());
+		    	System.out.println(model.getValueAt(i, 4).toString().isEmpty());
+		    	System.out.println(model.getValueAt(i, 5).toString().isEmpty());
+		    	System.out.println(model.getValueAt(i, 6).toString().isEmpty());
+		    	
+		    	receptions_auto_pieces = new Receptions_auto_pieces(reception.getId(), model.getValueAt(i, 0).toString(), 
+		    			model.getValueAt(i, 3).toString().isEmpty()?0:Float.valueOf(model.getValueAt(i, 3).toString()),
+		    			model.getValueAt(i, 4).toString().isEmpty()?0:Float.valueOf(model.getValueAt(i, 3).toString()),
+		    			model.getValueAt(i, 5).toString().isEmpty()?0:Float.valueOf(model.getValueAt(i, 3).toString()),
+		    			model.getValueAt(i, 6).toString().isEmpty()?0:Float.valueOf(model.getValueAt(i, 3).toString()));
+		    	
+			    //Save Receptions_auto_pieces
+			    session.save(receptions_auto_pieces);		    	
+		    }
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+		
+	    session.getTransaction().commit();
+	    
+	    //Closing the session
+	    session.close();
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
+	}
+
 	private void AddNewAutoPieceToReplaced(String from, String to) {
 		//Creating session
 		Session session = HibernateUtil.getSessionFactory().openSession();
@@ -1786,15 +2474,51 @@ public class MainFrame extends JFrame {
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
+		
+	private void AddNewAutoPieceToReception(List<JTextField> jtf_list) {
+		DefaultTableModel dtm = (DefaultTableModel) JT_pieces_ANS.getModel();
+		
+		dtm.insertRow(dtm.getRowCount(), new Object[] { selectedAutoPiece.getId(), selectedAutoPiece.getAutopiecename(), selectedAutoPiece.getAutopieceunitename(),
+				jtf_list.get(1).getText(), jtf_list.get(2).getText(), jtf_list.get(3).getText(), jtf_list.get(4).getText()});
+
+		//JT_pieces_ANS.setModel(dtm);
+	}
+	
+	
+	private void filterTable(JTable table, String text[], int idxs[]) {	
+	    TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel()); //Optimalization needed
+	    List<RowFilter<TableModel, Integer>> filters = new ArrayList<RowFilter<TableModel, Integer>>(idxs.length);
+	    
+	    try {
+		    if (text != null && text.length > 0) {
+		        for (int i = 0; i < idxs.length; i++) {
+		            if (text[i] != null && text[i].length() > 0) {
+		                RowFilter<TableModel, Integer> filter = RowFilter.regexFilter("(?i)" + text[i], idxs[i]);
+		                filters.add(filter);
+		            }
+		        }
+		        RowFilter<TableModel, Integer> filter = RowFilter.andFilter(filters);
+            	System.out.println("Filter: " + filter.toString());
+		        sorter.setRowFilter(filter);
+		    } else {
+		        sorter.setRowFilter(null);
+		    }
+
+		    table.setRowSorter(sorter);
+	    }catch(Exception e) {
+	    	System.out.println(e.toString());
+	    }
+	}
+	
 	
 	private void filterClients(String querry) {
 		rowSorter = new TableRowSorter<TableModel>(JT_clients_CL.getModel());
 		
 		JT_clients_CL.setRowSorter(rowSorter);
 		
-		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry));
+		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry, 1));
 	}
-
+	
 	private void filterAutoPieces(String querry) {
 		rowSorter = new TableRowSorter<TableModel>(JT_pieces_APL.getModel());
 		
@@ -1824,6 +2548,61 @@ public class MainFrame extends JFrame {
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
+	
+	private Boolean getPieceByID(String id) {
+		//Creating session
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		//Begin transaction
+		session.beginTransaction();
+		
+		Query<Auto_pieces> querry = session.createQuery("from Auto_pieces where id=:id");
+		querry.setParameter("id", id);
+		selectedAutoPiece = (Auto_pieces) querry.uniqueResult();
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
+	    
+	    //Closing the session
+	    session.close();
+	    
+	    if(selectedAutoPiece==null) return false;
+	    return true;
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
+	}
+	
+	private Boolean getClientIDByName(String name) {	
+		//Creating session
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		//Begin transaction
+		session.beginTransaction();
+		
+		Query<Client> querry = session.createQuery("from Client where contactname=:contactname and iscompany = true ");
+		querry.setParameter("contactname", name);
+		List<Client> cl = (List<Client>) querry.list();
+		int nr = querry.list().size();
+		Boolean exists = false;;
+		if(nr>1) {
+			System.out.println("Two or more with the same name. Try search please.");
+		}else if(nr<1) {
+			System.out.println("No result with this name.");
+		}else {
+			selectedClientID = cl.get(0).getId();
+			exists = true;
+		}
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
+	    
+	    //Closing the session
+	    session.close();
+	    
+	    return exists;
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
+	}
 
 	private void companyDataSetter(Boolean jtf_state, Boolean jb_state) {
 		List<JTextField> jtf_list = new ArrayList<JTextField>();
@@ -1849,7 +2628,7 @@ public class MainFrame extends JFrame {
 		
 		List<JButton> jb_list = new ArrayList<JButton>();
 		jb_list.add(JB_updateClient_CL);
-		jb_list.add(JB_deleteClient);
+		jb_list.add(JB_deleteClient_CL);
 		
 		GeneralResetter(jtf_list, jl_list, jb_list, jtf_state, jb_state);
 	}
@@ -1932,7 +2711,7 @@ public class MainFrame extends JFrame {
 		Auto_pieces auto_piece = (Auto_pieces) session.get(Auto_pieces.class, pid);
 		auto_piece.setId(pid);
 		auto_piece.setAutopiecename(pname);
-		auto_piece.setAutopieceunitname(punit);
+		auto_piece.setAutopieceunitename(punit);
 		
 	      
 	    //Committing the transaction
@@ -2077,5 +2856,4 @@ public class MainFrame extends JFrame {
 			System.exit(0);
 		}
 	}
-
 }

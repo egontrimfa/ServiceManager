@@ -1,12 +1,14 @@
 package com.license.Szerviz.Entities;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -33,6 +35,18 @@ public class Client implements Serializable {
 	
     @OneToOne(mappedBy = "clients")
     private Company company;
+    
+    @OneToMany(mappedBy="clients")
+    private Set<Inventory> inventory;
+    
+    @OneToMany(mappedBy="clients")
+    private Set<Registration> registrations;
+    
+    @OneToMany(mappedBy="clients")
+    private Set<Invoice> invoices;
+    
+    @OneToMany(mappedBy="clients")
+    private Set<Reception> reception;
     
 	public Client() {}
 	
@@ -75,10 +89,48 @@ public class Client implements Serializable {
 		return company;
 	}
 
-	@Override
-	public String toString() {
-		return "clients [id=" + id + ", contactname=" + contactname + ", contactphone=" + contactphone + ", iscompany="
-				+ iscompany + "]";
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 	
+	public Set<Inventory> getInventory() {
+		return inventory;
+	}
+
+	public void setInventory(Set<Inventory> inventory) {
+		this.inventory = inventory;
+	}
+
+	public Set<Registration> getRegistrations() {
+		return registrations;
+	}
+
+	public void setRegistrations(Set<Registration> registrations) {
+		this.registrations = registrations;
+	}
+
+	
+	
+	public Set<Invoice> getInvoices() {
+		return invoices;
+	}
+
+	public void setInvoices(Set<Invoice> invoices) {
+		this.invoices = invoices;
+	}
+
+	public Set<Reception> getReception() {
+		return reception;
+	}
+
+	public void setReception(Set<Reception> reception) {
+		this.reception = reception;
+	}
+
+	@Override
+	public String toString() {
+		return "Client [id=" + id + ", contactname=" + contactname + ", contactphone=" + contactphone + ", iscompany="
+				+ iscompany + "]";
+	}
+
 }

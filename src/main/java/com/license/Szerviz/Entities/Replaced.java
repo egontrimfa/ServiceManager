@@ -35,9 +35,7 @@ public class Replaced implements Serializable {
 		this.autopiecesidfrom = autopiecesidfrom;
 		this.autopiecesidto = autopiecesidto;
 	}
-
-
-
+	
 	public String getAutopiecesidto() {
 		return autopiecesidto;
 	}
