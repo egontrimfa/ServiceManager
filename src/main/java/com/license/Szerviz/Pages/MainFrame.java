@@ -31,6 +31,7 @@ import com.license.HibernateUtil.HibernateUtil;
 import com.license.Szerviz.Entities.Auto_pieces;
 import com.license.Szerviz.Entities.Client;
 import com.license.Szerviz.Entities.Company;
+import com.license.Szerviz.Entities.Job;
 import com.license.Szerviz.Entities.Reception;
 import com.license.Szerviz.Entities.Receptions_auto_pieces;
 import com.license.Szerviz.Entities.Replaced;
@@ -78,10 +79,12 @@ public class MainFrame extends JFrame {
 	static MainFrame mainFrame = new MainFrame();
 	
 	//DEFINED
+	private static Session session;
 	private int xx,xy;
 	private int selectedClientID;
 	private String selectedPieceID;
-	private String selectPiece;	
+	private int selectedJobID;
+	private String selectPiece;
 	static private TableRowSorter<TableModel> rowSorter;
 	private Client selectedClient;
 	private Company selectedCompany;
@@ -100,6 +103,7 @@ public class MainFrame extends JFrame {
 	static private JPanel panelANS;
 	static private JPanel panelAAP;
 	static private JPanel panelANJ;
+	static private JPanel panelJL;
 	
 	//panelNPR
 	private JTextField JTF_clientName_NPR;
@@ -148,13 +152,13 @@ public class MainFrame extends JFrame {
 	private JTextField JTF_pieceIDInfo_APL;
 	private JTextField JTF_pieceNameInfo_APL;
 	private JTextField JTF_pieceUnitNameInfo_APL;
+	private JTextField JTF_pieceQuickSearch_APL;
 	private JButton JB_updatePiece_APL;
 	private JButton JB_deletePiece_APL;
 	private JButton JB_selectPiece_APL;
 	
 	//panelAR
 	private static JTable JT_pieces_AR;
-	private JTextField JTF_pieceQuickSearch_APL;
 	private JTextField JTF_pieceNameFrom_AR;
 	private JTextField JTF_pieceIDInfo_AR;
 	private JTextField JTF_pieceNameInfo_AR;
@@ -181,6 +185,16 @@ public class MainFrame extends JFrame {
 	private JTextField JTF_jobName_ANJ;
 	private JTextField JTF_jobPrice_ANJ;
 	
+	//panelJL
+	private static JTable JT_jobs_JL;
+	private JTextField JTF_jobIDInfo_JL;
+	private JTextField JTF_jobNameInfo_JL;
+	private JTextField JTF_jobPriceInfo_JL;
+	private JTextField JTF_jobQuickSearch_JL;
+	private JButton JB_updateJob_JL;
+	private JButton JB_deleteJob_JL;
+	private JButton JB_selectJob_JL;
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -190,6 +204,9 @@ public class MainFrame extends JFrame {
 					
 					//Global settings
 					UIManager.put("OptionPane.minimumSize", new Dimension(350,75));
+					
+					//Creating global session -- testing
+					session = HibernateUtil.getSessionFactory().openSession();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -250,7 +267,7 @@ public class MainFrame extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				PanelNavigationHelper(panelDB, panelCL);
-				
+								
 				SetDefaultTable(JT_clients_CL, new String[]{"ID", "Numele clientului", "Numarul de telefon", "Firm?"});				
 				LoadClients();
 			}
@@ -343,6 +360,22 @@ public class MainFrame extends JFrame {
 		MCard_addJob_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		MCard_addJob_DB.setBounds(509, 88, 154, 154);
 		panelDB.add(MCard_addJob_DB);
+		
+		JLabel MCard_listJobs_DB = new JLabel("");
+		MCard_listJobs_DB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				PanelNavigationHelper(panelDB, panelJL);
+				
+				SetDefaultTable(JT_jobs_JL, new String[]{"ID", "Numele jobului", "Tarifa jobului"});				
+				LoadJobs();
+			}
+		});
+		MCard_listJobs_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		MCard_listJobs_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/jobsList0.png")));
+		MCard_listJobs_DB.setToolTipText("Joburi");
+		MCard_listJobs_DB.setBounds(509, 255, 154, 154);
+		panelDB.add(MCard_listJobs_DB);
 		
 		////////////////////////////////////////////////////
 		//--------//Client Registration Section//--------//
@@ -1035,6 +1068,9 @@ public class MainFrame extends JFrame {
 				PanelNavigationHelper(panelCL, panelANS);
 				
 				JTF_clientName_ANS.setText(JTF_clientNameInfo_CL.getText());
+				getClientByID(selectedClientID);
+				JTF_selectedClientName_ANS.setVisible(true);
+				JTF_selectedClientName_ANS.setText(selectedClient.getContactname());
 				
 				JB_selectClient_CL.setVisible(false);
 				JB_updateClient_CL.setVisible(true);
@@ -1058,7 +1094,7 @@ public class MainFrame extends JFrame {
 		JTF_clientQuickSearchByName_CL.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent arg0) {
-				filterTable(JT_clients_CL,  
+				comboFilter(JT_clients_CL,  
 						new String[]{JTF_clientQuickSearchByName_CL.getText(), JTF_clientQuickSearchByPhone_CL.getText(), JTF_clientQuickSearchByStatus_CL.getText()}, 
 						new int[] {1, 2, 3});
 			}
@@ -1072,7 +1108,7 @@ public class MainFrame extends JFrame {
 		JTF_clientQuickSearchByPhone_CL.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
-				filterTable(JT_clients_CL,  
+				comboFilter(JT_clients_CL,  
 						new String[]{JTF_clientQuickSearchByName_CL.getText(), JTF_clientQuickSearchByPhone_CL.getText(), JTF_clientQuickSearchByStatus_CL.getText()}, 
 						new int[] {1, 2, 3});
 			}
@@ -1085,7 +1121,7 @@ public class MainFrame extends JFrame {
 		JTF_clientQuickSearchByStatus_CL.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
-				filterTable(JT_clients_CL,  
+				comboFilter(JT_clients_CL,  
 						new String[]{JTF_clientQuickSearchByName_CL.getText(), JTF_clientQuickSearchByPhone_CL.getText(), JTF_clientQuickSearchByStatus_CL.getText()}, 
 						new int[] {1, 2, 3});
 			}
@@ -1114,14 +1150,16 @@ public class MainFrame extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				JPanel nextPanel = null;
 				
-				if(previousPanel.equals("panelANS")) {
-					nextPanel = panelANS;
+				if(previousPanel.equals("panelDB")) {
+					nextPanel = panelDB;
+				}else {
+					if(previousPanel.equals("panelANS")) {
+						nextPanel = panelANS;
+					}
 					
 					JB_selectClient_CL.setVisible(false);
 					JB_updateClient_CL.setVisible(true);
 					JB_deleteClient_CL.setVisible(true);
-				}else {
-					nextPanel = panelDB;
 				}
 				
 				//add textfield clears
@@ -1297,6 +1335,7 @@ public class MainFrame extends JFrame {
 		reloadPiecesTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				SetDefaultTable(JT_pieces_APL, new String[]{"COD", "Nume", "Unitate/Masura"});
 				LoadPieces();
 			}
 		});
@@ -1322,8 +1361,7 @@ public class MainFrame extends JFrame {
 		JTF_pieceQuickSearch_APL.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent arg0) {
-				String querry = JTF_pieceQuickSearch_APL.getText();
-				filterAutoPieces(querry);
+				simpleFilter(JT_pieces_APL, JTF_pieceQuickSearch_APL.getText());
 			}
 		});
 		
@@ -1364,7 +1402,7 @@ public class MainFrame extends JFrame {
 						JB_updatePiece_APL.setVisible(true);
 						JB_deletePiece_APL.setVisible(true);
 					}
-				}			
+				}	
 				PanelNavigationHelper(panelAPL, nextPanel);
 			}
 		});
@@ -1674,8 +1712,10 @@ public class MainFrame extends JFrame {
 					jtf_list.add(JTF_pieceVAT_ANS);
 					
 					AddNewAutoPieceToReception(jtf_list);
+					
+					GeneralResetter(jtf_list, null, null, true, null);
 				}else {
-					System.out.println("Auto piece with this ID is not found.");
+					MissingStatementInformer("Auto piece with this ID is not found!");
 				}
 			}
 		});
@@ -1753,19 +1793,39 @@ public class MainFrame extends JFrame {
 		JB_saveSupplie_ANS.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				List<JTextField> jtf_list = new ArrayList<JTextField>();
-				jtf_list.add(JTF_clientName_ANS);
-				jtf_list.add(JTF_invoiceNR_ANS);
-				jtf_list.add(JTF_pieceQuantity_ANS);
-				jtf_list.add(JTF_piecePriceIN_ANS);
-				jtf_list.add(JTF_piecePriceOUT_ANS);
-				jtf_list.add(JTF_pieceVAT_ANS);
-				
-				List<JDateChooser> jdc_list = new ArrayList<JDateChooser>();
-				jdc_list.add(JDC_dateIN_ANS);
-				jdc_list.add(JDC_dueDate_ANS);
-				
-				SaveReception(jtf_list, jdc_list);
+				if(selectedClient!=null) {
+					DefaultTableModel dtm = (DefaultTableModel) JT_pieces_ANS.getModel();
+					if(dtm.getRowCount()>0) {
+						List<JTextField> jtf_list = new ArrayList<JTextField>();
+						jtf_list.add(JTF_clientName_ANS);
+						jtf_list.add(JTF_invoiceNR_ANS);
+						jtf_list.add(JTL_pieceID_ANS);
+						jtf_list.add(JTF_pieceQuantity_ANS);
+						jtf_list.add(JTF_piecePriceIN_ANS);
+						jtf_list.add(JTF_piecePriceOUT_ANS);
+						jtf_list.add(JTF_pieceVAT_ANS);
+						
+						List<JDateChooser> jdc_list = new ArrayList<JDateChooser>();
+						jdc_list.add(JDC_dateIN_ANS);
+						jdc_list.add(JDC_dueDate_ANS);
+						
+						SaveReception(jtf_list, jdc_list);
+						
+						//needs improvment
+						GeneralResetter(jtf_list, null, null, true, null);
+						selectedClient=null;
+						dtm.setRowCount(0);
+						JDC_dateIN_ANS.setCalendar(null);
+						JDC_dueDate_ANS.setCalendar(null);
+						
+						JTF_selectedClientName_ANS.setText(null);
+						JTF_selectedClientName_ANS.setVisible(false);
+					}else {
+						MissingStatementInformer("You have to add values first to the table!");
+					}
+				}else {
+					MissingStatementInformer("You have to select a client first!");
+				}
 			}
 		});
 		JB_saveSupplie_ANS.setFont(new Font("Tahoma", Font.BOLD, 18));
@@ -1784,7 +1844,7 @@ public class MainFrame extends JFrame {
 				
 				JTF_clientQuickSearchByStatus_CL.setText("true");
 				
-				filterTable(JT_clients_CL,  
+				comboFilter(JT_clients_CL,  
 						new String[]{JTF_clientQuickSearchByName_CL.getText(), JTF_clientQuickSearchByPhone_CL.getText(), JTF_clientQuickSearchByStatus_CL.getText()}, 
 						new int[] {1, 2, 3});
 				
@@ -2018,6 +2078,71 @@ public class MainFrame extends JFrame {
 		contentPane.add(panelANJ, "name_1325770650059500");
 		panelANJ.setLayout(null);
 		
+		JLabel MLCard_newJob_ANJ = new JLabel("");
+		MLCard_newJob_ANJ.setIcon(new ImageIcon(MainFrame.class.getResource("/images/addJob1.png")));
+		MLCard_newJob_ANJ.setBounds(12, 58, 512, 512);
+		panelANJ.add(MLCard_newJob_ANJ);
+		
+		JLabel JL_jobName_ANJ = new JLabel("Denumirea lucrarii:");
+		JL_jobName_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_jobName_ANJ.setBounds(536, 58, 180, 24);
+		panelANJ.add(JL_jobName_ANJ);
+		
+		JTF_jobName_ANJ = new JTextField();
+		JTF_jobName_ANJ.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				if(JTF_jobName_ANJ.getBorder()!=null) {
+					JTF_jobName_ANJ.setBorder(null);
+				}
+			}
+		});
+		JTF_jobName_ANJ.setColumns(10);
+		JTF_jobName_ANJ.setBounds(728, 58, 300, 22);
+		panelANJ.add(JTF_jobName_ANJ);
+		
+		JLabel JB_jobPrice_ANJ = new JLabel("Tarifa lucrarii:");
+		JB_jobPrice_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JB_jobPrice_ANJ.setBounds(536, 95, 180, 24);
+		panelANJ.add(JB_jobPrice_ANJ);
+		
+		JTF_jobPrice_ANJ = new JTextField();
+		JTF_jobPrice_ANJ.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JTF_jobPrice_ANJ.getBorder()!=null) {
+					JTF_jobPrice_ANJ.setBorder(null);
+				}
+			}
+		});
+		JTF_jobPrice_ANJ.setColumns(10);
+		JTF_jobPrice_ANJ.setBounds(728, 95, 300, 22);
+		panelANJ.add(JTF_jobPrice_ANJ);
+		
+		JButton JB_saveJob_ANJ = new JButton("Salveaza");
+		JB_saveJob_ANJ.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				List<JTextField> jtf_list = new ArrayList<JTextField>();
+				jtf_list.add(JTF_jobName_ANJ);
+				jtf_list.add(JTF_jobPrice_ANJ);
+				
+				if(InputValidation(jtf_list)) {
+					SaveJob(jtf_list);
+					
+					PanelNavigationHelper(panelANJ, panelDB);
+									
+					GeneralResetter(jtf_list, null, null, true, null);	
+				}else {
+					//Set warning pop-up here
+					unsavedInformer();
+				}
+			}
+		});
+		JB_saveJob_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JB_saveJob_ANJ.setBounds(728, 130, 197, 41);
+		panelANJ.add(JB_saveJob_ANJ);
+		
 		JLabel exitANJ = new JLabel("");
 		exitANJ.setBounds(1236, 13, 59, 32);
 		exitANJ.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -2037,7 +2162,25 @@ public class MainFrame extends JFrame {
 		backANJ.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				PanelNavigationHelper(panelANJ, panelDB);
+				List<JTextField> jtf_list = new ArrayList<JTextField>();
+				jtf_list.add(JTF_jobName_ANJ);
+				jtf_list.add(JTF_jobPrice_ANJ);
+				
+				//I can reduce the condition tree to one branch but then the confirmation to go back will be displayed if all text fields are empty as well
+				//not just when there is some text in them, and I did not want that
+				
+				if(unsavedChecker(jtf_list)) {
+					if(backDialog()) {
+						PanelNavigationHelper(panelANJ, panelDB);
+						
+						TextFieldBorderResetter(jtf_list);
+						GeneralResetter(jtf_list, null, null, true, null);
+					}
+				}else {
+					PanelNavigationHelper(panelANJ, panelDB);
+					
+					TextFieldBorderResetter(jtf_list);
+				}
 			}
 		});
 		backANJ.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -2046,35 +2189,187 @@ public class MainFrame extends JFrame {
 		backANJ.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
 		panelANJ.add(backANJ);
 		
-		JLabel MLCard_newJob_ANJ = new JLabel("");
-		MLCard_newJob_ANJ.setIcon(new ImageIcon(MainFrame.class.getResource("/images/addJob1.png")));
-		MLCard_newJob_ANJ.setBounds(12, 58, 512, 512);
-		panelANJ.add(MLCard_newJob_ANJ);
+		/////////////////////////////////////////
+		//--------//Job List Section//--------//
+		////////////////////////////////////////
 		
-		JLabel JL_jobName_ANJ = new JLabel("Denumirea lucrarii:");
-		JL_jobName_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		JL_jobName_ANJ.setBounds(536, 58, 180, 24);
-		panelANJ.add(JL_jobName_ANJ);
+		panelJL = new JPanel();
+		panelJL.setName("panelJL");
+		contentPane.add(panelJL, "name_2546791077200");
+		panelJL.setLayout(null);
 		
-		JTF_jobName_ANJ = new JTextField();
-		JTF_jobName_ANJ.setColumns(10);
-		JTF_jobName_ANJ.setBounds(728, 58, 300, 22);
-		panelANJ.add(JTF_jobName_ANJ);
+		JScrollPane JSP_jobs_JL = new JScrollPane();
+		JSP_jobs_JL.setBounds(436, 140, 849, 445);
+		panelJL.add(JSP_jobs_JL);
 		
-		JLabel JB_jobPrice_ANJ = new JLabel("Tarifa lucrarii:");
-		JB_jobPrice_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		JB_jobPrice_ANJ.setBounds(536, 95, 180, 24);
-		panelANJ.add(JB_jobPrice_ANJ);
+		JT_jobs_JL = new JTable();
+		JT_jobs_JL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				int index = JT_jobs_JL.convertRowIndexToModel(JT_jobs_JL.getSelectedRow());
+				TableModel model = JT_jobs_JL.getModel();
+				JTF_jobNameInfo_JL.setText(model.getValueAt(index, 1)!=null?model.getValueAt(index, 1).toString():"");
+				JTF_jobPriceInfo_JL.setText(model.getValueAt(index, 2)!=null?model.getValueAt(index, 2).toString():"");
+				selectedJobID = Integer.valueOf(model.getValueAt(index, 0).toString());
+				
+				if(previousPanel.equals("panelDB")) {
+				    List<JButton> jb_list = new ArrayList<JButton>();
+				    jb_list.add(JB_updateJob_JL);
+				    jb_list.add(JB_deleteJob_JL);
+				    
+				    GeneralResetter(null, null, jb_list, null, true);
+				}else {
+					//TODO
+				}
+	
+			}
+		});
+		JSP_jobs_JL.setViewportView(JT_jobs_JL);
 		
-		JTF_jobPrice_ANJ = new JTextField();
-		JTF_jobPrice_ANJ.setColumns(10);
-		JTF_jobPrice_ANJ.setBounds(728, 95, 300, 22);
-		panelANJ.add(JTF_jobPrice_ANJ);
+		JPanel JP_jobInfo_JL = new JPanel();
+		JP_jobInfo_JL.setBounds(12, 97, 412, 488);
+		panelJL.add(JP_jobInfo_JL);
+		JP_jobInfo_JL.setLayout(null);
 		
-		JButton JB_saveJob_ANJ = new JButton("Salveaza");
-		JB_saveJob_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		JB_saveJob_ANJ.setBounds(728, 130, 197, 41);
-		panelANJ.add(JB_saveJob_ANJ);
+		JLabel JL_jobsDetails_JL = new JLabel("Detalii jobului:");
+		JL_jobsDetails_JL.setBounds(145, 13, 134, 20);
+		JL_jobsDetails_JL.setFont(new Font("Tahoma", Font.BOLD, 16));
+		JP_jobInfo_JL.add(JL_jobsDetails_JL);
+		
+		JLabel JL_jobNameInfo_JL = new JLabel("Numele jobului:");
+		JL_jobNameInfo_JL.setBounds(12, 85, 107, 16);
+		JP_jobInfo_JL.add(JL_jobNameInfo_JL);
+		
+		JTF_jobNameInfo_JL = new JTextField();
+		JTF_jobNameInfo_JL.setBounds(131, 82, 269, 22);
+		JP_jobInfo_JL.add(JTF_jobNameInfo_JL);
+		JTF_jobNameInfo_JL.setColumns(10);
+		
+		JLabel JL_jobPriceInfo_JL = new JLabel("Tarifa jobului:");
+		JL_jobPriceInfo_JL.setBounds(12, 114, 103, 16);
+		JP_jobInfo_JL.add(JL_jobPriceInfo_JL);
+		
+		JTF_jobPriceInfo_JL = new JTextField();
+		JTF_jobPriceInfo_JL.setBounds(131, 111, 269, 22);
+		JP_jobInfo_JL.add(JTF_jobPriceInfo_JL);
+		JTF_jobPriceInfo_JL.setColumns(10);
+		
+		JB_updateJob_JL = new JButton("Update");
+		JB_updateJob_JL.setEnabled(false);
+		JB_updateJob_JL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if(selectedJobID>0) {
+					UpdateJob(JTF_jobNameInfo_JL.getText(), Float.valueOf(JTF_jobPriceInfo_JL.getText()));
+					
+					PanelJLResetter();
+				}
+			}
+		});
+		JB_updateJob_JL.setBounds(69, 426, 116, 37);
+		JP_jobInfo_JL.add(JB_updateJob_JL);
+		
+		JB_deleteJob_JL = new JButton("Delete");
+		JB_deleteJob_JL.setEnabled(false);
+		JB_deleteJob_JL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				//TODO
+			}
+		});
+		JB_deleteJob_JL.setBounds(239, 426, 116, 37);
+		JP_jobInfo_JL.add(JB_deleteJob_JL);
+		
+		JB_selectJob_JL = new JButton("Selectare");
+		JB_selectJob_JL.setVisible(false);
+		JB_selectJob_JL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				//TODO
+			}
+		});
+		JB_selectJob_JL.setEnabled(false);
+		JB_selectJob_JL.setBounds(69, 185, 286, 71);
+		JP_jobInfo_JL.add(JB_selectJob_JL);
+		
+		JLabel reloadJobsTable = new JLabel("");
+		reloadJobsTable.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		reloadJobsTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JT_jobs_JL.setRowSorter(null);
+				
+				SetDefaultTable(JT_jobs_JL, new String[]{"ID", "Numele jobului", "Tarifa jobului"});
+				LoadJobs();
+				
+				PanelJLResetter();
+			}
+		});
+		reloadJobsTable.setToolTipText("Reload table");
+		reloadJobsTable.setIcon(new ImageIcon(MainFrame.class.getResource("/images/reload0.png")));
+		reloadJobsTable.setBounds(1179, 13, 45, 32);
+		panelJL.add(reloadJobsTable);
+		
+		JPanel JP_jobQuickSearch_JL = new JPanel();
+		JP_jobQuickSearch_JL.setBounds(436, 97, 849, 37);
+		panelJL.add(JP_jobQuickSearch_JL);
+		JP_jobQuickSearch_JL.setLayout(null);
+		
+		JLabel JL_pieceQuickSearch_JL = new JLabel("Căutare:");
+		JL_pieceQuickSearch_JL.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JL_pieceQuickSearch_JL.setBounds(12, 13, 60, 16);
+		JP_jobQuickSearch_JL.add(JL_pieceQuickSearch_JL);
+		
+		JTF_jobQuickSearch_JL = new JTextField();
+		
+		//Quick search method
+		
+		JTF_jobQuickSearch_JL.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				simpleFilter(JT_jobs_JL, JTF_jobQuickSearch_JL.getText());
+			}
+		});	
+		JTF_jobQuickSearch_JL.setBounds(84, 11, 753, 22);
+		JP_jobQuickSearch_JL.add(JTF_jobQuickSearch_JL);
+		JTF_jobQuickSearch_JL.setColumns(10);
+		
+		JLabel exitJL = new JLabel("");
+		exitJL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitJL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitJL.setToolTipText("EXIT");
+		exitJL.setHorizontalAlignment(SwingConstants.CENTER);
+		exitJL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		exitJL.setBounds(1236, 13, 59, 32);
+		panelJL.add(exitJL);
+		
+		JLabel backJL = new JLabel("");
+		backJL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JPanel nextPanel = null;
+				
+				if(previousPanel.equals("panelDB")) {
+					nextPanel = panelDB;
+				}else {
+					//TODO
+				}				
+				PanelJLResetter();
+				
+				PanelNavigationHelper(panelJL, nextPanel);
+			}
+		});
+		backJL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backJL.setToolTipText("BACK");
+		backJL.setHorizontalAlignment(SwingConstants.CENTER);
+		backJL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		backJL.setBounds(12, 13, 52, 32);
+		panelJL.add(backJL);
 		
 		//On Creation
 		panelDB.setVisible(true);
@@ -2087,6 +2382,7 @@ public class MainFrame extends JFrame {
 		panelANS.setVisible(false);
 		panelAAP.setVisible(false);
 		panelANJ.setVisible(false);
+		panelJL.setVisible(false);
 		
 	}
 	
@@ -2102,6 +2398,7 @@ public class MainFrame extends JFrame {
 	}
 	
 	private void SetDefaultTable(JTable table, String[] cols) {
+			table.setRowSorter(null);
 			table.setRowHeight(30);
 			table.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 21));
 			table.setFont(new Font("Tahoma", Font.PLAIN, 18));
@@ -2137,18 +2434,12 @@ public class MainFrame extends JFrame {
 	}
 	
 	private void LoadClients() {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
 		List<Client> clients= (List<Client>)session.createQuery("from Client").list();
 		
-		System.out.println(clients);
-		
 		DefaultTableModel dtm = (DefaultTableModel) JT_clients_CL.getModel();
-		
-		System.out.println(dtm.getColumnCount());
 		
 		for(Client c:clients) 
 		{
@@ -2162,9 +2453,6 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	    
@@ -2174,12 +2462,12 @@ public class MainFrame extends JFrame {
 		JTF_clientCompanyInfo_CL.setText(null);
 		selectedClientID = 0;
 	    JTF_clientQuickSearchByName_CL.setText(null);
+	    JTF_clientQuickSearchByPhone_CL.setText(null);
+	    JTF_clientQuickSearchByStatus_CL.setText(null);
 	    companyDataSetter(false, false);
 	}
 	
 	private void LoadPieces() {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2198,9 +2486,6 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	    
@@ -2217,10 +2502,32 @@ public class MainFrame extends JFrame {
 	    
 	    GeneralResetter(jtf_list, null, jb_list, true, false);
 	}
+		
+	private void LoadJobs() {
+		//Begin transaction
+		session.beginTransaction();
+	    
+		List<Job> jobs= (List<Job>)session.createQuery("from Job").list();
+		
+		DefaultTableModel dtm = (DefaultTableModel) JT_jobs_JL.getModel();
+		
+		for(Job j:jobs) 
+		{
+		    String[] row= {String.valueOf(j.getId()) , j.getJobname(), String.valueOf(j.getJobprice())};
+		    dtm.addRow( row );
+		}
+
+		JT_jobs_JL.setModel(dtm);
+		JT_jobs_JL.removeColumn(JT_jobs_JL.getColumnModel().getColumn(0));
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
+	}
 	
 	private void LoadReplacables(String piece) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 
@@ -2265,9 +2572,6 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
@@ -2284,9 +2588,7 @@ public class MainFrame extends JFrame {
 		String companyName = JTF_companyName_LPR.getText();
 		String companyOffice = JTF_companyBranchOffice_LPR.getText();
 		String companyRegNR = JTF_companyRegNR_LPR.getText();
-		
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
+	
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2306,9 +2608,6 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
@@ -2318,8 +2617,6 @@ public class MainFrame extends JFrame {
 		String clientName = JTF_clientName_NPR.getText();
 		String clientPhone = JTF_clientPhone_NPR.getText();
 		
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2332,16 +2629,11 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
 
 	private void SaveAutoPiece(List<JTextField> jtf_list) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2354,50 +2646,62 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
+	}
+	
+	private void SaveJob(List<JTextField> jtf_list) {
+		//Begin transaction
+		session.beginTransaction();
+	    
+	    //Create new Client object
+	    Job job = new Job(jtf_list.get(0).getText(), Float.valueOf(jtf_list.get(1).getText()));
+	    
+	    //Save Client
+	    session.save(job);
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
 	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
 	
 	private void SaveReception(List<JTextField> jtf_list, List<JDateChooser> jdc_list) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 		
 		Reception reception = null;
-		Receptions_auto_pieces receptions_auto_pieces = null;
 		
 		try {
 		    //Create new Reception object
-			if(selectedClient!=null) {
-			    reception = new Reception(selectedClient.getId(), jtf_list.get(1).getText(), jdc_list.get(0).getDate(), jdc_list.get(1).getDate());	    
+			reception = new Reception(selectedClient.getId(), jtf_list.get(1).getText(), jdc_list.get(0).getDate(), jdc_list.get(1).getDate());	    
 			    
-			    //Save Reception
-			    session.save(reception);
-			}else {
-				System.out.println("You have to slect a client first!");
-			}
+			//Save Reception
+			session.save(reception);
 		}catch(Exception ex) {
 			System.out.println(ex.toString());
 		}
 	      
 	    //Committing the transaction
 	    session.getTransaction().commit();
-	    //Starting new transaction
+	    
+	    SaveReceptionAutoPiece(reception.getId());
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
+	}
+
+	private void SaveReceptionAutoPiece(int apid) {
+	    //Begin transaction
 	    session.beginTransaction();
+	    
+		Receptions_auto_pieces receptions_auto_pieces = null;
 	    
 		try {
 			TableModel model = JT_pieces_ANS.getModel();
-		    for(int i=0; i<model.getRowCount(); i++) {
-		    	System.out.println(model.getValueAt(i, 3).toString().isEmpty());
-		    	System.out.println(model.getValueAt(i, 4).toString().isEmpty());
-		    	System.out.println(model.getValueAt(i, 5).toString().isEmpty());
-		    	System.out.println(model.getValueAt(i, 6).toString().isEmpty());
-		    	
-		    	receptions_auto_pieces = new Receptions_auto_pieces(reception.getId(), model.getValueAt(i, 0).toString(), 
+		    for(int i=0; i<model.getRowCount(); i++) {	    	
+		    	receptions_auto_pieces = new Receptions_auto_pieces(apid, model.getValueAt(i, 0).toString(), 
 		    			model.getValueAt(i, 3).toString().isEmpty()?0:Float.valueOf(model.getValueAt(i, 3).toString()),
 		    			model.getValueAt(i, 4).toString().isEmpty()?0:Float.valueOf(model.getValueAt(i, 3).toString()),
 		    			model.getValueAt(i, 5).toString().isEmpty()?0:Float.valueOf(model.getValueAt(i, 3).toString()),
@@ -2412,16 +2716,11 @@ public class MainFrame extends JFrame {
 		
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
-
+	
 	private void AddNewAutoPieceToReplaced(String from, String to) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 		
@@ -2468,9 +2767,6 @@ public class MainFrame extends JFrame {
 			System.out.println(e.toString());
 		}
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
@@ -2484,8 +2780,7 @@ public class MainFrame extends JFrame {
 		//JT_pieces_ANS.setModel(dtm);
 	}
 	
-	
-	private void filterTable(JTable table, String text[], int idxs[]) {	
+	private void comboFilter(JTable table, String text[], int idxs[]) {	
 	    TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel()); //Optimalization needed
 	    List<RowFilter<TableModel, Integer>> filters = new ArrayList<RowFilter<TableModel, Integer>>(idxs.length);
 	    
@@ -2510,13 +2805,12 @@ public class MainFrame extends JFrame {
 	    }
 	}
 	
-	
-	private void filterClients(String querry) {
-		rowSorter = new TableRowSorter<TableModel>(JT_clients_CL.getModel());
+	private void simpleFilter(JTable table, String querry) {
+		TableRowSorter<TableModel> rowSorter = new TableRowSorter<TableModel>(table.getModel());
 		
-		JT_clients_CL.setRowSorter(rowSorter);
+		table.setRowSorter(rowSorter);
 		
-		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry, 1));
+		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry));
 	}
 	
 	private void filterAutoPieces(String querry) {
@@ -2528,8 +2822,6 @@ public class MainFrame extends JFrame {
 	}
 	
 	private void getClientByID(int id) {	
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2542,16 +2834,11 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
 	
 	private Boolean getPieceByID(String id) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 		
@@ -2562,9 +2849,6 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    if(selectedAutoPiece==null) return false;
 	    return true;
 	    
@@ -2573,8 +2857,6 @@ public class MainFrame extends JFrame {
 	}
 	
 	private Boolean getClientIDByName(String name) {	
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 		
@@ -2595,15 +2877,28 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    return exists;
 	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
-
+	
+	//Resets all components value of the panel to the default(original/starting) value
+	private void PanelJLResetter() {
+		//JTextField and JButton resetter				
+		List<JTextField> jtf_list = new ArrayList<JTextField>();
+		jtf_list.add(JTF_jobNameInfo_JL);
+		jtf_list.add(JTF_jobPriceInfo_JL);
+		jtf_list.add(JTF_jobQuickSearch_JL);
+		
+		List<JButton> jb_list = new ArrayList<JButton>();
+		jb_list.add(JB_updateJob_JL);
+		jb_list.add(JB_deleteJob_JL);
+		
+		GeneralResetter(jtf_list, null, jb_list, true, false);
+		selectedJobID = 0;
+	}
+	
 	private void companyDataSetter(Boolean jtf_state, Boolean jb_state) {
 		List<JTextField> jtf_list = new ArrayList<JTextField>();
 		jtf_list.add(JTF_companyNameInfo_CL);
@@ -2629,6 +2924,7 @@ public class MainFrame extends JFrame {
 		List<JButton> jb_list = new ArrayList<JButton>();
 		jb_list.add(JB_updateClient_CL);
 		jb_list.add(JB_deleteClient_CL);
+		jb_list.add(JB_selectClient_CL);
 		
 		GeneralResetter(jtf_list, jl_list, jb_list, jtf_state, jb_state);
 	}
@@ -2646,8 +2942,6 @@ public class MainFrame extends JFrame {
 	}
 	
 	private void updateNaturalClient(int id, String cname, String cphone) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2658,20 +2952,16 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Reload updated table
 	    System.out.println("Updated Successfully");
-	    LoadClients();
+		SetDefaultTable(JT_clients_CL, new String[]{"ID", "Numele clientului", "Numarul de telefon", "Firm?"});				
+		LoadClients();
 	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
 	
 	private void updateLegalClient(int id, String cname, String cphone, String comname, String comadd, String comtel, String comcif, String comreg, String combank, String comiban, String combranch) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2691,20 +2981,16 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Reload updated table
 	    System.out.println("Updated Successfully");
-	    LoadClients();
+		SetDefaultTable(JT_clients_CL, new String[]{"ID", "Numele clientului", "Numarul de telefon", "Firm?"});				
+		LoadClients();
 	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
 
 	private void updateAutoPiece(String pid, String pname, String punit) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2717,20 +3003,40 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Reload updated table
 	    System.out.println("Updated Successfully");
-	    LoadPieces();
+		SetDefaultTable(JT_pieces_APL, new String[]{"COD", "Nume", "Unitate/Masura"});
+		LoadPieces();
 	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
+
+	private void UpdateJob(String jname, float jprice) {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+		    
+			Job job = (Job) session.get(Job.class, selectedJobID);
+			job.setJobname(jname);
+			job.setJobprice(jprice);
+		      
+		    //Committing the transaction
+			session.getTransaction().commit();
+		    
+		    //Reload updated table
+		    System.out.println("Updated Successfully");
+			SetDefaultTable(JT_jobs_JL, new String[]{"ID", "Numele jobului", "Tarifa jobului"});
+			LoadJobs();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
 	
 	private void deleteClient(int id) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2743,20 +3049,16 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Reload modified table
 	    System.out.println("Deleted Successfully");
-	    LoadClients();
+		SetDefaultTable(JT_clients_CL, new String[]{"ID", "Numele clientului", "Numarul de telefon", "Firm?"});				
+		LoadClients();
 	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
 
 	private void deleteAutoPiece(String pid) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2766,20 +3068,16 @@ public class MainFrame extends JFrame {
 	    //Committing the transaction
 	    session.getTransaction().commit();
 	    
-	    //Closing the session
-	    session.close();
-	    
 	    //Reload modified table
 	    System.out.println("Deleted Successfully");
-	    LoadPieces();
+		SetDefaultTable(JT_pieces_APL, new String[]{"COD", "Nume", "Unitate/Masura"});
+		LoadPieces();
 	    
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
 	
 	private void DeleteFromReplaced(String piece) {
-		//Creating session
-		Session session = HibernateUtil.getSessionFactory().openSession();
 		//Begin transaction
 		session.beginTransaction();
 	    
@@ -2790,9 +3088,6 @@ public class MainFrame extends JFrame {
 	      
 	    //Committing the transaction
 	    session.getTransaction().commit();
-	    
-	    //Closing the session
-	    session.close();
 	    
 	    //Reload modified table
 	    System.out.println("Deleted Successfully");
@@ -2814,6 +3109,11 @@ public class MainFrame extends JFrame {
 		JOptionPane.showMessageDialog(mainFrame, "Unele câmpuri nu sunt completate corect.", "Warning", JOptionPane.WARNING_MESSAGE);
 	}
 
+	//informs the user with a pop-up if something important is missing
+	private void MissingStatementInformer(String statement) {
+		JOptionPane.showMessageDialog(mainFrame, statement, "Warning", JOptionPane.WARNING_MESSAGE);
+	}
+	
 	//Return true if all inputs are valid, else false
 	private Boolean InputValidation(List<JTextField> jtf_list) {
 		int invalids = 0;
@@ -2853,6 +3153,8 @@ public class MainFrame extends JFrame {
 	private void exitDialog() {
 		int i = JOptionPane.showConfirmDialog(mainFrame, "Ești sigur că vrei să renunți?",  "Exit", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 		if(i == JOptionPane.OK_OPTION) {
+		    //Closing the session
+			session.close();
 			System.exit(0);
 		}
 	}

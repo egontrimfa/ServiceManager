@@ -30,11 +30,9 @@ public class Job {
 	public Job() {
 	}
 
-	public Job(int id, String jobname, float jobprice, Set<Job_registration> job_registration) {
-		this.id = id;
+	public Job(String jobname, float jobprice) {
 		this.jobname = jobname;
 		this.jobprice = jobprice;
-		this.job_registration = job_registration;
 	}
 
 	public int getId() {
