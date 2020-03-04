@@ -20,6 +20,9 @@ public class User {
 	@Column(name="id")
 	private int id;
 	
+	@Column(name="rolesid")
+	private int rolesid;
+	
 	@Column(name="username")
 	private String username;
 	
@@ -39,11 +42,11 @@ public class User {
 	public User() {
 	}
 
-	public User(int id, String username, String userpassword, Role roles) {
-		this.id = id;
+	public User(int rolesid, String username, String userpassword) {
+		super();
+		this.rolesid = rolesid;
 		this.username = username;
 		this.userpassword = userpassword;
-		this.roles = roles;
 	}
 
 	public int getId() {
@@ -52,6 +55,14 @@ public class User {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public int getRolesid() {
+		return rolesid;
+	}
+
+	public void setRolesid(int rolesid) {
+		this.rolesid = rolesid;
 	}
 
 	public String getUsername() {
@@ -85,9 +96,6 @@ public class User {
 	public void setJob_registration(Set<Job_registration> job_registration) {
 		this.job_registration = job_registration;
 	}
-	
-	
-	
 
 	public Set<Invoice> getInvoices() {
 		return invoices;
@@ -97,9 +105,10 @@ public class User {
 		this.invoices = invoices;
 	}
 
+	
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", username=" + username + ", userpassword=" + userpassword + ", roles=" + roles
+		return "User [id=" + id + ", rolesid=" + rolesid + ", username=" + username + ", userpassword=" + userpassword
 				+ "]";
 	}
 }

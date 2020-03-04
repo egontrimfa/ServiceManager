@@ -26,16 +26,15 @@ public class Role {
 
 	public Role() {
 	}
-	
-	
 
-	public Role(int id, String rolename, Set<User> users) {
+	public Role(int id, String rolename) {
 		this.id = id;
 		this.rolename = rolename;
-		this.users = users;
 	}
 
-
+	public Role(String rolename) {
+		this.rolename = rolename;
+	}
 
 	public int getId() {
 		return id;
@@ -61,8 +60,10 @@ public class Role {
 		this.users = users;
 	}
 
+
 	@Override
 	public String toString() {
-		return "Role [id=" + id + ", rolename=" + rolename + ", users=" + users + "]";
-	} 
+		return rolename.toUpperCase();
+	}
+
 }

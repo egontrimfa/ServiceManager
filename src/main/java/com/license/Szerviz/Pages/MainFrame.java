@@ -8,6 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -35,10 +36,14 @@ import com.license.Szerviz.Entities.Job;
 import com.license.Szerviz.Entities.Reception;
 import com.license.Szerviz.Entities.Receptions_auto_pieces;
 import com.license.Szerviz.Entities.Replaced;
+import com.license.Szerviz.Entities.Role;
+import com.license.Szerviz.Entities.User;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.persistence.EntityTransaction;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
@@ -50,9 +55,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import com.toedter.calendar.JDateChooser;
-import javax.swing.JSplitPane;
-import java.awt.BorderLayout;
-import javax.swing.JSeparator;
+import javax.swing.JPasswordField;
+import javax.swing.JComboBox;
 
 public class MainFrame extends JFrame {
 	
@@ -81,9 +85,11 @@ public class MainFrame extends JFrame {
 	//DEFINED
 	private static Session session;
 	private int xx,xy;
-	private int selectedClientID;
+	private int selectedClientID = 0;
 	private String selectedPieceID;
-	private int selectedJobID;
+	private int selectedRoleID = 0;
+	private int selectedUserID = 0;
+	private int selectedJobID = 0;
 	private String selectPiece;
 	static private TableRowSorter<TableModel> rowSorter;
 	private Client selectedClient;
@@ -104,6 +110,8 @@ public class MainFrame extends JFrame {
 	static private JPanel panelAAP;
 	static private JPanel panelANJ;
 	static private JPanel panelJL;
+	static private JPanel panelANU;
+	static private JPanel panelUL ;
 	
 	//panelNPR
 	private JTextField JTF_clientName_NPR;
@@ -194,6 +202,21 @@ public class MainFrame extends JFrame {
 	private JButton JB_updateJob_JL;
 	private JButton JB_deleteJob_JL;
 	private JButton JB_selectJob_JL;
+	
+	//panelANU
+	private JTextField JTF_userName_ANU;
+	private JPasswordField JPF_userPassword_ANU;
+	private JPasswordField JPF_userPasswordRE_ANU;
+	private JComboBox<Role> JCB_userRole_ANU;
+	
+	//panelUL
+	private static JTable JT_users_UL;
+	private JTextField JTF_userNameInfo_UL;
+	private JTextField JTF_userQuickSearch_UL;
+	private JButton JB_updateUser_UL;
+	private JButton JB_deleteUser_UL;
+	private JButton JB_selectUser_UL;
+	private JComboBox<Role> JCB_userRoleInfo_UL;
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -376,6 +399,44 @@ public class MainFrame extends JFrame {
 		MCard_listJobs_DB.setToolTipText("Joburi");
 		MCard_listJobs_DB.setBounds(509, 255, 154, 154);
 		panelDB.add(MCard_listJobs_DB);
+		
+		JLabel MCard_addUser_DB = new JLabel("");
+		MCard_addUser_DB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				PanelNavigationHelper(panelDB, panelANU);
+				if(JCB_userRole_ANU.getItemCount()==0) {
+					LoadRoles(JCB_userRole_ANU);
+				}
+			    
+			    selectedRoleID = 1;
+			}
+		});
+		MCard_addUser_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		MCard_addUser_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/worker0.png")));
+		MCard_addUser_DB.setBounds(675, 88, 154, 154);
+		panelDB.add(MCard_addUser_DB);
+		
+		JLabel MCard_listUsers_DB = new JLabel("");
+		MCard_listUsers_DB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				PanelNavigationHelper(panelDB, panelUL);
+				
+				SetDefaultTable(JT_users_UL, new String[]{"ID", "Numele lucratorului", "Rolul"});				
+				LoadUsers();
+				
+				if(JCB_userRoleInfo_UL.getItemCount()==0) {
+					LoadRoles(JCB_userRoleInfo_UL);
+				}
+			    
+			    selectedRoleID = 1;
+			}
+		});
+		MCard_listUsers_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		MCard_listUsers_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/worker2.png")));
+		MCard_listUsers_DB.setBounds(675, 255, 154, 154);
+		panelDB.add(MCard_listUsers_DB);
 		
 		////////////////////////////////////////////////////
 		//--------//Client Registration Section//--------//
@@ -2074,6 +2135,10 @@ public class MainFrame extends JFrame {
 		backAAP.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
 		panelAAP.add(backAAP);
 		
+		///////////////////////////////////////////
+		//--------//Add New Job Section//--------//
+		///////////////////////////////////////////
+		
 		panelANJ = new JPanel();
 		contentPane.add(panelANJ, "name_1325770650059500");
 		panelANJ.setLayout(null);
@@ -2262,7 +2327,7 @@ public class MainFrame extends JFrame {
 				if(selectedJobID>0) {
 					UpdateJob(JTF_jobNameInfo_JL.getText(), Float.valueOf(JTF_jobPriceInfo_JL.getText()));
 					
-					PanelJLResetter();
+					panelJLResetter();
 				}
 			}
 		});
@@ -2302,7 +2367,7 @@ public class MainFrame extends JFrame {
 				SetDefaultTable(JT_jobs_JL, new String[]{"ID", "Numele jobului", "Tarifa jobului"});
 				LoadJobs();
 				
-				PanelJLResetter();
+				panelJLResetter();
 			}
 		});
 		reloadJobsTable.setToolTipText("Reload table");
@@ -2359,7 +2424,7 @@ public class MainFrame extends JFrame {
 				}else {
 					//TODO
 				}				
-				PanelJLResetter();
+				panelJLResetter();
 				
 				PanelNavigationHelper(panelJL, nextPanel);
 			}
@@ -2370,6 +2435,350 @@ public class MainFrame extends JFrame {
 		backJL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
 		backJL.setBounds(12, 13, 52, 32);
 		panelJL.add(backJL);
+		
+		////////////////////////////////////////////
+		//--------//Add New User Section//--------//
+		////////////////////////////////////////////
+		
+		panelANU = new JPanel();
+		contentPane.add(panelANU, "name_116966522239800");
+		panelANU.setLayout(null);
+		
+		JLabel MLCard_newUser_ANU = new JLabel("");
+		MLCard_newUser_ANU.setIcon(new ImageIcon(MainFrame.class.getResource("/images/worker1.png")));
+		MLCard_newUser_ANU.setBounds(12, 58, 512, 512);
+		panelANU.add(MLCard_newUser_ANU);
+		
+		JLabel JL_userName_ANU = new JLabel("Numele:");
+		JL_userName_ANU.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_userName_ANU.setBounds(536, 58, 180, 24);
+		panelANU.add(JL_userName_ANU);
+		
+		JTF_userName_ANU = new JTextField();
+		JTF_userName_ANU.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				if(JTF_userName_ANU.getBorder()!=null) {
+					JTF_userName_ANU.setBorder(null);
+				}
+			}
+		});
+		JTF_userName_ANU.setColumns(10);
+		JTF_userName_ANU.setBounds(728, 58, 300, 22);
+		panelANU.add(JTF_userName_ANU);
+		
+		JLabel JB_userPassword_ANU = new JLabel("Parola:");
+		JB_userPassword_ANU.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JB_userPassword_ANU.setBounds(536, 95, 180, 24);
+		panelANU.add(JB_userPassword_ANU);
+		
+		JPF_userPassword_ANU = new JPasswordField();
+		JPF_userPassword_ANU.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				if(JPF_userPassword_ANU.getBorder()!=null) {
+					JPF_userPassword_ANU.setBorder(null);
+				}
+			}
+		});
+		JPF_userPassword_ANU.setBounds(728, 95, 300, 24);
+		panelANU.add(JPF_userPassword_ANU);
+		
+		JLabel JB_userPasswordRE_ANU = new JLabel("Parola incaodata:");
+		JB_userPasswordRE_ANU.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JB_userPasswordRE_ANU.setBounds(536, 132, 180, 24);
+		panelANU.add(JB_userPasswordRE_ANU);
+		
+		JPF_userPasswordRE_ANU = new JPasswordField();
+		JPF_userPasswordRE_ANU.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(JPF_userPasswordRE_ANU.getBorder()!=null) {
+					JPF_userPasswordRE_ANU.setBorder(null);
+				}
+			}
+		});
+		JPF_userPasswordRE_ANU.setBounds(728, 132, 300, 24);
+		panelANU.add(JPF_userPasswordRE_ANU);
+		
+		JLabel JL_userRole_ANU = new JLabel("Role:");
+		JL_userRole_ANU.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_userRole_ANU.setBounds(536, 169, 180, 24);
+		panelANU.add(JL_userRole_ANU);
+		
+		JCB_userRole_ANU = new JComboBox<Role>();
+		JCB_userRole_ANU.addActionListener(r -> {
+	        JComboBox jcb = (JComboBox) r.getSource();
+	        Role role = (Role) jcb.getSelectedItem();
+	        selectedRoleID = role.getId();
+	      });
+		JCB_userRole_ANU.setBounds(728, 169, 300, 24);
+		panelANU.add(JCB_userRole_ANU);
+		
+		JButton JB_saveUser_ANU = new JButton("Salveaza");
+		JB_saveUser_ANU.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {				
+				if(UserRegistrtationValidation(JTF_userName_ANU, JPF_userPassword_ANU, JPF_userPasswordRE_ANU)) {
+					SaveUser(JTF_userName_ANU, JPF_userPassword_ANU, selectedRoleID);
+					
+					PanelNavigationHelper(panelANU, panelDB);
+									
+					JTF_userName_ANU.setText(null);
+					JPF_userPassword_ANU.setText(null);
+					JPF_userPasswordRE_ANU.setText(null);
+					JCB_userRole_ANU.setSelectedIndex(0);
+				}else {
+					//Set warning pop-up here
+					unsavedInformer();
+				}
+			}
+		});
+		JB_saveUser_ANU.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JB_saveUser_ANU.setBounds(728, 217, 197, 41);
+		panelANU.add(JB_saveUser_ANU);
+		
+		JLabel exitANU = new JLabel("");
+		exitANU.setBounds(1236, 13, 59, 32);
+		exitANU.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitANU.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitANU.setToolTipText("EXIT");
+		exitANU.setHorizontalAlignment(SwingConstants.CENTER);
+		exitANU.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		panelANU.add(exitANU);
+		
+		JLabel backANU = new JLabel("");
+		backANU.setBounds(12, 13, 52, 32);
+		backANU.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {				
+				//I can reduce the condition tree to one branch but then the confirmation to go back will be displayed if all text fields are empty as well
+				//not just when there is some text in them, and I did not want that
+				
+				if(JTF_userName_ANU.getText().length()>0 || JPF_userPassword_ANU.getPassword().length>0 || JPF_userPasswordRE_ANU.getPassword().length>0) {
+					if(backDialog()) {
+						PanelNavigationHelper(panelANU, panelDB);
+						
+						JTF_userName_ANU.setText(null);
+						JTF_userName_ANU.setBorder(null);
+						JPF_userPassword_ANU.setText(null);
+						JPF_userPassword_ANU.setBorder(null);
+						JPF_userPasswordRE_ANU.setText(null);
+						JPF_userPasswordRE_ANU.setBorder(null);
+					}
+				}else {
+					PanelNavigationHelper(panelANU, panelDB);
+					
+					JTF_userName_ANU.setBorder(null);
+					JPF_userPassword_ANU.setBorder(null);
+					JPF_userPasswordRE_ANU.setBorder(null);
+				}
+			}
+		});
+		backANU.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backANU.setToolTipText("BACK");
+		backANU.setHorizontalAlignment(SwingConstants.CENTER);
+		backANU.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		panelANU.add(backANU);
+		
+		/////////////////////////////////////////
+		//--------//User List Section//--------//
+		/////////////////////////////////////////
+		
+		panelUL = new JPanel();
+		panelUL.setName("panelUL");
+		contentPane.add(panelUL, "name_271145984886000");
+		panelUL.setLayout(null);
+		
+		JScrollPane JSP_users_UL = new JScrollPane();
+		JSP_users_UL.setBounds(436, 140, 849, 445);
+		panelUL.add(JSP_users_UL);
+		
+		JT_users_UL = new JTable();
+		JT_users_UL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				int index = JT_users_UL.convertRowIndexToModel(JT_users_UL.getSelectedRow());
+				TableModel model = JT_users_UL.getModel();
+				JTF_userNameInfo_UL.setText(model.getValueAt(index, 1)!=null?model.getValueAt(index, 1).toString():"");
+				if(!(model.getValueAt(index, 2).toString().isEmpty())) {
+					JCB_userRoleInfo_UL.setSelectedItem(getRoleByName(model.getValueAt(index, 2).toString()));
+				}
+				
+				if(selectedUserID==0) {
+					if(previousPanel.equals("panelDB")) {
+					    List<JButton> jb_list = new ArrayList<JButton>();
+					    jb_list.add(JB_updateUser_UL);
+					    jb_list.add(JB_deleteUser_UL);
+					    
+					    GeneralResetter(null, null, jb_list, null, true);
+					}else {
+						//TODO
+					}
+					JCB_userRoleInfo_UL.setEnabled(true);
+				}
+	
+				selectedUserID = Integer.valueOf(model.getValueAt(index, 0).toString());
+			}
+		});
+		JSP_users_UL.setViewportView(JT_users_UL);
+		
+		JPanel JP_userInfo_UL = new JPanel();
+		JP_userInfo_UL.setBounds(12, 97, 412, 488);
+		panelUL.add(JP_userInfo_UL);
+		JP_userInfo_UL.setLayout(null);
+		
+		JLabel JL_userDetails_UL = new JLabel("Detalii jobului:");
+		JL_userDetails_UL.setBounds(145, 13, 134, 20);
+		JL_userDetails_UL.setFont(new Font("Tahoma", Font.BOLD, 16));
+		JP_userInfo_UL.add(JL_userDetails_UL);
+		
+		JLabel JL_userNameInfo_UL = new JLabel("Numele lucratorului:");
+		JL_userNameInfo_UL.setBounds(12, 85, 134, 16);
+		JP_userInfo_UL.add(JL_userNameInfo_UL);
+		
+		JTF_userNameInfo_UL = new JTextField();
+		JTF_userNameInfo_UL.setBounds(145, 82, 255, 22);
+		JP_userInfo_UL.add(JTF_userNameInfo_UL);
+		JTF_userNameInfo_UL.setColumns(10);
+		
+		JLabel JL_userRoleInfo_UL = new JLabel("Role:");
+		JL_userRoleInfo_UL.setBounds(12, 114, 103, 16);
+		JP_userInfo_UL.add(JL_userRoleInfo_UL);
+		
+		JB_updateUser_UL = new JButton("Update");
+		JB_updateUser_UL.setEnabled(false);
+		JB_updateUser_UL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if(selectedUserID>0) {
+					updateUser(JTF_userNameInfo_UL.getText());
+					
+					panelULResetter();
+				}
+			}
+		});
+		JB_updateUser_UL.setBounds(69, 426, 116, 37);
+		JP_userInfo_UL.add(JB_updateUser_UL);
+		
+		JB_deleteUser_UL = new JButton("Delete");
+		JB_deleteUser_UL.setEnabled(false);
+		JB_deleteUser_UL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				//TODO
+			}
+		});
+		JB_deleteUser_UL.setBounds(239, 426, 116, 37);
+		JP_userInfo_UL.add(JB_deleteUser_UL);
+		
+		JB_selectUser_UL = new JButton("Selectare");
+		JB_selectUser_UL.setVisible(false);
+		JB_selectUser_UL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				//TODO
+			}
+		});
+		JB_selectUser_UL.setEnabled(false);
+		JB_selectUser_UL.setBounds(69, 185, 286, 71);
+		JP_userInfo_UL.add(JB_selectUser_UL);
+		
+		JCB_userRoleInfo_UL = new JComboBox();
+		JCB_userRoleInfo_UL.addActionListener(r -> {
+	        JComboBox jcb = (JComboBox) r.getSource();
+	        Role role = (Role) jcb.getSelectedItem();
+	        selectedRoleID = role.getId();
+	        System.out.println(selectedRoleID);
+	      });
+		JCB_userRoleInfo_UL.setEnabled(false);
+		JCB_userRoleInfo_UL.setBounds(145, 117, 255, 20);
+		JP_userInfo_UL.add(JCB_userRoleInfo_UL);
+		
+		JLabel reloadUsersTable = new JLabel("");
+		reloadUsersTable.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		reloadUsersTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JT_users_UL.setRowSorter(null);
+				
+				SetDefaultTable(JT_users_UL, new String[]{"ID", "Numele lucratorului", "Rolul"});				
+				LoadUsers();
+				
+				panelULResetter();
+			}
+		});
+		reloadUsersTable.setToolTipText("Reload table");
+		reloadUsersTable.setIcon(new ImageIcon(MainFrame.class.getResource("/images/reload0.png")));
+		reloadUsersTable.setBounds(1179, 13, 45, 32);
+		panelUL.add(reloadUsersTable);
+		
+		JPanel JP_userQuickSearch_UL = new JPanel();
+		JP_userQuickSearch_UL.setBounds(436, 97, 849, 37);
+		panelUL.add(JP_userQuickSearch_UL);
+		JP_userQuickSearch_UL.setLayout(null);
+		
+		JLabel JL_userQuickSearch_UL = new JLabel("Căutare:");
+		JL_userQuickSearch_UL.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JL_userQuickSearch_UL.setBounds(12, 13, 60, 16);
+		JP_userQuickSearch_UL.add(JL_userQuickSearch_UL);
+		
+		JTF_userQuickSearch_UL = new JTextField();
+		
+		//Quick search method
+		
+		JTF_userQuickSearch_UL.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				//TODO
+			}
+		});	
+		JTF_userQuickSearch_UL.setBounds(84, 11, 753, 22);
+		JP_userQuickSearch_UL.add(JTF_userQuickSearch_UL);
+		JTF_userQuickSearch_UL.setColumns(10);
+		
+		JLabel exitUL = new JLabel("");
+		exitUL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitUL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitUL.setToolTipText("EXIT");
+		exitUL.setHorizontalAlignment(SwingConstants.CENTER);
+		exitUL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		exitUL.setBounds(1236, 13, 59, 32);
+		panelUL.add(exitUL);
+		
+		JLabel backUL = new JLabel("");
+		backUL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JPanel nextPanel = null;
+				
+				if(previousPanel.equals("panelDB")) {
+					nextPanel = panelDB;
+				}else {
+					//TODO
+				}				
+				panelULResetter();
+				
+				PanelNavigationHelper(panelJL, nextPanel);
+
+			}
+		});
+		backUL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backUL.setToolTipText("BACK");
+		backUL.setHorizontalAlignment(SwingConstants.CENTER);
+		backUL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		backUL.setBounds(12, 13, 52, 32);
+		panelUL.add(backUL);
 		
 		//On Creation
 		panelDB.setVisible(true);
@@ -2383,7 +2792,8 @@ public class MainFrame extends JFrame {
 		panelAAP.setVisible(false);
 		panelANJ.setVisible(false);
 		panelJL.setVisible(false);
-		
+		panelANU.setVisible(false);	
+		panelUL.setVisible(false);	
 	}
 	
 	////////////////////////////////////////////////////
@@ -2576,6 +2986,68 @@ public class MainFrame extends JFrame {
 	    //HibernateUtil.shutDown();
 	}
 	
+	private void LoadRoles(JComboBox comboBox) {
+		try {
+			//Set Combobox parameters
+			comboBox.setMaximumRowCount(5);
+			
+			//Begin transaction
+			session.beginTransaction();
+		    
+			List<Role> roles= (List<Role>)session.createQuery("from Role").list();
+			
+			for(Role r:roles) {
+				comboBox.addItem(r);
+			}
+			
+			/*
+			//Removes the additional items -- deprecated
+			if(JCB_userRole_ANU.getItemCount()>roles.size()) {
+				int comboCount = JCB_userRole_ANU.getItemCount();
+				int rolesCount = roles.size();
+				for(int i=roles.size(); i<comboCount; i++) {
+					JCB_userRole_ANU.removeItemAt(rolesCount);
+				}
+			}*/
+			      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
+	private void LoadUsers() {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+		    
+			List<User> users= (List<User>)session.createQuery("from User").list();
+			
+			DefaultTableModel dtm = (DefaultTableModel) JT_users_UL.getModel();
+			
+			for(User u:users) 
+			{
+			    String[] row= {String.valueOf(u.getId()) , u.getUsername(), u.getRoles().getRolename()};
+			    dtm.addRow( row );
+			}
+
+			JT_users_UL.setModel(dtm);
+			JT_users_UL.removeColumn(JT_users_UL.getColumnModel().getColumn(0));
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
 	private void SaveLegalPerson() {
 		//Getting the textbox values
 		String companyAdress = JTF_companyAddress_LPR.getText();
@@ -2720,6 +3192,30 @@ public class MainFrame extends JFrame {
 	    //HibernateUtil.shutDown();
 	}
 	
+	private void SaveUser(JTextField uname, JPasswordField upwd, int urole) {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+		    
+		    //Create new Client object
+		    User newUser = new User(urole, uname.getText(), new String(upwd.getPassword()));
+		    
+		    //Save Client
+		    session.save(newUser);
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		    
+		    selectedRoleID = 1;
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
+
 	private void AddNewAutoPieceToReplaced(String from, String to) {
 		//Begin transaction
 		session.beginTransaction();
@@ -2780,6 +3276,37 @@ public class MainFrame extends JFrame {
 		//JT_pieces_ANS.setModel(dtm);
 	}
 	
+	private Role getRoleByName(String rname) {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+			
+			Query<Role> querry = session.createQuery("from Role where rolename=:rolename");
+			querry.setParameter("rolename", rname);
+			List<Role> rl = (List<Role>) querry.list();
+			int nr = querry.list().size();
+      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+			if(nr>1) {
+				System.out.println("Two or more with the same name. Try search please.");
+			}else if(nr<1) {
+				System.out.println("No result with this name.");
+			}else {
+			    return rl.get(0); //unique result found
+			}
+		    
+			return null; //not(no) unique result
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+			return null;
+		}
+	}
+	
 	private void comboFilter(JTable table, String text[], int idxs[]) {	
 	    TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel()); //Optimalization needed
 	    List<RowFilter<TableModel, Integer>> filters = new ArrayList<RowFilter<TableModel, Integer>>(idxs.length);
@@ -2821,21 +3348,25 @@ public class MainFrame extends JFrame {
 		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry));
 	}
 	
-	private void getClientByID(int id) {	
-		//Begin transaction
-		session.beginTransaction();
-	    
-		//Client client = (Client) session.load(Client.class, new Integer(id));
-		
-		Query<Client> querry = session.createQuery("from Client where id=:id");
-		querry.setParameter("id", id);
-		selectedClient = (Client) querry.uniqueResult();
-	      
-	    //Committing the transaction
-	    session.getTransaction().commit();
-	    
-	    //Shotting down the session factory
-	    //HibernateUtil.shutDown();
+	private void getClientByID(int id) {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+		    
+			//Client client = (Client) session.load(Client.class, new Integer(id));
+			
+			Query<Client> querry = session.createQuery("from Client where id=:id");
+			querry.setParameter("id", id);
+			selectedClient = (Client) querry.uniqueResult();
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
 	}
 	
 	private Boolean getPieceByID(String id) {
@@ -2884,7 +3415,7 @@ public class MainFrame extends JFrame {
 	}
 	
 	//Resets all components value of the panel to the default(original/starting) value
-	private void PanelJLResetter() {
+	private void panelJLResetter() {
 		//JTextField and JButton resetter				
 		List<JTextField> jtf_list = new ArrayList<JTextField>();
 		jtf_list.add(JTF_jobNameInfo_JL);
@@ -2897,6 +3428,23 @@ public class MainFrame extends JFrame {
 		
 		GeneralResetter(jtf_list, null, jb_list, true, false);
 		selectedJobID = 0;
+	}
+
+	private void panelULResetter() {
+		//JTextField, JComboBox and JButton resetter				
+		List<JTextField> jtf_list = new ArrayList<JTextField>();
+		jtf_list.add(JTF_userNameInfo_UL);
+		
+		JCB_userRoleInfo_UL.setSelectedIndex(1);
+		JCB_userRoleInfo_UL.setEnabled(false);
+		
+		List<JButton> jb_list = new ArrayList<JButton>();
+		jb_list.add(JB_updateUser_UL);
+		jb_list.add(JB_deleteUser_UL);
+		
+		GeneralResetter(jtf_list, null, jb_list, true, false);
+		selectedUserID = 0;
+		selectedRoleID = 1;
 	}
 	
 	private void companyDataSetter(Boolean jtf_state, Boolean jb_state) {
@@ -3036,6 +3584,34 @@ public class MainFrame extends JFrame {
 		}
 	}
 	
+	private void updateUser(String uname) {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+		    
+			User user = (User) session.get(User.class, selectedUserID);
+			user.setUsername(uname);
+			user.setRolesid(selectedRoleID);
+		      
+		    //Committing the transaction
+			session.getTransaction().commit();
+			
+			//Reopen the session factory, needed for releasing the cash, further research is required
+			session.close();
+			session = HibernateUtil.getSessionFactory().openSession();
+		    
+		    //Reload updated table
+		    System.out.println("Updated Successfully");
+			SetDefaultTable(JT_users_UL, new String[]{"ID", "Numele lucratorului", "Rolul"});				
+			LoadUsers();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
 	private void deleteClient(int id) {
 		//Begin transaction
 		session.beginTransaction();
@@ -3131,6 +3707,44 @@ public class MainFrame extends JFrame {
 		return true;
 	}
 
+	private Boolean UserRegistrtationValidation(JTextField uname, JPasswordField upwd, JPasswordField upwdre) {
+		int invalids = 0;
+		char[] pwd = upwd.getPassword();
+		char[] pwdRE = upwdre.getPassword();
+		
+		if(uname.getText().isEmpty()) {
+			Border border = BorderFactory.createLineBorder(Color.RED, 2);
+			uname.setBorder(border);
+			
+			invalids++;
+		}
+		
+		if(pwd.length<6) {
+			Border border = BorderFactory.createLineBorder(Color.RED, 2);
+			upwd.setBorder(border);
+			
+			invalids++;
+		}
+		if(pwdRE.length<6) {
+			Border border = BorderFactory.createLineBorder(Color.RED, 2);
+			upwdre.setBorder(border);
+			
+			invalids++;
+		}
+		if(!Arrays.equals(pwd, pwdRE)) {
+			Border border = BorderFactory.createLineBorder(Color.RED, 2);
+			upwd.setBorder(border);
+			upwdre.setBorder(border);
+			
+			invalids++;
+		}
+		
+		if(invalids>0) {
+			return false;
+		}
+		return true;
+	}
+	
 	//return true if the user truly wants to delete the document
 	private Boolean DeleteConfirmation() {
 		int i = JOptionPane.showConfirmDialog(mainFrame, "Sigur doriți să ștergeți?",  "Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
