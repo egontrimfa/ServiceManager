@@ -21,6 +21,12 @@ public class Inventory {
 	@Column(name="id")
 	private int id;
 	
+	@Column(name="autopiecesid")
+	private String autopiecesid;
+	
+	@Column(name="clientsid")
+	private int clientsid;
+	
 	@Column(name="quantity")
 	private float quantity;
 	
@@ -46,16 +52,15 @@ public class Inventory {
     
 	public Inventory() {
 	}
-	
-	public Inventory(int id, float quantity, float unitepricein, float unitepriceout, Date datein, Client clients,
-			Auto_pieces auto_pieces) {
-		this.id = id;
+
+	public Inventory(String autopiecesid, int clientsid, float quantity, float unitepricein, float unitepriceout,
+			Date datein) {
+		this.autopiecesid = autopiecesid;
+		this.clientsid = clientsid;
 		this.quantity = quantity;
 		this.unitepricein = unitepricein;
 		this.unitepriceout = unitepriceout;
 		this.datein = datein;
-		this.clients = clients;
-		this.auto_pieces = auto_pieces;
 	}
 
 	public int getId() {
@@ -64,6 +69,22 @@ public class Inventory {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public String getAutopiecesid() {
+		return autopiecesid;
+	}
+
+	public void setAutopiecesid(String autopiecesid) {
+		this.autopiecesid = autopiecesid;
+	}
+
+	public int getClientsid() {
+		return clientsid;
+	}
+
+	public void setClientsid(int clientsid) {
+		this.clientsid = clientsid;
 	}
 
 	public float getQuantity() {
@@ -114,9 +135,11 @@ public class Inventory {
 		this.auto_pieces = auto_pieces;
 	}
 
+	
 	@Override
 	public String toString() {
-		return "Inventory [id=" + id + ", quantity=" + quantity + ", unitepricein=" + unitepricein + ", unitepriceout="
-				+ unitepriceout + ", datein=" + datein + ", clients=" + clients + ", autopieces=" + auto_pieces + "]";
+		return "Inventory [id=" + id + ", autopiecesid=" + autopiecesid + ", clientsid=" + clientsid + ", quantity="
+				+ quantity + ", unitepricein=" + unitepricein + ", unitepriceout=" + unitepriceout + ", datein="
+				+ datein + "]";
 	}	
 }

@@ -7,8 +7,13 @@ import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -32,6 +37,7 @@ import com.license.HibernateUtil.HibernateUtil;
 import com.license.Szerviz.Entities.Auto_pieces;
 import com.license.Szerviz.Entities.Client;
 import com.license.Szerviz.Entities.Company;
+import com.license.Szerviz.Entities.Inventory;
 import com.license.Szerviz.Entities.Job;
 import com.license.Szerviz.Entities.Reception;
 import com.license.Szerviz.Entities.Receptions_auto_pieces;
@@ -57,6 +63,8 @@ import java.awt.event.ActionEvent;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.JPasswordField;
 import javax.swing.JComboBox;
+import javax.swing.JTabbedPane;
+import javax.swing.JTree;
 
 public class MainFrame extends JFrame {
 	
@@ -90,11 +98,15 @@ public class MainFrame extends JFrame {
 	private int selectedRoleID = 0;
 	private int selectedUserID = 0;
 	private int selectedJobID = 0;
+	private int selectedInventoryID = 0;
+	private int selectedSupplieID = 0;
+	private int selectedRAPID = 0;
 	private String selectPiece;
 	static private TableRowSorter<TableModel> rowSorter;
 	private Client selectedClient;
 	private Company selectedCompany;
 	private Auto_pieces selectedAutoPiece;
+	private Reception selectedReception;
 	private String previousPanel = "panelDB";
 	
 	//contentPane	
@@ -111,7 +123,12 @@ public class MainFrame extends JFrame {
 	static private JPanel panelANJ;
 	static private JPanel panelJL;
 	static private JPanel panelANU;
-	static private JPanel panelUL ;
+	static private JPanel panelUL;
+	static private JPanel panelAA;
+	static private JPanel panelANR;
+	static private JPanel panelIM;
+	static private JPanel panelSL;
+	static private JPanel panelRAPL;
 	
 	//panelNPR
 	private JTextField JTF_clientName_NPR;
@@ -195,7 +212,7 @@ public class MainFrame extends JFrame {
 	
 	//panelJL
 	private static JTable JT_jobs_JL;
-	private JTextField JTF_jobIDInfo_JL;
+	//private JTextField JTF_jobIDInfo_JL;
 	private JTextField JTF_jobNameInfo_JL;
 	private JTextField JTF_jobPriceInfo_JL;
 	private JTextField JTF_jobQuickSearch_JL;
@@ -217,6 +234,55 @@ public class MainFrame extends JFrame {
 	private JButton JB_deleteUser_UL;
 	private JButton JB_selectUser_UL;
 	private JComboBox<Role> JCB_userRoleInfo_UL;
+	
+	//panelAA
+	private JTextField JTF_carBrand_AA;
+	private JTextField JTF_carModel_AA;
+	private JTextField JTF_carLicenseNumber_AA;
+	private JTable JT_prevCars_AA;
+	private JTable JT_cars_AA;
+	
+	//panelIM
+	private static JTable JT_inventory_IM;
+	private JTextField JTF_pieceIDInfo_IM;
+	private JTextField JTF_clientNameInfo_IM;
+	private JTextField JTF_quantityInfo_IM;
+	private JTextField JTF_unitePriceINInfo_IM;
+	private JTextField JTF_unitePriceOUTInfo_IM;
+	private JDateChooser JDC_dateINInfo_IM;
+	private JButton JB_updateInventory_IM;
+	private JButton JB_deleteInventory_IM;
+	private JButton JB_selectInventoryItem_IM;
+	private JTextField JTF_clientQuickSearch_IM;
+	private JTextField JTF_autoPieceQuickSearch_IM;
+	private JTextField JTF_dateINQuickSearch_IM;
+	
+	//panelSL
+	private static JTable JT_supplies_SL;
+	private JTextField JTF_clientNameInfo_SL;
+	private JTextField JTF_invoiceNRInfo_SL;
+	private JButton JB_updateSupplie_SL;
+	private JButton JB_deleteSupplie_SL;
+	private JButton JB_selectSupplie_SL;
+	private JDateChooser JDC_dateINInfo_SL;
+	private JDateChooser JDC_dueDateInfo_SL;
+	private JTextField JTF_clientNameQuickSearch_SL;
+	private JTextField JTF_invoiceNRQuickSearch_SL;
+	private JDateChooser JDC_dateINQuickSearch_SL;
+	private JDateChooser JDC_dueDateQuickSearch_SL;
+	
+	//panelRAPL
+	private static JTable JT_rapl_RAPL;
+	private JTextField JTF_recInvoiceNRInfo_RAPL;
+	private JTextField JTF_autoPieceIDInfo_RAPL;
+	private JTextField JTF_quantityInfo_RAPL;
+	private JTextField JTF_priceINInfo_RAPL;
+	private JTextField JTF_priceOUTInfo_RAPL;
+	private JTextField JTF_vatInfo_RAPL;
+	private JButton JB_updateRAP_RAPL;
+	private JButton JB_deleteRAP_RAPL;
+	private JButton JB_selectRAP_RAPL;
+	private JTextField JTF_rapQuickSearch_RAPL;
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -327,7 +393,7 @@ public class MainFrame extends JFrame {
 		});
 		MCard_addReplace_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		MCard_addReplace_DB.setToolTipText("Piese de schimb");
-		MCard_addReplace_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/part_switch0.png")));
+		MCard_addReplace_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/auto_piece_replace_154.png")));
 		MCard_addReplace_DB.setBounds(178, 422, 154, 154);
 		panelDB.add(MCard_addReplace_DB);
 		
@@ -438,7 +504,49 @@ public class MainFrame extends JFrame {
 		MCard_listUsers_DB.setBounds(675, 255, 154, 154);
 		panelDB.add(MCard_listUsers_DB);
 		
-		////////////////////////////////////////////////////
+		JLabel MCard_inventoryManagement_DB = new JLabel("");
+		MCard_inventoryManagement_DB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				PanelNavigationHelper(panelDB, panelIM);
+				
+				SetDefaultTable(JT_inventory_IM, new String[]{"ID", "Piese de auto", "Furnizor", "Quantity", "Price IN", "Price OUT", "Date"});				
+				loadInventory();
+			}
+		});
+		MCard_inventoryManagement_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		MCard_inventoryManagement_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/inventory_manager_154.png")));
+		MCard_inventoryManagement_DB.setBounds(343, 422, 154, 154);
+		panelDB.add(MCard_inventoryManagement_DB);
+		
+		JLabel MCard_listSupplies_DB = new JLabel("");
+		MCard_listSupplies_DB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				PanelNavigationHelper(panelDB, panelSL);
+				
+				SetDefaultTable(JT_supplies_SL, new String[]{"ID", "Furnizor", "Număr de factură", "Date IN", "Due Date"});				
+				loadSupplies();
+			}
+		});
+		MCard_listSupplies_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		MCard_listSupplies_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/supplier_list_154.png")));
+		MCard_listSupplies_DB.setBounds(344, 255, 154, 154);
+		panelDB.add(MCard_listSupplies_DB);
+		
+		JLabel MCard_addRegistration_DB = new JLabel("");
+		MCard_addRegistration_DB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				PanelNavigationHelper(panelDB, panelANR);
+			}
+		});
+		MCard_addRegistration_DB.setIcon(new ImageIcon(MainFrame.class.getResource("/images/add_registration_154.png")));
+		MCard_addRegistration_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		MCard_addRegistration_DB.setBounds(841, 88, 154, 154);
+		panelDB.add(MCard_addRegistration_DB);
+		
+		///////////////////////////////////////////////////
 		//--------//Client Registration Section//--------//
 		///////////////////////////////////////////////////
 		
@@ -2769,7 +2877,7 @@ public class MainFrame extends JFrame {
 				}				
 				panelULResetter();
 				
-				PanelNavigationHelper(panelJL, nextPanel);
+				PanelNavigationHelper(panelUL, nextPanel);
 
 			}
 		});
@@ -2779,6 +2887,1000 @@ public class MainFrame extends JFrame {
 		backUL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
 		backUL.setBounds(12, 13, 52, 32);
 		panelUL.add(backUL);
+		
+		////////////////////////////////////////
+		//--------//Add Auto Section//--------//
+		////////////////////////////////////////
+		
+		panelAA = new JPanel();
+		panelAA.setName("panelAA");
+		contentPane.add(panelAA, "name_174016408126300");
+		panelAA.setLayout(null);
+		
+		JLabel MLCard_addAuto_ANS = new JLabel("");
+		MLCard_addAuto_ANS.setIcon(new ImageIcon(MainFrame.class.getResource("/images/car0.png")));
+		MLCard_addAuto_ANS.setBounds(12, 58, 256, 256);
+		panelAA.add(MLCard_addAuto_ANS);
+		
+		JLabel JL_carBrand_AA = new JLabel("Brand:");
+		JL_carBrand_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_carBrand_AA.setBounds(280, 58, 63, 24);
+		panelAA.add(JL_carBrand_AA);
+		
+		JTF_carBrand_AA = new JTextField();
+		JTF_carBrand_AA.setColumns(10);
+		JTF_carBrand_AA.setBounds(355, 58, 300, 22);
+		panelAA.add(JTF_carBrand_AA);
+		
+		JLabel JL_carModel_AA = new JLabel("Model:");
+		JL_carModel_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_carModel_AA.setBounds(667, 58, 63, 24);
+		panelAA.add(JL_carModel_AA);
+		
+		JTF_carModel_AA = new JTextField();
+		JTF_carModel_AA.setColumns(10);
+		JTF_carModel_AA.setBounds(742, 58, 300, 22);
+		panelAA.add(JTF_carModel_AA);
+		
+		JLabel JL_carLicenseNumber_AA = new JLabel("NR de înmatriculare:");
+		JL_carLicenseNumber_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_carLicenseNumber_AA.setBounds(280, 95, 194, 24);
+		panelAA.add(JL_carLicenseNumber_AA);
+		
+		JTF_carLicenseNumber_AA = new JTextField();
+		JTF_carLicenseNumber_AA.setColumns(10);
+		JTF_carLicenseNumber_AA.setBounds(486, 93, 300, 22);
+		panelAA.add(JTF_carLicenseNumber_AA);
+		
+		JButton JB_addToList_AA = new JButton("Adaugă la listă");
+		JB_addToList_AA.setBounds(798, 93, 244, 25);
+		panelAA.add(JB_addToList_AA);
+		
+		JScrollPane JP_prevCars_AA = new JScrollPane();
+		JP_prevCars_AA.setBounds(280, 165, 762, 149);
+		panelAA.add(JP_prevCars_AA);
+		
+		JT_prevCars_AA = new JTable();
+		JP_prevCars_AA.setViewportView(JT_prevCars_AA);
+		
+		JButton btnNewButton = new JButton("Selectează");
+		btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		btnNewButton.setBounds(1054, 165, 170, 50);
+		panelAA.add(btnNewButton);
+		
+		JScrollPane JP_cars_AA = new JScrollPane();
+		JP_cars_AA.setBounds(12, 327, 1030, 248);
+		panelAA.add(JP_cars_AA);
+		
+		JT_cars_AA = new JTable();
+		JP_cars_AA.setViewportView(JT_cars_AA);
+		
+		JButton JB_saveCars_AA = new JButton("OK");
+		JB_saveCars_AA.setFont(new Font("Tahoma", Font.BOLD, 24));
+		JB_saveCars_AA.setBounds(1054, 327, 170, 75);
+		panelAA.add(JB_saveCars_AA);
+		
+		JButton btnterge = new JButton("Șterge");
+		btnterge.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		btnterge.setBounds(1054, 462, 170, 50);
+		panelAA.add(btnterge);
+		
+		JButton btntergeToate = new JButton("Șterge toate");
+		btntergeToate.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		btntergeToate.setBounds(1054, 525, 170, 50);
+		panelAA.add(btntergeToate);
+		
+		JLabel JL_prevInfo_AA = new JLabel("Mașini recente");
+		JL_prevInfo_AA.setHorizontalAlignment(SwingConstants.CENTER);
+		JL_prevInfo_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JL_prevInfo_AA.setBounds(280, 128, 762, 24);
+		panelAA.add(JL_prevInfo_AA);
+		
+		JLabel exitAA = new JLabel("");
+		exitAA.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitAA.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitAA.setToolTipText("EXIT");
+		exitAA.setHorizontalAlignment(SwingConstants.CENTER);
+		exitAA.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		exitAA.setBounds(1236, 13, 59, 32);
+		panelAA.add(exitAA);
+		
+		JLabel backAA = new JLabel("");
+		backAA.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {			
+				PanelNavigationHelper(panelAA, panelDB);
+			}
+		});
+		backAA.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backAA.setToolTipText("BACK");
+		backAA.setHorizontalAlignment(SwingConstants.CENTER);
+		backAA.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		backAA.setBounds(12, 13, 52, 32);
+		panelAA.add(backAA);
+		
+		////////////////////////////////////////////////////
+		//--------//Add New Registration Section//--------//
+		////////////////////////////////////////////////////
+		
+		panelANR = new JPanel();
+		panelANR.setName("panelANR");
+		contentPane.add(panelANR, "name_262951066585500");
+		panelANR.setLayout(null);
+		
+		JLabel exitANR = new JLabel("");
+		exitANR.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitANR.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitANR.setToolTipText("EXIT");
+		exitANR.setHorizontalAlignment(SwingConstants.CENTER);
+		exitANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		exitANR.setBounds(1236, 13, 59, 32);
+		panelANR.add(exitANR);
+		
+		JLabel backANR = new JLabel("");
+		backANR.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {			
+				PanelNavigationHelper(panelANR, panelDB);
+			}
+		});
+		backANR.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backANR.setToolTipText("BACK");
+		backANR.setHorizontalAlignment(SwingConstants.CENTER);
+		backANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		backANR.setBounds(12, 13, 52, 32);
+		panelANR.add(backANR);
+		
+		JLabel SMC_client_ANR = new JLabel("");
+		SMC_client_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/natural_person_128.png")));
+		SMC_client_ANR.setBounds(12, 58, 128, 141);
+		panelANR.add(SMC_client_ANR);
+		
+		JLabel SC_addClient_ANR = new JLabel("");
+		SC_addClient_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/add_new_64.png")));
+		SC_addClient_ANR.setBounds(152, 58, 64, 64);
+		panelANR.add(SC_addClient_ANR);
+		
+		JLabel SC_editClient_ANR = new JLabel("");
+		SC_editClient_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/edit_64.png")));
+		SC_editClient_ANR.setBounds(152, 135, 64, 64);
+		panelANR.add(SC_editClient_ANR);
+		
+		JLabel SMC_car_ANR = new JLabel("");
+		SMC_car_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/car_128.png")));
+		SMC_car_ANR.setBounds(12, 245, 128, 141);
+		panelANR.add(SMC_car_ANR);
+		
+		JLabel SC_addCarANR = new JLabel("");
+		SC_addCarANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/add_new_64.png")));
+		SC_addCarANR.setBounds(152, 245, 64, 64);
+		panelANR.add(SC_addCarANR);
+		
+		JLabel SC_editCar_ANR = new JLabel("");
+		SC_editCar_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/edit_64.png")));
+		SC_editCar_ANR.setBounds(152, 322, 64, 64);
+		panelANR.add(SC_editCar_ANR);
+		
+		JLabel SMC_worker_ANR = new JLabel("");
+		SMC_worker_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/mechanic_128.png")));
+		SMC_worker_ANR.setBounds(12, 434, 128, 141);
+		panelANR.add(SMC_worker_ANR);
+		
+		JLabel SC_addWorker_ANR = new JLabel("");
+		SC_addWorker_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/add_new_64.png")));
+		SC_addWorker_ANR.setBounds(152, 434, 64, 64);
+		panelANR.add(SC_addWorker_ANR);
+		
+		JLabel SC_editWorker_ANR = new JLabel("");
+		SC_editWorker_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/edit_64.png")));
+		SC_editWorker_ANR.setBounds(152, 511, 64, 64);
+		panelANR.add(SC_editWorker_ANR);
+		
+		JLabel JB_selectClient_ANR = new JLabel("Selectati client");
+		JB_selectClient_ANR.setFont(new Font("Tahoma", Font.BOLD, 32));
+		JB_selectClient_ANR.setHorizontalAlignment(SwingConstants.CENTER);
+		JB_selectClient_ANR.setBounds(228, 58, 400, 141);
+		panelANR.add(JB_selectClient_ANR);
+		
+		JLabel JB_selectCar_ANR = new JLabel("Selectati masini");
+		JB_selectCar_ANR.setHorizontalAlignment(SwingConstants.CENTER);
+		JB_selectCar_ANR.setFont(new Font("Tahoma", Font.BOLD, 32));
+		JB_selectCar_ANR.setBounds(228, 245, 400, 141);
+		panelANR.add(JB_selectCar_ANR);
+		
+		JLabel JB_selectWorker_ANR = new JLabel("Selectati lucratori");
+		JB_selectWorker_ANR.setHorizontalAlignment(SwingConstants.CENTER);
+		JB_selectWorker_ANR.setFont(new Font("Tahoma", Font.BOLD, 32));
+		JB_selectWorker_ANR.setBounds(228, 434, 400, 141);
+		panelANR.add(JB_selectWorker_ANR);
+		
+		JLabel SMC_piece_ANR = new JLabel("");
+		SMC_piece_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/auto_parts_128.png")));
+		SMC_piece_ANR.setBounds(640, 58, 128, 141);
+		panelANR.add(SMC_piece_ANR);
+		
+		JLabel SC_addPiece_ANR = new JLabel("");
+		SC_addPiece_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/add_new_64.png")));
+		SC_addPiece_ANR.setBounds(780, 58, 64, 64);
+		panelANR.add(SC_addPiece_ANR);
+		
+		JLabel SC_editPiece_ANR = new JLabel("");
+		SC_editPiece_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/edit_64.png")));
+		SC_editPiece_ANR.setBounds(780, 135, 64, 64);
+		panelANR.add(SC_editPiece_ANR);
+		
+		JLabel JB_selectPiece_ANR = new JLabel("Selectati piesele");
+		JB_selectPiece_ANR.setHorizontalAlignment(SwingConstants.CENTER);
+		JB_selectPiece_ANR.setFont(new Font("Tahoma", Font.BOLD, 32));
+		JB_selectPiece_ANR.setBounds(856, 58, 400, 141);
+		panelANR.add(JB_selectPiece_ANR);
+		
+		JLabel SMC_job_ANR = new JLabel("");
+		SMC_job_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/job_128.png")));
+		SMC_job_ANR.setBounds(640, 245, 128, 141);
+		panelANR.add(SMC_job_ANR);
+		
+		JLabel SC_addJob_ANR = new JLabel("");
+		SC_addJob_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/add_new_64.png")));
+		SC_addJob_ANR.setBounds(780, 245, 64, 64);
+		panelANR.add(SC_addJob_ANR);
+		
+		JLabel SC_editJob_ANR = new JLabel("");
+		SC_editJob_ANR.setIcon(new ImageIcon(MainFrame.class.getResource("/images/edit_64.png")));
+		SC_editJob_ANR.setBounds(780, 322, 64, 64);
+		panelANR.add(SC_editJob_ANR);
+		
+		JLabel JB_selectJob_ANR = new JLabel("Selectati joburi");
+		JB_selectJob_ANR.setHorizontalAlignment(SwingConstants.CENTER);
+		JB_selectJob_ANR.setFont(new Font("Tahoma", Font.BOLD, 32));
+		JB_selectJob_ANR.setBounds(856, 245, 400, 141);
+		panelANR.add(JB_selectJob_ANR);
+		
+		////////////////////////////////////////////////////
+		//--------//Inventory Management Section//--------//
+		////////////////////////////////////////////////////
+		
+		panelIM = new JPanel();
+		panelIM.setName("panelIM");
+		contentPane.add(panelIM, "name_306400352950000");
+		panelIM.setLayout(null);
+		
+		JScrollPane JSP_inventory_IM = new JScrollPane();
+		JSP_inventory_IM.setBounds(436, 140, 849, 445);
+		panelIM.add(JSP_inventory_IM);
+		
+		JT_inventory_IM = new JTable();
+		JT_inventory_IM.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				int index = JT_inventory_IM.convertRowIndexToModel(JT_inventory_IM.getSelectedRow());
+				TableModel model = JT_inventory_IM.getModel();
+				JTF_pieceIDInfo_IM.setText(model.getValueAt(index, 1)!=null?model.getValueAt(index, 1).toString():"");
+				JTF_clientNameInfo_IM.setText(model.getValueAt(index, 2)!=null?model.getValueAt(index, 2).toString():"");
+				JTF_quantityInfo_IM.setText(model.getValueAt(index, 3)!=null?model.getValueAt(index, 3).toString():"");
+				JTF_unitePriceINInfo_IM.setText(model.getValueAt(index, 4)!=null?model.getValueAt(index, 4).toString():"");
+				JTF_unitePriceOUTInfo_IM.setText(model.getValueAt(index, 5)!=null?model.getValueAt(index, 5).toString():"");
+				if(!model.getValueAt(index, 6).toString().equals("")) {
+					try {
+						JDC_dateINInfo_IM.setDate(new SimpleDateFormat("yyyy-mm-dd").parse(model.getValueAt(index, 6).toString()));
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}else {
+					JDC_dateINInfo_IM.setDate(null);
+				}
+				selectedInventoryID = Integer.valueOf(model.getValueAt(index, 0).toString());
+				
+				if(previousPanel.equals("panelDB")) {
+				    List<JButton> jb_list = new ArrayList<JButton>();
+				    jb_list.add(JB_updateInventory_IM);
+				    jb_list.add(JB_deleteInventory_IM);
+				    
+				    GeneralResetter(null, null, jb_list, null, true);
+				}else {
+					//TODO
+				}
+	
+			}
+		});
+		JSP_inventory_IM.setViewportView(JT_inventory_IM);
+		
+		JPanel JP_inventoryInfo_IM = new JPanel();
+		JP_inventoryInfo_IM.setBounds(12, 97, 412, 488);
+		panelIM.add(JP_inventoryInfo_IM);
+		JP_inventoryInfo_IM.setLayout(null);
+		
+		JLabel JL_inventoryDetails_IM = new JLabel("Detalii iventory:");
+		JL_inventoryDetails_IM.setBounds(145, 13, 134, 20);
+		JL_inventoryDetails_IM.setFont(new Font("Tahoma", Font.BOLD, 16));
+		JP_inventoryInfo_IM.add(JL_inventoryDetails_IM);
+		
+		JLabel JL_pieceIdInfo_IM = new JLabel("Piece ID:");
+		JL_pieceIdInfo_IM.setBounds(12, 85, 107, 16);
+		JP_inventoryInfo_IM.add(JL_pieceIdInfo_IM);
+		
+		JTF_pieceIDInfo_IM = new JTextField();
+		JTF_pieceIDInfo_IM.setBounds(140, 82, 260, 22);
+		JP_inventoryInfo_IM.add(JTF_pieceIDInfo_IM);
+		JTF_pieceIDInfo_IM.setColumns(10);
+		
+		JLabel JL_clientNameInfo_IM = new JLabel("Numele furnizorului:");
+		JL_clientNameInfo_IM.setBounds(12, 114, 116, 16);
+		JP_inventoryInfo_IM.add(JL_clientNameInfo_IM);
+		
+		JTF_clientNameInfo_IM = new JTextField();
+		JTF_clientNameInfo_IM.setBounds(140, 111, 260, 22);
+		JP_inventoryInfo_IM.add(JTF_clientNameInfo_IM);
+		JTF_clientNameInfo_IM.setColumns(10);
+		
+		JB_updateInventory_IM = new JButton("Update");
+		JB_updateInventory_IM.setEnabled(false);
+		JB_updateInventory_IM.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				//TODO
+			}
+		});
+		JB_updateInventory_IM.setBounds(69, 426, 116, 37);
+		JP_inventoryInfo_IM.add(JB_updateInventory_IM);
+		
+		JB_deleteInventory_IM = new JButton("Delete");
+		JB_deleteInventory_IM.setEnabled(false);
+		JB_deleteInventory_IM.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				//TODO
+			}
+		});
+		JB_deleteInventory_IM.setBounds(239, 426, 116, 37);
+		JP_inventoryInfo_IM.add(JB_deleteInventory_IM);
+		
+		JB_selectInventoryItem_IM = new JButton("Selectare");
+		JB_selectInventoryItem_IM.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			}
+		});
+		JB_selectInventoryItem_IM.setVisible(false);
+		JB_selectInventoryItem_IM.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				//TODO
+			}
+		});
+		JB_selectInventoryItem_IM.setEnabled(false);
+		JB_selectInventoryItem_IM.setBounds(69, 280, 286, 71);
+		JP_inventoryInfo_IM.add(JB_selectInventoryItem_IM);
+		
+		JLabel JL_quantityInfo_IM = new JLabel("Quantity:");
+		JL_quantityInfo_IM.setBounds(12, 146, 107, 16);
+		JP_inventoryInfo_IM.add(JL_quantityInfo_IM);
+		
+		JTF_quantityInfo_IM = new JTextField();
+		JTF_quantityInfo_IM.setColumns(10);
+		JTF_quantityInfo_IM.setBounds(140, 143, 260, 22);
+		JP_inventoryInfo_IM.add(JTF_quantityInfo_IM);
+		
+		JLabel JL_unitePriceINInfo_IM = new JLabel("Unite price in:");
+		JL_unitePriceINInfo_IM.setBounds(12, 178, 107, 16);
+		JP_inventoryInfo_IM.add(JL_unitePriceINInfo_IM);
+		
+		JTF_unitePriceINInfo_IM = new JTextField();
+		JTF_unitePriceINInfo_IM.setColumns(10);
+		JTF_unitePriceINInfo_IM.setBounds(140, 175, 260, 22);
+		JP_inventoryInfo_IM.add(JTF_unitePriceINInfo_IM);
+		
+		JLabel JL_unitePriceOutInfo_IM = new JLabel("Unite price out:");
+		JL_unitePriceOutInfo_IM.setBounds(12, 210, 107, 16);
+		JP_inventoryInfo_IM.add(JL_unitePriceOutInfo_IM);
+		
+		JTF_unitePriceOUTInfo_IM = new JTextField();
+		JTF_unitePriceOUTInfo_IM.setColumns(10);
+		JTF_unitePriceOUTInfo_IM.setBounds(140, 204, 260, 22);
+		JP_inventoryInfo_IM.add(JTF_unitePriceOUTInfo_IM);
+		
+		JDC_dateINInfo_IM = new JDateChooser();
+		JDC_dateINInfo_IM.setBounds(140, 233, 260, 22);
+		JP_inventoryInfo_IM.add(JDC_dateINInfo_IM);
+		
+		JLabel JL_dateINInfo_IM = new JLabel("Date in:");
+		JL_dateINInfo_IM.setBounds(12, 239, 107, 16);
+		JP_inventoryInfo_IM.add(JL_dateINInfo_IM);
+		
+		JLabel reloadInventoryTable = new JLabel("");
+		reloadInventoryTable.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		reloadInventoryTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				panelIMResetter();
+				
+				SetDefaultTable(JT_inventory_IM, new String[]{"ID", "Piese de auto", "Furnizor", "Quantity", "Price IN", "Price OUT", "Date"});				
+				loadInventory();
+			}
+		});
+		reloadInventoryTable.setToolTipText("Reload table");
+		reloadInventoryTable.setIcon(new ImageIcon(MainFrame.class.getResource("/images/reload0.png")));
+		reloadInventoryTable.setBounds(1179, 13, 45, 32);
+		panelIM.add(reloadInventoryTable);
+		
+		JPanel JP_inventoryQuickSearch_IM = new JPanel();
+		JP_inventoryQuickSearch_IM.setBounds(436, 97, 849, 37);
+		panelIM.add(JP_inventoryQuickSearch_IM);
+		JP_inventoryQuickSearch_IM.setLayout(null);
+		
+		//Quick search methods
+		
+		JTF_autoPieceQuickSearch_IM = new JTextField();
+		JTF_autoPieceQuickSearch_IM.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				comboFilter(JT_inventory_IM,  
+						new String[]{JTF_autoPieceQuickSearch_IM.getText(), JTF_clientQuickSearch_IM.getText(), JTF_dateINQuickSearch_IM.getText()}, 
+						new int[] {1, 2, 3});
+			}
+		});
+		JTF_autoPieceQuickSearch_IM.setBounds(0, 13, 141, 22);
+		JP_inventoryQuickSearch_IM.add(JTF_autoPieceQuickSearch_IM);
+		JTF_autoPieceQuickSearch_IM.setColumns(10);
+		
+		JTF_clientQuickSearch_IM = new JTextField();
+		JTF_clientQuickSearch_IM.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				comboFilter(JT_inventory_IM,  
+						new String[]{JTF_autoPieceQuickSearch_IM.getText(), JTF_clientQuickSearch_IM.getText(), JTF_dateINQuickSearch_IM.getText()}, 
+						new int[] {1, 2, 3});
+			}
+		});
+		JTF_clientQuickSearch_IM.setColumns(10);
+		JTF_clientQuickSearch_IM.setBounds(141, 13, 141, 22);
+		JP_inventoryQuickSearch_IM.add(JTF_clientQuickSearch_IM);
+		
+		JTF_dateINQuickSearch_IM = new JTextField();
+		JTF_dateINQuickSearch_IM.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				comboFilter(JT_inventory_IM,  
+						new String[]{JTF_autoPieceQuickSearch_IM.getText(), JTF_clientQuickSearch_IM.getText(), JTF_dateINQuickSearch_IM.getText()}, 
+						new int[] {1, 2, 3});
+			}
+		});
+		JTF_dateINQuickSearch_IM.setColumns(10);
+		JTF_dateINQuickSearch_IM.setBounds(708, 13, 141, 22);
+		JP_inventoryQuickSearch_IM.add(JTF_dateINQuickSearch_IM);
+		
+		JLabel exitIM = new JLabel("");
+		exitIM.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitIM.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitIM.setToolTipText("EXIT");
+		exitIM.setHorizontalAlignment(SwingConstants.CENTER);
+		exitIM.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		exitIM.setBounds(1236, 13, 59, 32);
+		panelIM.add(exitIM);
+		
+		JLabel backIM = new JLabel("");
+		backIM.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JPanel nextPanel = null;
+				
+				if(previousPanel.equals("panelDB")) {
+					nextPanel = panelDB;
+				}else {
+					//TODO
+				}				
+				panelIMResetter();
+				
+				PanelNavigationHelper(panelIM, nextPanel);
+			}
+		});
+		backIM.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backIM.setToolTipText("BACK");
+		backIM.setHorizontalAlignment(SwingConstants.CENTER);
+		backIM.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		backIM.setBounds(12, 13, 52, 32);
+		panelIM.add(backIM);
+		
+		////////////////////////////////////////////
+		//--------//Supplie List Section//--------//
+		////////////////////////////////////////////
+		
+		panelSL = new JPanel();
+		panelSL.setName("panelSL");
+		contentPane.add(panelSL, "name_9670417171200");
+		panelSL.setLayout(null);
+		
+		JScrollPane JSP_supplies_SL = new JScrollPane();
+		JSP_supplies_SL.setBounds(436, 140, 849, 445);
+		panelSL.add(JSP_supplies_SL);
+		
+		JT_supplies_SL = new JTable();
+		JT_supplies_SL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				int index = JT_supplies_SL.convertRowIndexToModel(JT_supplies_SL.getSelectedRow());
+				TableModel model = JT_supplies_SL.getModel();
+				JTF_clientNameInfo_SL.setText(model.getValueAt(index, 1)!=null?model.getValueAt(index, 1).toString():"");
+				JTF_invoiceNRInfo_SL.setText(model.getValueAt(index, 2)!=null?model.getValueAt(index, 2).toString():"");
+				if(!model.getValueAt(index, 3).toString().equals("")) {
+					try {
+						JDC_dateINInfo_SL.setDate(new SimpleDateFormat("yyyy-MM-dd").parse(model.getValueAt(index, 3).toString()));
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}else {
+					JDC_dateINInfo_SL.setDate(null);
+				}
+				if(!model.getValueAt(index, 4).toString().equals("")) {
+					try {
+						JDC_dueDateInfo_SL.setDate(new SimpleDateFormat("yyyy-MM-dd").parse(model.getValueAt(index, 4).toString()));
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}else {
+					JDC_dueDateInfo_SL.setDate(null);
+				}
+				selectedSupplieID = Integer.valueOf(model.getValueAt(index, 0).toString());
+				
+				if(previousPanel.equals("panelDB") || previousPanel.equals("panelRAPL")) {
+				    List<JButton> jb_list = new ArrayList<JButton>();
+				    jb_list.add(JB_updateSupplie_SL);
+				    jb_list.add(JB_deleteSupplie_SL);
+				    jb_list.add(JB_selectSupplie_SL);
+				    
+				    GeneralResetter(null, null, jb_list, null, true);
+				}else {
+					//TODO
+				}
+			}
+		});
+		JSP_supplies_SL.setViewportView(JT_supplies_SL);
+		
+		JPanel JP_supplieInfo_SL = new JPanel();
+		JP_supplieInfo_SL.setBounds(12, 97, 412, 488);
+		panelSL.add(JP_supplieInfo_SL);
+		JP_supplieInfo_SL.setLayout(null);
+		
+		JLabel JL_supplieDetails_SL = new JLabel("Detalii supplie:");
+		JL_supplieDetails_SL.setBounds(145, 13, 134, 20);
+		JL_supplieDetails_SL.setFont(new Font("Tahoma", Font.BOLD, 16));
+		JP_supplieInfo_SL.add(JL_supplieDetails_SL);
+		
+		JLabel JL_clientNameInfo_SL = new JLabel("Numele furnizorului:");
+		JL_clientNameInfo_SL.setBounds(12, 85, 134, 16);
+		JP_supplieInfo_SL.add(JL_clientNameInfo_SL);
+		
+		JTF_clientNameInfo_SL = new JTextField();
+		JTF_clientNameInfo_SL.setBounds(145, 82, 255, 22);
+		JP_supplieInfo_SL.add(JTF_clientNameInfo_SL);
+		JTF_clientNameInfo_SL.setColumns(10);
+		
+		JLabel JL_invoiceNRInfo_SL = new JLabel("Invoice number:");
+		JL_invoiceNRInfo_SL.setBounds(12, 117, 103, 16);
+		JP_supplieInfo_SL.add(JL_invoiceNRInfo_SL);
+		
+		JB_updateSupplie_SL = new JButton("Update");
+		JB_updateSupplie_SL.setEnabled(false);
+		JB_updateSupplie_SL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				//TODO
+			}
+		});
+		JB_updateSupplie_SL.setBounds(69, 426, 116, 37);
+		JP_supplieInfo_SL.add(JB_updateSupplie_SL);
+		
+		JB_deleteSupplie_SL = new JButton("Delete");
+		JB_deleteSupplie_SL.setEnabled(false);
+		JB_deleteSupplie_SL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				//TODO
+			}
+		});
+		JB_deleteSupplie_SL.setBounds(239, 426, 116, 37);
+		JP_supplieInfo_SL.add(JB_deleteSupplie_SL);
+		
+		JB_selectSupplie_SL = new JButton("Selectare");
+		JB_selectSupplie_SL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(selectedSupplieID>0) {
+					PanelNavigationHelper(panelSL, panelRAPL);
+					
+					SetDefaultTable(JT_rapl_RAPL, new String[]{"Auto Piece ID", "Quantity", "Date IN", "Unite Price IN", "Unite Price OUT", "TVA"});		
+					loadReceptionAutoPieces(selectedSupplieID);
+					
+					int temp = selectedSupplieID;
+					panelSLResetter();
+					selectedSupplieID = temp;
+				}
+			}
+		});
+		JB_selectSupplie_SL.setEnabled(false);
+		JB_selectSupplie_SL.setBounds(69, 219, 286, 71);
+		JP_supplieInfo_SL.add(JB_selectSupplie_SL);
+		
+		JTF_invoiceNRInfo_SL = new JTextField();
+		JTF_invoiceNRInfo_SL.setColumns(10);
+		JTF_invoiceNRInfo_SL.setBounds(145, 114, 255, 22);
+		JP_supplieInfo_SL.add(JTF_invoiceNRInfo_SL);
+		
+		JLabel JL_dateINInfo_SL = new JLabel("Date in:");
+		JL_dateINInfo_SL.setBounds(12, 155, 107, 16);
+		JP_supplieInfo_SL.add(JL_dateINInfo_SL);
+		
+		JDC_dateINInfo_SL = new JDateChooser();
+		JDC_dateINInfo_SL.setBounds(145, 149, 255, 22);
+		JP_supplieInfo_SL.add(JDC_dateINInfo_SL);
+		
+		JLabel JL_dueDATEInfo_SL = new JLabel("Due date:");
+		JL_dueDATEInfo_SL.setBounds(12, 190, 107, 16);
+		JP_supplieInfo_SL.add(JL_dueDATEInfo_SL);
+		
+		JDC_dueDateInfo_SL = new JDateChooser();
+		JDC_dueDateInfo_SL.setBounds(145, 184, 255, 22);
+		JP_supplieInfo_SL.add(JDC_dueDateInfo_SL);
+		
+		JLabel reloadSuppliesTable = new JLabel("");
+		reloadSuppliesTable.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		reloadSuppliesTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				panelSLResetter();
+				
+				SetDefaultTable(JT_supplies_SL, new String[]{"ID", "Furnizor", "Număr de factură", "Date IN", "Due Date"});				
+				loadSupplies();
+			}
+		});
+		reloadSuppliesTable.setToolTipText("Reload table");
+		reloadSuppliesTable.setIcon(new ImageIcon(MainFrame.class.getResource("/images/reload0.png")));
+		reloadSuppliesTable.setBounds(1179, 13, 45, 32);
+		panelSL.add(reloadSuppliesTable);
+		
+		JPanel JP_supplieQuickSearch_SL = new JPanel();
+		JP_supplieQuickSearch_SL.setBounds(436, 97, 849, 37);
+		panelSL.add(JP_supplieQuickSearch_SL);
+		JP_supplieQuickSearch_SL.setLayout(null);
+		
+		//Quick search method
+		
+		JTF_clientNameQuickSearch_SL = new JTextField();		
+		JTF_clientNameQuickSearch_SL.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				comboFilter(JT_supplies_SL,  
+						new String[]{JTF_clientNameQuickSearch_SL.getText(), JTF_invoiceNRQuickSearch_SL.getText()}, 
+						new int[] {1, 2});
+			}
+		});	
+		JTF_clientNameQuickSearch_SL.setBounds(0, 13, 212, 22);
+		JP_supplieQuickSearch_SL.add(JTF_clientNameQuickSearch_SL);
+		JTF_clientNameQuickSearch_SL.setColumns(10);
+		
+		JTF_invoiceNRQuickSearch_SL = new JTextField();
+		JTF_invoiceNRQuickSearch_SL.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				comboFilter(JT_supplies_SL,  
+						new String[]{JTF_clientNameQuickSearch_SL.getText(), JTF_invoiceNRQuickSearch_SL.getText()}, 
+						new int[] {1, 2});
+			}
+		});	
+		JTF_invoiceNRQuickSearch_SL.setColumns(10);
+		JTF_invoiceNRQuickSearch_SL.setBounds(212, 13, 212, 22);
+		JP_supplieQuickSearch_SL.add(JTF_invoiceNRQuickSearch_SL);
+		
+		JDC_dateINQuickSearch_SL = new JDateChooser();
+		JDC_dateINQuickSearch_SL.addPropertyChangeListener(
+			new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent e) {	
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+					String dateIN;
+					try {
+						dateIN = sdf.format(JDC_dateINQuickSearch_SL.getDate());
+						dateFilter(JT_supplies_SL, dateIN, 3);
+					}catch(Exception ex){
+						//dateIN = sdf.format(new Date());
+					}
+					
+					//dateFilter(JT_supplies_SL, dateIN, 3);
+				}
+			});
+		JDC_dateINQuickSearch_SL.setBounds(423, 13, 212, 22);
+		JP_supplieQuickSearch_SL.add(JDC_dateINQuickSearch_SL);
+		
+		JDC_dueDateQuickSearch_SL = new JDateChooser();
+		JDC_dueDateQuickSearch_SL.addPropertyChangeListener(
+				new PropertyChangeListener() {
+					@Override
+					public void propertyChange(PropertyChangeEvent e) {				
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+						String dueDate;
+						try {
+							dueDate = sdf.format(JDC_dueDateQuickSearch_SL.getDate());
+							dateFilter(JT_supplies_SL, dueDate, 4);
+						}catch(Exception ex){
+							//dateIN = sdf.format(new Date());
+						}
+						
+						//dateFilter(JT_supplies_SL, dateIN, 4);
+					}
+				});
+		JDC_dueDateQuickSearch_SL.setBounds(637, 13, 212, 22);
+		JP_supplieQuickSearch_SL.add(JDC_dueDateQuickSearch_SL);
+		
+		JLabel exitSL = new JLabel("");
+		exitSL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitSL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitSL.setToolTipText("EXIT");
+		exitSL.setHorizontalAlignment(SwingConstants.CENTER);
+		exitSL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		exitSL.setBounds(1236, 13, 59, 32);
+		panelSL.add(exitSL);
+		
+		JLabel backSL = new JLabel("");
+		backSL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JPanel nextPanel = null;
+				
+				if(previousPanel.equals("panelDB")) {
+					nextPanel = panelDB;
+				}else {
+					//TODO
+				}				
+				panelSLResetter();
+				
+				PanelNavigationHelper(panelSL, nextPanel);
+
+			}
+		});
+		backSL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backSL.setToolTipText("BACK");
+		backSL.setHorizontalAlignment(SwingConstants.CENTER);
+		backSL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		backSL.setBounds(12, 13, 52, 32);
+		panelSL.add(backSL);
+		
+		////////////////////////////////////////////////////
+		//--------//Reception Auto Pieces Section//--------/
+		////////////////////////////////////////////////////
+		
+		panelRAPL = new JPanel();
+		panelRAPL.setName("panelRAPL");
+		contentPane.add(panelRAPL, "name_71536934844800");
+		panelRAPL.setLayout(null);
+		
+		JScrollPane JSP_pieces_RAPL = new JScrollPane();
+		JSP_pieces_RAPL.setBounds(436, 140, 849, 445);
+		panelRAPL.add(JSP_pieces_RAPL);
+		
+		JT_rapl_RAPL = new JTable();
+		JT_rapl_RAPL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				int index = JT_rapl_RAPL.convertRowIndexToModel(JT_rapl_RAPL.getSelectedRow());
+				TableModel model = JT_rapl_RAPL.getModel();
+				JTF_recInvoiceNRInfo_RAPL.setText(model.getValueAt(index, 0)!=null?model.getValueAt(index, 0).toString():"");
+				JTF_autoPieceIDInfo_RAPL.setText(model.getValueAt(index, 1)!=null?model.getValueAt(index, 1).toString():"");
+				JTF_quantityInfo_RAPL.setText(model.getValueAt(index, 2)!=null?model.getValueAt(index, 2).toString():"");
+				JTF_priceINInfo_RAPL.setText(model.getValueAt(index, 3)!=null?model.getValueAt(index, 3).toString():"");
+				JTF_priceOUTInfo_RAPL.setText(model.getValueAt(index, 4)!=null?model.getValueAt(index, 4).toString():"");
+				JTF_vatInfo_RAPL.setText(model.getValueAt(index, 5)!=null?model.getValueAt(index, 5).toString():"");
+				
+				if(previousPanel.equals("panelSL")) {
+				    List<JButton> jb_list = new ArrayList<JButton>();
+				    jb_list.add(JB_updateRAP_RAPL);
+				    jb_list.add(JB_deleteRAP_RAPL);
+				    
+				    GeneralResetter(null, null, jb_list, null, true);
+				}else {
+					//TODO
+				}
+	
+			}
+		});
+		JSP_pieces_RAPL.setViewportView(JT_rapl_RAPL);
+		
+		JPanel JP_raplInfo_RAPL = new JPanel();
+		JP_raplInfo_RAPL.setBounds(12, 97, 412, 488);
+		panelRAPL.add(JP_raplInfo_RAPL);
+		JP_raplInfo_RAPL.setLayout(null);
+		
+		JLabel JL_raplDetails_RAPL = new JLabel("Detalii piese de auto al furnizarii:");
+		JL_raplDetails_RAPL.setHorizontalAlignment(SwingConstants.CENTER);
+		JL_raplDetails_RAPL.setBounds(12, 13, 388, 20);
+		JL_raplDetails_RAPL.setFont(new Font("Tahoma", Font.BOLD, 16));
+		JP_raplInfo_RAPL.add(JL_raplDetails_RAPL);
+		
+		JLabel JL_recInvoiceNRInfo_RAPL = new JLabel("Reception invoice nr:");
+		JL_recInvoiceNRInfo_RAPL.setBounds(12, 85, 120, 16);
+		JP_raplInfo_RAPL.add(JL_recInvoiceNRInfo_RAPL);
+		
+		JTF_recInvoiceNRInfo_RAPL = new JTextField();
+		JTF_recInvoiceNRInfo_RAPL.setBounds(145, 82, 255, 22);
+		JP_raplInfo_RAPL.add(JTF_recInvoiceNRInfo_RAPL);
+		JTF_recInvoiceNRInfo_RAPL.setColumns(10);
+		
+		JLabel JL_autoPieceIDInfo_RAPL = new JLabel("Tarifa jobului:");
+		JL_autoPieceIDInfo_RAPL.setBounds(12, 114, 103, 16);
+		JP_raplInfo_RAPL.add(JL_autoPieceIDInfo_RAPL);
+		
+		JTF_autoPieceIDInfo_RAPL = new JTextField();
+		JTF_autoPieceIDInfo_RAPL.setBounds(145, 111, 255, 22);
+		JP_raplInfo_RAPL.add(JTF_autoPieceIDInfo_RAPL);
+		JTF_autoPieceIDInfo_RAPL.setColumns(10);
+		
+		JLabel JL_quantityInfo_RAPL = new JLabel("Quantity:");
+		JL_quantityInfo_RAPL.setBounds(12, 146, 103, 16);
+		JP_raplInfo_RAPL.add(JL_quantityInfo_RAPL);
+		
+		JTF_quantityInfo_RAPL = new JTextField();
+		JTF_quantityInfo_RAPL.setColumns(10);
+		JTF_quantityInfo_RAPL.setBounds(145, 143, 255, 22);
+		JP_raplInfo_RAPL.add(JTF_quantityInfo_RAPL);
+		
+		JLabel JL_priceINInfo_RAPL = new JLabel("Price IN:");
+		JL_priceINInfo_RAPL.setBounds(12, 178, 103, 16);
+		JP_raplInfo_RAPL.add(JL_priceINInfo_RAPL);
+		
+		JTF_priceINInfo_RAPL = new JTextField();
+		JTF_priceINInfo_RAPL.setColumns(10);
+		JTF_priceINInfo_RAPL.setBounds(145, 175, 255, 22);
+		JP_raplInfo_RAPL.add(JTF_priceINInfo_RAPL);
+		
+		JLabel JL_priceOUTInfo_RAPL = new JLabel("Price OUT:");
+		JL_priceOUTInfo_RAPL.setBounds(12, 210, 103, 16);
+		JP_raplInfo_RAPL.add(JL_priceOUTInfo_RAPL);
+		
+		JTF_priceOUTInfo_RAPL = new JTextField();
+		JTF_priceOUTInfo_RAPL.setColumns(10);
+		JTF_priceOUTInfo_RAPL.setBounds(145, 207, 255, 22);
+		JP_raplInfo_RAPL.add(JTF_priceOUTInfo_RAPL);
+		
+		JLabel JL_vatInfo_RAPL = new JLabel("TVA:");
+		JL_vatInfo_RAPL.setBounds(12, 242, 103, 16);
+		JP_raplInfo_RAPL.add(JL_vatInfo_RAPL);
+		
+		JTF_vatInfo_RAPL = new JTextField();
+		JTF_vatInfo_RAPL.setColumns(10);
+		JTF_vatInfo_RAPL.setBounds(145, 239, 255, 22);
+		JP_raplInfo_RAPL.add(JTF_vatInfo_RAPL);
+		
+		JB_updateRAP_RAPL = new JButton("Update");
+		JB_updateRAP_RAPL.setEnabled(false);
+		JB_updateRAP_RAPL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				//TODO
+			}
+		});
+		JB_updateRAP_RAPL.setBounds(69, 426, 116, 37);
+		JP_raplInfo_RAPL.add(JB_updateRAP_RAPL);
+		
+		JB_deleteRAP_RAPL = new JButton("Delete");
+		JB_deleteRAP_RAPL.setEnabled(false);
+		JB_deleteRAP_RAPL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				//TODO
+			}
+		});
+		JB_deleteRAP_RAPL.setBounds(239, 426, 116, 37);
+		JP_raplInfo_RAPL.add(JB_deleteRAP_RAPL);
+		
+		JB_selectRAP_RAPL = new JButton("Selectare");
+		JB_selectRAP_RAPL.setVisible(false);
+		JB_selectRAP_RAPL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				//TODO
+			}
+		});
+		JB_selectRAP_RAPL.setEnabled(false);
+		JB_selectRAP_RAPL.setBounds(69, 271, 286, 71);
+		JP_raplInfo_RAPL.add(JB_selectRAP_RAPL);
+		
+		JLabel reloadRAPLTable = new JLabel("");
+		reloadRAPLTable.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		reloadRAPLTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {			
+				SetDefaultTable(JT_rapl_RAPL, new String[]{"Auto Piece ID", "Quantity", "Date IN", "Unite Price IN", "Unite Price OUT", "TVA"});
+				loadReceptionAutoPieces(selectedSupplieID);
+				
+				panelRAPLResetter();
+			}
+		});
+		reloadRAPLTable.setToolTipText("Reload table");
+		reloadRAPLTable.setIcon(new ImageIcon(MainFrame.class.getResource("/images/reload0.png")));
+		reloadRAPLTable.setBounds(1179, 13, 45, 32);
+		panelRAPL.add(reloadRAPLTable);
+		
+		JPanel JP_rapQuickSearch_RAPL = new JPanel();
+		JP_rapQuickSearch_RAPL.setBounds(436, 97, 849, 37);
+		panelRAPL.add(JP_rapQuickSearch_RAPL);
+		JP_rapQuickSearch_RAPL.setLayout(null);
+		
+		JLabel JL_rapQuickSearch_RAPL = new JLabel("Căutare:");
+		JL_rapQuickSearch_RAPL.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JL_rapQuickSearch_RAPL.setBounds(12, 13, 60, 16);
+		JP_rapQuickSearch_RAPL.add(JL_rapQuickSearch_RAPL);
+		
+		//Quick search method
+		
+		JTF_rapQuickSearch_RAPL = new JTextField();
+		JTF_rapQuickSearch_RAPL.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				//TODO
+			}
+		});	
+		JTF_rapQuickSearch_RAPL.setBounds(84, 11, 753, 22);
+		JP_rapQuickSearch_RAPL.add(JTF_rapQuickSearch_RAPL);
+		JTF_rapQuickSearch_RAPL.setColumns(10);
+		
+		JLabel exitRAPL = new JLabel("");
+		exitRAPL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		exitRAPL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				exitDialog();
+			}
+		});
+		exitRAPL.setToolTipText("EXIT");
+		exitRAPL.setHorizontalAlignment(SwingConstants.CENTER);
+		exitRAPL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/exit0.png")));
+		exitRAPL.setBounds(1236, 13, 59, 32);
+		panelRAPL.add(exitRAPL);
+		
+		JLabel backRAPL = new JLabel("");
+		backRAPL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JPanel nextPanel = null;
+				
+				if(previousPanel.equals("panelSL")) {
+					nextPanel = panelSL;
+				}else {
+					//TODO
+				}				
+				panelRAPLResetter();
+				selectedSupplieID = 0;
+				
+				PanelNavigationHelper(panelRAPL, nextPanel);
+				
+				SetDefaultTable(JT_supplies_SL, new String[]{"ID", "Furnizor", "Număr de factură", "Date IN", "Due Date"});				
+				loadSupplies();
+			}
+		});
+		backRAPL.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backRAPL.setToolTipText("BACK");
+		backRAPL.setHorizontalAlignment(SwingConstants.CENTER);
+		backRAPL.setIcon(new ImageIcon(MainFrame.class.getResource("/images/back-arrow.png")));
+		backRAPL.setBounds(12, 13, 52, 32);
+		panelRAPL.add(backRAPL);
 		
 		//On Creation
 		panelDB.setVisible(true);
@@ -2794,11 +3896,16 @@ public class MainFrame extends JFrame {
 		panelJL.setVisible(false);
 		panelANU.setVisible(false);	
 		panelUL.setVisible(false);	
+		panelAA.setVisible(false);
+		panelANR.setVisible(false);
+		panelIM.setVisible(false);
+		panelSL.setVisible(false);
+		panelRAPL.setVisible(false);
 	}
 	
 	////////////////////////////////////////////////////
 	//--------//CRUD & Other Methods Section//--------//
-	///////////////////////////////////////////////////
+	////////////////////////////////////////////////////
 	
 	private void PanelNavigationHelper(JPanel from, JPanel to) {
 		from.setVisible(false);
@@ -3046,6 +4153,117 @@ public class MainFrame extends JFrame {
 		}catch(Exception ex) {
 			System.out.println(ex.toString());
 		}
+	}
+	
+	private void loadInventory() {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+		    
+			List<Inventory> inventory= (List<Inventory>)session.createQuery("from Inventory").list();
+			
+			DefaultTableModel dtm = (DefaultTableModel) JT_inventory_IM.getModel();
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			String formattedDate;
+			
+			for(Inventory i:inventory) 
+			{
+				try {
+					formattedDate = sdf.format(i.getDatein());
+				}catch(Exception ex){
+					formattedDate = null;
+				}
+				
+			    String[] row= {String.valueOf(i.getId()) , i.getAutopieces().getId(), i.getClients().getContactname(), String.valueOf(i.getQuantity()), String.valueOf(i.getUnitepricein()),
+			    		String.valueOf(i.getUnitepriceout()), formattedDate!=null?formattedDate:""};
+			    dtm.addRow( row );
+			}
+
+			JT_inventory_IM.setModel(dtm);
+			JT_inventory_IM.removeColumn(JT_inventory_IM.getColumnModel().getColumn(0));
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
+	private void loadSupplies() {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+		    
+			List<Reception> receptions= (List<Reception>)session.createQuery("from Reception").list();
+			//System.out.println(receptions.toString());
+			
+			DefaultTableModel dtm = (DefaultTableModel) JT_supplies_SL.getModel();
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			String formattedDateIN;
+			String formattedDueDate;
+			//Date dateIN;
+			//Date dueDate;
+			
+			for(Reception r:receptions) 
+			{
+				try {
+					formattedDateIN = sdf.format(r.getDatein());
+					formattedDueDate = sdf.format(r.getDuedate());
+					//dateIN = sdf.parse(formattedDateIN);
+					//dueDate = sdf.parse(formattedDueDate);
+				}catch(Exception ex){
+					//dateIN = null;
+					//dueDate = null;
+					formattedDateIN = null;
+					formattedDueDate = null;
+				}
+				
+			    Object[] row= {r.getId() , r.getClients().getContactname(), r.getIncominginvoicenr(), formattedDateIN!=null?formattedDateIN:"", formattedDueDate!=null?formattedDueDate:""};
+			    dtm.addRow( row );
+			}
+
+			JT_supplies_SL.setModel(dtm);
+			JT_supplies_SL.removeColumn(JT_supplies_SL.getColumnModel().getColumn(0));
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
+	
+	//Load the Reception Auto Pieces table, where the id is given by selection
+	private void loadReceptionAutoPieces(int id) {
+		//Begin transaction
+		session.beginTransaction();
+	    
+		List<Receptions_auto_pieces> raps= (List<Receptions_auto_pieces>)session
+				.createQuery("from Receptions_auto_pieces where receptionsid=:id")
+				.setParameter("id", id)
+				.list();
+		
+		DefaultTableModel dtm = (DefaultTableModel) JT_rapl_RAPL.getModel();
+		
+		for(Receptions_auto_pieces r:raps) 
+		{
+		    Object[] row= {r.getAutopiecesid(), r.getQuantity(), r.getQuantity(), r.getUnitepricein(), r.getUnitepriceout(), r.getVatitem()};
+		    dtm.addRow( row );
+		}
+
+		JT_rapl_RAPL.setModel(dtm);
+	      
+	    //Committing the transaction
+	    session.getTransaction().commit();
+	    
+	    //Shotting down the session factory
+	    //HibernateUtil.shutDown();
 	}
 	
 	private void SaveLegalPerson() {
@@ -3307,6 +4525,27 @@ public class MainFrame extends JFrame {
 		}
 	}
 	
+	
+	private void getReceptionByID(int id) {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+			
+			Query<Reception> querry = session.createQuery("from Reception where id=:id");
+			querry.setParameter("id", id);
+			selectedReception = (Reception) querry.uniqueResult();
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
+	
 	private void comboFilter(JTable table, String text[], int idxs[]) {	
 	    TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel()); //Optimalization needed
 	    List<RowFilter<TableModel, Integer>> filters = new ArrayList<RowFilter<TableModel, Integer>>(idxs.length);
@@ -3339,13 +4578,13 @@ public class MainFrame extends JFrame {
 		
 		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry));
 	}
-	
-	private void filterAutoPieces(String querry) {
-		rowSorter = new TableRowSorter<TableModel>(JT_pieces_APL.getModel());
+
+	private void dateFilter(JTable table, String querry, int column) {
+		TableRowSorter<TableModel> rowSorter = new TableRowSorter<TableModel>(table.getModel());
 		
-		JT_pieces_APL.setRowSorter(rowSorter);
+		table.setRowSorter(rowSorter);
 		
-		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry));
+		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry, column));
 	}
 	
 	private void getClientByID(int id) {
@@ -3369,6 +4608,7 @@ public class MainFrame extends JFrame {
 		}
 	}
 	
+	
 	private Boolean getPieceByID(String id) {
 		//Begin transaction
 		session.beginTransaction();
@@ -3386,6 +4626,7 @@ public class MainFrame extends JFrame {
 	    //Shotting down the session factory
 	    //HibernateUtil.shutDown();
 	}
+	
 	
 	private Boolean getClientIDByName(String name) {	
 		//Begin transaction
@@ -3446,6 +4687,75 @@ public class MainFrame extends JFrame {
 		selectedUserID = 0;
 		selectedRoleID = 1;
 	}
+		
+	private void panelIMResetter() {
+		//JTextField and JButton resetter				
+		List<JTextField> jtf_list = new ArrayList<JTextField>();
+		jtf_list.add(JTF_pieceIDInfo_IM);
+		jtf_list.add(JTF_clientNameInfo_IM);
+		jtf_list.add(JTF_quantityInfo_IM);
+		jtf_list.add(JTF_unitePriceINInfo_IM);
+		jtf_list.add(JTF_unitePriceOUTInfo_IM);
+		jtf_list.add(JTF_clientQuickSearch_IM);
+		jtf_list.add(JTF_autoPieceQuickSearch_IM);
+		jtf_list.add(JTF_dateINQuickSearch_IM);
+		
+		List<JButton> jb_list = new ArrayList<JButton>();
+		jb_list.add(JB_updateInventory_IM);
+		jb_list.add(JB_deleteInventory_IM);
+		jb_list.add(JB_selectInventoryItem_IM);
+		
+		GeneralResetter(jtf_list, null, jb_list, true, false);
+		selectedInventoryID = 0;
+		JDC_dateINInfo_IM.setDate(null);
+		JT_inventory_IM.setRowSorter(null);
+	}
+
+	private void panelSLResetter() {
+		//JTextField and JButton resetter				
+		List<JTextField> jtf_list = new ArrayList<JTextField>();
+		jtf_list.add(JTF_clientNameInfo_SL);
+		jtf_list.add(JTF_invoiceNRInfo_SL);
+		jtf_list.add(JTF_clientNameQuickSearch_SL);
+		jtf_list.add(JTF_invoiceNRQuickSearch_SL);
+		
+		List<JButton> jb_list = new ArrayList<JButton>();
+		jb_list.add(JB_updateSupplie_SL);
+		jb_list.add(JB_deleteSupplie_SL);
+		jb_list.add(JB_selectSupplie_SL);
+		
+		GeneralResetter(jtf_list, null, jb_list, true, false);
+		selectedSupplieID = 0;
+		JDC_dateINInfo_SL.setDate(null);
+		JDC_dueDateInfo_SL.setDate(null);
+		JDC_dateINQuickSearch_SL.setDate(null);
+		JDC_dueDateQuickSearch_SL.setDate(null);
+		JT_supplies_SL.setRowSorter(null);
+	}
+	
+	
+	private void panelRAPLResetter() {
+		//JTextField and JButton resetter				
+		List<JTextField> jtf_list = new ArrayList<JTextField>();
+		jtf_list.add(JTF_recInvoiceNRInfo_RAPL);
+		jtf_list.add(JTF_autoPieceIDInfo_RAPL);
+		jtf_list.add(JTF_quantityInfo_RAPL);
+		jtf_list.add(JTF_priceINInfo_RAPL);
+		jtf_list.add(JTF_priceOUTInfo_RAPL);
+		jtf_list.add(JTF_vatInfo_RAPL);
+		jtf_list.add(JTF_rapQuickSearch_RAPL);
+		
+		List<JButton> jb_list = new ArrayList<JButton>();
+		jb_list.add(JB_updateRAP_RAPL);
+		jb_list.add(JB_deleteRAP_RAPL);
+		jb_list.add(JB_selectRAP_RAPL);
+		
+		GeneralResetter(jtf_list, null, jb_list, true, false);
+		selectedRAPID = 0;
+		//selectedSupplieID = 0;
+		JT_rapl_RAPL.setRowSorter(null);
+	}
+	
 	
 	private void companyDataSetter(Boolean jtf_state, Boolean jb_state) {
 		List<JTextField> jtf_list = new ArrayList<JTextField>();
@@ -3477,17 +4787,7 @@ public class MainFrame extends JFrame {
 		GeneralResetter(jtf_list, jl_list, jb_list, jtf_state, jb_state);
 	}
 
-	private void pieceDataResetter() {
-		List<JTextField> jtf_list = new ArrayList<JTextField>();
-		jtf_list.add(JTF_pieceIDInfo_APL);
-		jtf_list.add(JTF_pieceNameInfo_APL);
-		jtf_list.add(JTF_pieceUnitNameInfo_APL);
-		
-		List<JButton> jb_list = new ArrayList<JButton>();
-		jb_list.add(JB_updatePiece_APL);
-		
-		GeneralResetter(jtf_list, null, jb_list, true, false);
-	}
+
 	
 	private void updateNaturalClient(int id, String cname, String cphone) {
 		//Begin transaction

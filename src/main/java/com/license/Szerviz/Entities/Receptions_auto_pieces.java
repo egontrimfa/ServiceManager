@@ -116,10 +116,10 @@ public class Receptions_auto_pieces {
 	public void setAuto_pieces(Auto_pieces auto_pieces) {
 		this.auto_pieces = auto_pieces;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "Receptions_auto_pieces [receptions=" + receptions + ", auto_pieces=" + auto_pieces + ", quantity="
+		return "Receptions_auto_pieces [receptionsid=" + receptionsid + ", autopiecesid=" + autopiecesid + ", quantity="
 				+ quantity + ", unitepricein=" + unitepricein + ", unitepriceout=" + unitepriceout + ", vatitem="
 				+ vatitem + "]";
 	}
