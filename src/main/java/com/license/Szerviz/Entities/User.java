@@ -34,7 +34,7 @@ public class User {
     private Role roles;
 
     @OneToMany(mappedBy="users")
-    private Set<Job_registration> job_registration;
+    private Set<Registration_job> job_registration;
     
     @OneToMany(mappedBy="users")
     private Set<Invoice> invoices;
@@ -89,11 +89,11 @@ public class User {
 		this.roles = roles;
 	}
 	
-	public Set<Job_registration> getJob_registration() {
+	public Set<Registration_job> getJob_registration() {
 		return job_registration;
 	}
 
-	public void setJob_registration(Set<Job_registration> job_registration) {
+	public void setJob_registration(Set<Registration_job> job_registration) {
 		this.job_registration = job_registration;
 	}
 

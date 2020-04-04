@@ -13,14 +13,12 @@ import javax.persistence.Table;
 @Table(name="registrations_inventory", catalog="postgres", schema="public")
 public class Registrations_inventory {
 	@Id
-    @ManyToOne
-    @JoinColumn(name="registrationsid", insertable = false, updatable = false)
-    private Registration registrations;
-    
+	@Column(name="registrationsid")
+	private Integer registrationsid;
+	
 	@Id
-    @ManyToOne
-    @JoinColumn(name="inventoryid", insertable = false, updatable = false)
-    private Inventory inventory;
+	@Column(name="inventoryid")
+	private Integer inventoryid;
 	
 	@Column(name="newuniteprice")
 	private float newuniteprice;
@@ -28,15 +26,54 @@ public class Registrations_inventory {
 	@Column(name="quantity")
 	private float quantity;
 	
+    @ManyToOne
+    @JoinColumn(name="registrationsid", insertable = false, updatable = false)
+    private Registration registrations;
+    
+    @ManyToOne
+    @JoinColumn(name="inventoryid", insertable = false, updatable = false)
+    private Inventory inventory;
+	
 	public Registrations_inventory() {
 	}
 
-	public Registrations_inventory(float newuniteprice, float quantity, Registration registrations,
-			Inventory inventory) {
+	public Registrations_inventory(Integer registrationsid, Integer inventoryid, float newuniteprice, float quantity) {
+		this.registrationsid = registrationsid;
+		this.inventoryid = inventoryid;
 		this.newuniteprice = newuniteprice;
 		this.quantity = quantity;
-		this.registrations = registrations;
-		this.inventory = inventory;
+	}
+	
+	public Integer getRegistrationsid() {
+		return registrationsid;
+	}
+
+	public void setRegistrationsid(Integer registrationsid) {
+		this.registrationsid = registrationsid;
+	}
+
+	public Integer getInventoryid() {
+		return inventoryid;
+	}
+
+	public void setInventoryid(Integer inventoryid) {
+		this.inventoryid = inventoryid;
+	}
+
+	public float getNewuniteprice() {
+		return newuniteprice;
+	}
+
+	public void setNewuniteprice(float newuniteprice) {
+		this.newuniteprice = newuniteprice;
+	}
+
+	public float getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(float quantity) {
+		this.quantity = quantity;
 	}
 
 	public Registration getRegistrations() {
@@ -54,28 +91,11 @@ public class Registrations_inventory {
 	public void setInventory(Inventory inventory) {
 		this.inventory = inventory;
 	}
-	
-	public float getNewuniteprice() {
-		return newuniteprice;
-	}
 
-	public void setNewuniteprice(float newuniteprice) {
-		this.newuniteprice = newuniteprice;
-	}
-
-	public float getQuantity() {
-		return quantity;
-	}
-
-	public void setQuantity(float quantity) {
-		this.quantity = quantity;
-	}
-
-	
 	
 	@Override
 	public String toString() {
-		return "Registrations_inventory [newuniteprice=" + newuniteprice + ", quantity=" + quantity + ", registrations="
-				+ registrations + ", inventorys=" + inventory + "]";
+		return "Registrations_inventory [registrationsid=" + registrationsid + ", inventoryid=" + inventoryid
+				+ ", newuniteprice=" + newuniteprice + ", quantity=" + quantity + "]";
 	}
 }

@@ -5,6 +5,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 
+import com.license.Service.Models.ReceptionReport;
 import com.license.Szerviz.Entities.Auto_pieces;
 import com.license.Szerviz.Entities.Car;
 import com.license.Szerviz.Entities.Client;
@@ -14,8 +15,8 @@ import com.license.Szerviz.Entities.Invoice;
 import com.license.Szerviz.Entities.Invoice_item;
 import com.license.Szerviz.Entities.Invoice_itemPK;
 import com.license.Szerviz.Entities.Job;
-import com.license.Szerviz.Entities.Job_registration;
-import com.license.Szerviz.Entities.Job_registrationPK;
+import com.license.Szerviz.Entities.Registration_job;
+import com.license.Szerviz.Entities.Registration_jobPK;
 import com.license.Szerviz.Entities.Reception;
 import com.license.Szerviz.Entities.Receptions_auto_pieces;
 import com.license.Szerviz.Entities.Registration;
@@ -49,14 +50,16 @@ public class HibernateUtil {
             configuration.addAnnotatedClass(User.class);
             configuration.addAnnotatedClass(Registration.class);
             configuration.addAnnotatedClass(Registrations_inventory.class);
-            configuration.addAnnotatedClass(Job_registration.class);
-            configuration.addAnnotatedClass(Job_registrationPK.class);
+            configuration.addAnnotatedClass(Registrations_inventoryPK.class);
+            configuration.addAnnotatedClass(Registration_job.class);
+            configuration.addAnnotatedClass(Registration_jobPK.class);
             configuration.addAnnotatedClass(Invoice.class);
             configuration.addAnnotatedClass(Invoice_item.class);
             configuration.addAnnotatedClass(Invoice_itemPK.class);
             configuration.addAnnotatedClass(Reception.class);
             configuration.addAnnotatedClass(Receptions_auto_pieces.class);
-            configuration.addAnnotatedClass(Registrations_inventoryPK.class);
+            
+            configuration.addAnnotatedClass(ReceptionReport.class);
 
             configuration.configure("hibernate.cfg.xml");
 

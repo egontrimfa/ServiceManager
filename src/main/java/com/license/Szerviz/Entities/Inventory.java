@@ -47,7 +47,8 @@ public class Inventory {
     @JoinColumn(name="autopiecesid", insertable = false, updatable = false)
     private Auto_pieces auto_pieces;
     
-    @OneToMany(mappedBy="inventory")
+    @OneToMany
+    @JoinColumn(name = "inventoryid")
     private Set<Registrations_inventory> registrations_inventory;
     
 	public Inventory() {
@@ -135,7 +136,6 @@ public class Inventory {
 		this.auto_pieces = auto_pieces;
 	}
 
-	
 	@Override
 	public String toString() {
 		return "Inventory [id=" + id + ", autopiecesid=" + autopiecesid + ", clientsid=" + clientsid + ", quantity="

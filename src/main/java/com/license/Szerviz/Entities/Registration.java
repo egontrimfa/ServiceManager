@@ -22,6 +22,12 @@ public class Registration {
 	@Column(name="id")
 	private int id;
 	
+	@Column(name="clientsid")
+	private Integer clientsid;
+	
+	@Column(name="carsid")
+	private Integer carsid;
+	
 	@Column(name="regnr")
 	private String regnr;
 	
@@ -40,20 +46,30 @@ public class Registration {
     private Set<Registrations_inventory> registrations_inventory;
     
     @OneToMany(mappedBy="registrations")
-    private Set<Job_registration> job_registration;
+    private Set<Registration_job> job_registration;
     
     @OneToOne(mappedBy = "registrations")
     private Invoice invoice;
     
 	public Registration() {
 	}
-	
-	public Registration(int id, String regnr, Date regdate, Client clients, Car cars) {
-		this.id = id;
+
+	public Registration(String regnr, Date regdate) {
 		this.regnr = regnr;
 		this.regdate = regdate;
-		this.clients = clients;
-		this.cars = cars;
+	}
+
+	public Registration(Integer clientsid, String regnr, Date regdate) {
+		this.clientsid = clientsid;
+		this.regnr = regnr;
+		this.regdate = regdate;
+	}
+
+	public Registration(Integer clientsid, Integer carsid, String regnr, Date regdate) {
+		this.clientsid = clientsid;
+		this.carsid = carsid;
+		this.regnr = regnr;
+		this.regdate = regdate;
 	}
 
 	public int getId() {
@@ -62,6 +78,22 @@ public class Registration {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public Integer getCarsid() {
+		return carsid;
+	}
+
+	public void setCarsid(Integer carsid) {
+		this.carsid = carsid;
+	}
+
+	public int getClientsid() {
+		return clientsid;
+	}
+
+	public void setClientsid(Integer clientsid) {
+		this.clientsid = clientsid;
 	}
 
 	public String getRegnr() {
@@ -104,17 +136,28 @@ public class Registration {
 		this.registrations_inventory = registrations_inventory;
 	}
 
-	public Set<Job_registration> getJob_registration() {
+	public Set<Registration_job> getJob_registration() {
 		return job_registration;
 	}
 
-	public void setJob_registration(Set<Job_registration> job_registration) {
+	public void setJob_registration(Set<Registration_job> job_registration) {
 		this.job_registration = job_registration;
 	}
 
+	public Invoice getInvoice() {
+		return invoice;
+	}
+	
+
+	public void setInvoice(Invoice invoice) {
+		this.invoice = invoice;
+	}
+
+	
 	@Override
 	public String toString() {
-		return "Registration [id=" + id + ", regnr=" + regnr + ", regdate=" + regdate + ", client=" + clients + ", car="
-				+ cars + "]";
+		return "Registration [id=" + id + ", carsid=" + carsid + ", clientsid=" + clientsid + ", regnr=" + regnr
+				+ ", regdate=" + regdate + "]";
 	}
+
 }
