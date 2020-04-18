@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.12.2.final using JasperReports Library version 6.12.2-75c5e90a222ab406e416cbf590a5397028a52de3  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ReportTest" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="8ac73c71-7522-47c2-877e-95ebd4d8b3a2">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ServiceDB:5432"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT roles.rolename,
+	roles.id
+FROM roles]]>
+	</queryString>
+	<field name="rolename" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="rolename"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="roles"/>
+	</field>
+	<field name="id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="roles"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="35" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="30" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="278" height="30" uuid="a4ffb2d7-1b8a-40e3-9024-6d093617dfe0">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="831d1ada-9805-4b79-82fc-3b3a0fb9b20e"/>
+				</reportElement>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[rolename]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="278" y="0" width="277" height="30" uuid="25ff8f66-4dbb-44c1-b313-a1c55ae56455">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="aa39f2fe-90e2-40c6-a902-c7993d1de49b"/>
+				</reportElement>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[id]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="30" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="278" height="30" uuid="d84550b9-ebef-4430-a235-2c75826eb529">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="831d1ada-9805-4b79-82fc-3b3a0fb9b20e"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{rolename}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="278" y="0" width="277" height="30" uuid="4ce01bff-5381-424d-b55c-0ba8023dd33b">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="aa39f2fe-90e2-40c6-a902-c7993d1de49b"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

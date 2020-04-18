@@ -13,6 +13,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.license.Service.Models.RegistrationReport;
+
 @Entity(name="Inventory")
 @Table(name="inventory", catalog="postgres", schema="public")
 public class Inventory {
@@ -51,6 +53,10 @@ public class Inventory {
     @JoinColumn(name = "inventoryid")
     private Set<Registrations_inventory> registrations_inventory;
     
+    @OneToMany
+    @JoinColumn(name = "inventoryid")
+    private Set<RegistrationReport> registrationreport;
+    
 	public Inventory() {
 	}
 
@@ -64,79 +70,118 @@ public class Inventory {
 		this.datein = datein;
 	}
 
+
 	public int getId() {
 		return id;
 	}
 
+	
 	public void setId(int id) {
 		this.id = id;
 	}
 
+	
 	public String getAutopiecesid() {
 		return autopiecesid;
 	}
 
+	
 	public void setAutopiecesid(String autopiecesid) {
 		this.autopiecesid = autopiecesid;
 	}
 
+	
 	public int getClientsid() {
 		return clientsid;
 	}
 
+	
 	public void setClientsid(int clientsid) {
 		this.clientsid = clientsid;
 	}
 
+	
 	public float getQuantity() {
 		return quantity;
 	}
 
+	
 	public void setQuantity(float quantity) {
 		this.quantity = quantity;
 	}
 
+	
 	public float getUnitepricein() {
 		return unitepricein;
 	}
 
+	
 	public void setUnitepricein(float unitepricein) {
 		this.unitepricein = unitepricein;
 	}
 
+	
 	public float getUnitepriceout() {
 		return unitepriceout;
 	}
 
+	
 	public void setUnitepriceout(float unitepriceout) {
 		this.unitepriceout = unitepriceout;
 	}
 
+	
 	public Date getDatein() {
 		return datein;
 	}
 
+	
 	public void setDatein(Date datein) {
 		this.datein = datein;
 	}
 
+	
 	public Client getClients() {
 		return clients;
 	}
 
+	
 	public void setClients(Client clients) {
 		this.clients = clients;
 	}
 
-	public Auto_pieces getAutopieces() {
+	
+	public Auto_pieces getAuto_pieces() {
 		return auto_pieces;
 	}
 
-	public void setAutopieces(Auto_pieces auto_pieces) {
+	
+	public void setAuto_pieces(Auto_pieces auto_pieces) {
 		this.auto_pieces = auto_pieces;
 	}
 
-	@Override
+	
+	public Set<Registrations_inventory> getRegistrations_inventory() {
+		return registrations_inventory;
+	}
+
+	
+	public void setRegistrations_inventory(Set<Registrations_inventory> registrations_inventory) {
+		this.registrations_inventory = registrations_inventory;
+	}
+
+	
+	public Set<RegistrationReport> getRegistrationreport() {
+		return registrationreport;
+	}
+
+	
+	public void setRegistrationreport(Set<RegistrationReport> registrationreport) {
+		this.registrationreport = registrationreport;
+	}
+
+	
+	@Override	
 	public String toString() {
 		return "Inventory [id=" + id + ", autopiecesid=" + autopiecesid + ", clientsid=" + clientsid + ", quantity="
 				+ quantity + ", unitepricein=" + unitepricein + ", unitepriceout=" + unitepriceout + ", datein="

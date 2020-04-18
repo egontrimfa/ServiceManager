@@ -3,6 +3,7 @@ package com.license.Szerviz;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +13,9 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 
 import com.license.HibernateUtil.HibernateUtil;
+import com.license.Service.Models.CommandModel;
 import com.license.Service.Models.ReceptionReport;
+import com.license.Service.Models.RegistrationReport;
 import com.license.Szerviz.Entities.Auto_pieces;
 import com.license.Szerviz.Entities.Client;
 import com.license.Szerviz.Entities.Company;
@@ -36,24 +39,45 @@ public class App {
 	public static void main(String[] args) {
 		
 		try {
-			JasperReport jasperReport = JasperCompileManager.compileReport("D:\\Sapientia\\licencework\\Eclipse\\Szerviz\\src\\main\\java\\com\\license\\Print\\Blank_A4.jrxml");
-
+			JasperReport jasperReport = JasperCompileManager.compileReport("D:\\Sapientia\\licencework\\Eclipse\\Szerviz\\src\\main\\java\\com\\license\\Print\\CommandInvoice.jrxml");
+			//mJasperReport jasperSubReport = JasperCompileManager.compileReport("D:\\Sapientia\\licencework\\Eclipse\\Szerviz\\src\\main\\java\\com\\license\\Print\\CommandInvoice.jrxml");
+			
 			Map<String, Object> parameters = new HashMap<String, Object>();
-			parameters.put("REC_ID", 2);
+			parameters.put("REG_ID", 56);
+			parameters.put("CLIENT_ID", 1);
+			
 			Session session = HibernateUtil.getSessionFactory().openSession();
 			//Begin transaction
 			session.beginTransaction();
 			
-			List<ReceptionReport> rec = (List<ReceptionReport>) session.createQuery("from ReceptionReport").list();
+			List<Registrations_inventory> registrations_inventory= (List<Registrations_inventory>)session
+					.createQuery("from Registrations_inventory where registrationsid=:registrationsid")
+					.setParameter("registrationsid", 56)
+					.list();
+			List<CommandModel> cmd = new ArrayList<CommandModel>();
 			
-			JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(rec);
+			for(int i=0; i<registrations_inventory.size(); i++) {
+				Registrations_inventory ri = registrations_inventory.get(i);
+				
+				cmd.add(new CommandModel
+						(ri.getInventory().getAuto_pieces().getAutopiecename(), 
+						ri.getInventory().getAuto_pieces().getAutopieceunitename(), 
+						ri.getQuantity(), 
+						ri.getNewuniteprice(),
+						(ri.getQuantity()*ri.getNewuniteprice()), 
+						(float)(ri.getQuantity()*ri.getNewuniteprice()*0.09), 
+						(float)(ri.getQuantity()*ri.getNewuniteprice()*1.09))
+				);
+			}
+			
+			JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(cmd);
 			
 		    //Committing the transaction
 		    session.getTransaction().commit();
 
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, ds);
 			
-			JasperExportManager.exportReportToPdfStream(jasperPrint, new FileOutputStream(new File("C:\\Users\\egont\\OneDrive\\Documents\\JasperReports\\test3.pdf")));
+			JasperExportManager.exportReportToPdfStream(jasperPrint, new FileOutputStream(new File("C:\\Users\\egont\\OneDrive\\Documents\\JasperReports\\invoicetest4.pdf")));
 		    
 		    //Close the session
 		    session.close();

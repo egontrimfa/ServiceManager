@@ -6,6 +6,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 
 import com.license.Service.Models.ReceptionReport;
+import com.license.Service.Models.RegistrationReport;
 import com.license.Szerviz.Entities.Auto_pieces;
 import com.license.Szerviz.Entities.Car;
 import com.license.Szerviz.Entities.Client;
@@ -60,6 +61,7 @@ public class HibernateUtil {
             configuration.addAnnotatedClass(Receptions_auto_pieces.class);
             
             configuration.addAnnotatedClass(ReceptionReport.class);
+            configuration.addAnnotatedClass(RegistrationReport.class);
 
             configuration.configure("hibernate.cfg.xml");
 
