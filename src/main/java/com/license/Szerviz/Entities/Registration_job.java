@@ -24,7 +24,7 @@ public class Registration_job {
 	private Integer usersid;	
 	
 	@Column(name="newjobprice")
-	private float newjobprice;
+	private Float newjobprice;
 	
     @ManyToOne
     @JoinColumn(name="jobsid", insertable = false, updatable = false)
@@ -41,13 +41,13 @@ public class Registration_job {
 	public Registration_job() {
 	}
 
-	public Registration_job(Integer jobsid, Integer registrationsid, float newjobprice) {
+	public Registration_job(Integer jobsid, Integer registrationsid, Float newjobprice) {
 		this.jobsid = jobsid;
 		this.registrationsid = registrationsid;
 		this.newjobprice = newjobprice;
 	}
 
-	public Registration_job(Integer jobsid, Integer registrationsid, Integer usersid, float newjobprice) {
+	public Registration_job(Integer jobsid, Integer registrationsid, Integer usersid, Float newjobprice) {
 		this.jobsid = jobsid;
 		this.registrationsid = registrationsid;
 		this.usersid = usersid;
@@ -78,11 +78,11 @@ public class Registration_job {
 		this.usersid = usersid;
 	}
 
-	public float getNewjobprice() {
+	public Float getNewjobprice() {
 		return newjobprice;
 	}
 
-	public void setNewjobprice(float newjobprice) {
+	public void setNewjobprice(Float newjobprice) {
 		this.newjobprice = newjobprice;
 	}
 

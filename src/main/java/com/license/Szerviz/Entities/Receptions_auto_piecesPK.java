@@ -5,14 +5,14 @@ import java.io.Serializable;
 public class Receptions_auto_piecesPK implements Serializable {
 	private static final long serialVersionUID = 494762005644315231L;
 
-	protected int receptionsid;
+	protected Integer receptionsid;
 	protected String autopiecesid;
 	
 	public Receptions_auto_piecesPK() {
 	}
 
 	
-	public Receptions_auto_piecesPK(int receptionsid, String autopiecesid) {
+	public Receptions_auto_piecesPK(Integer receptionsid, String autopiecesid) {
 		this.receptionsid = receptionsid;
 		this.autopiecesid = autopiecesid;
 	}

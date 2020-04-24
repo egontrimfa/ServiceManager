@@ -19,10 +19,10 @@ public class Reception {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")
-	private int id;
+	private Integer id;
 	
 	@Column(name="clientsid")
-	private int clientsid;
+	private Integer clientsid;
     
 	@Column(name="incominginvoicenr")
 	private String incominginvoicenr;
@@ -43,22 +43,22 @@ public class Reception {
 	public Reception() {
 	}
 
-	public Reception(int clientsid, String incominginvoicenr, Date datein, Date duedate) {
+	public Reception(Integer clientsid, String incominginvoicenr, Date datein, Date duedate) {
 		this.clientsid = clientsid;
 		this.incominginvoicenr = incominginvoicenr;
 		this.datein = datein;
 		this.duedate = duedate;
 	}
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
-	public int getClientsid() {
+	public Integer getClientsid() {
 		return clientsid;
 	}
 
@@ -90,7 +90,7 @@ public class Reception {
 		this.duedate = duedate;
 	}
 
-	public void setClientsid(int clientsid) {
+	public void setClientsid(Integer clientsid) {
 		this.clientsid = clientsid;
 	}
 

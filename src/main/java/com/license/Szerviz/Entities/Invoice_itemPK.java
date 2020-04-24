@@ -5,21 +5,21 @@ import java.io.Serializable;
 public class Invoice_itemPK implements Serializable {
 	private static final long serialVersionUID = -6001662181681020713L;
 	
-	protected int itemnumber;
+	protected Integer itemnumber;
 	protected Invoice invoices;
 	
 	public Invoice_itemPK() {
 	}
 
-	public Invoice_itemPK(int itemnumber, Invoice invoices) {
+	public Invoice_itemPK(Integer itemnumber, Invoice invoices) {
 		this.itemnumber = itemnumber;
 		this.invoices = invoices;
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
+		final Integer prime = 31;
+		Integer result = 1;
 		result = prime * result + ((invoices == null) ? 0 : invoices.hashCode());
 		result = prime * result + itemnumber;
 		return result;

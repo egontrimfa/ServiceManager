@@ -31,7 +31,7 @@ public class Client implements Serializable {
 	private String contactphone;
 	
 	@Column(name="iscompany")
-	private boolean iscompany;
+	private Boolean iscompany;
 	
     @OneToOne(mappedBy = "clients")
     private Company company;
@@ -50,7 +50,7 @@ public class Client implements Serializable {
     
 	public Client() {}
 	
-	public Client(String contactname, String contactphone, boolean iscompany) {
+	public Client(String contactname, String contactphone, Boolean iscompany) {
 		this.contactname = contactname;
 		this.contactphone = contactphone;
 		this.iscompany = iscompany;
@@ -78,13 +78,14 @@ public class Client implements Serializable {
 		this.contactphone = contactphone;
 	}
 
-	public boolean getIscompany() {
+	public Boolean getIscompany() {
 		return iscompany;
 	}
-	public void setIscompany(boolean iscompany) {
+
+	public void setIscompany(Boolean iscompany) {
 		this.iscompany = iscompany;
 	}
-	
+
 	public Company getCompany() {
 		return company;
 	}

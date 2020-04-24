@@ -18,10 +18,10 @@ public class User {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")
-	private int id;
+	private Integer id;
 	
 	@Column(name="rolesid")
-	private int rolesid;
+	private Integer rolesid;
 	
 	@Column(name="username")
 	private String username;
@@ -42,26 +42,26 @@ public class User {
 	public User() {
 	}
 
-	public User(int rolesid, String username, String userpassword) {
+	public User(Integer rolesid, String username, String userpassword) {
 		super();
 		this.rolesid = rolesid;
 		this.username = username;
 		this.userpassword = userpassword;
 	}
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
-	public int getRolesid() {
+	public Integer getRolesid() {
 		return rolesid;
 	}
 
-	public void setRolesid(int rolesid) {
+	public void setRolesid(Integer rolesid) {
 		this.rolesid = rolesid;
 	}
 

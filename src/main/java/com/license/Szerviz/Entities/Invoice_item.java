@@ -16,7 +16,7 @@ import javax.persistence.Table;
 public class Invoice_item {
 	@Id
 	@Column(name="itemnumber")
-	private int itemnumber;
+	private Integer itemnumber;
 	
 	@Id
     @ManyToOne
@@ -30,16 +30,16 @@ public class Invoice_item {
 	private String unitename;
 	
 	@Column(name="uniteprice")
-	private float uniteprice;
+	private Float uniteprice;
 	
 	@Column(name="invoiceitemquantity")
-	private float invoiceitemquantity;
+	private Float invoiceitemquantity;
 
 	public Invoice_item() {
 	}
 
-	public Invoice_item(int itemnumber, Invoice invoices, String itemname, String unitename, float uniteprice,
-			float invoiceitemquantity) {
+	public Invoice_item(Integer itemnumber, Invoice invoices, String itemname, String unitename, Float uniteprice,
+			Float invoiceitemquantity) {
 		this.itemnumber = itemnumber;
 		this.invoices = invoices;
 		this.itemname = itemname;
@@ -48,11 +48,11 @@ public class Invoice_item {
 		this.invoiceitemquantity = invoiceitemquantity;
 	}
 
-	public int getItemnumber() {
+	public Integer getItemnumber() {
 		return itemnumber;
 	}
 
-	public void setItemnumber(int itemnumber) {
+	public void setItemnumber(Integer itemnumber) {
 		this.itemnumber = itemnumber;
 	}
 
@@ -80,19 +80,19 @@ public class Invoice_item {
 		this.unitename = unitename;
 	}
 
-	public float getUniteprice() {
+	public Float getUniteprice() {
 		return uniteprice;
 	}
 
-	public void setUniteprice(float uniteprice) {
+	public void setUniteprice(Float uniteprice) {
 		this.uniteprice = uniteprice;
 	}
 
-	public float getInvoiceitemquantity() {
+	public Float getInvoiceitemquantity() {
 		return invoiceitemquantity;
 	}
 
-	public void setInvoiceitemquantity(float invoiceitemquantity) {
+	public void setInvoiceitemquantity(Float invoiceitemquantity) {
 		this.invoiceitemquantity = invoiceitemquantity;
 	}
 

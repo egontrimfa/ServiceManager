@@ -20,7 +20,7 @@ public class Registration {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")
-	private int id;
+	private Integer id;
 	
 	@Column(name="clientsid")
 	private Integer clientsid;
@@ -72,11 +72,11 @@ public class Registration {
 		this.regdate = regdate;
 	}
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -88,7 +88,7 @@ public class Registration {
 		this.carsid = carsid;
 	}
 
-	public int getClientsid() {
+	public Integer getClientsid() {
 		return clientsid;
 	}
 

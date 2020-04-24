@@ -34,7 +34,7 @@ public class Car {
 	private String enginenr;
 	
 	@Column(name = "milometer")
-	private int milometer;
+	private Integer milometer;
 	
     @OneToMany(mappedBy="cars")
     private Set<Registration> registrations;
@@ -42,7 +42,7 @@ public class Car {
 	public Car() {
 	}
 
-	public Car(String licenseNumber, String brand, String model, String chassisnr, String enginenr, int milometer) {
+	public Car(String licenseNumber, String brand, String model, String chassisnr, String enginenr, Integer milometer) {
 		this.licenseNumber = licenseNumber;
 		this.brand = brand;
 		this.model = model;
@@ -99,11 +99,11 @@ public class Car {
 		this.enginenr = enginenr;
 	}
 
-	public int getMilometer() {
+	public Integer getMilometer() {
 		return milometer;
 	}
 
-	public void setMilometer(int milometer) {
+	public void setMilometer(Integer milometer) {
 		this.milometer = milometer;
 	}
 
@@ -114,7 +114,6 @@ public class Car {
 	public void setRegistrations(Set<Registration> registrations) {
 		this.registrations = registrations;
 	}
-
 	
 	@Override
 	public String toString() {

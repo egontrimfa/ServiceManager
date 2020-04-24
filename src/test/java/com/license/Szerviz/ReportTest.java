@@ -16,8 +16,6 @@ import org.hibernate.query.Query;
 
 import com.license.HibernateUtil.HibernateUtil;
 import com.license.Service.Models.CommandModel;
-import com.license.Service.Models.ReceptionReport;
-import com.license.Service.Models.RegistrationReport;
 import com.license.Szerviz.Entities.Auto_pieces;
 import com.license.Szerviz.Entities.Client;
 import com.license.Szerviz.Entities.Company;

@@ -18,7 +18,7 @@ public class Company implements Serializable {
 	//companies table's columns implementation to variables
 	@Id
 	@Column(name="clientsid")
-	private int clientsid;
+	private Integer clientsid;
 	
 	@Column(name="companyphone")
 	private String companyphone;
@@ -50,7 +50,7 @@ public class Company implements Serializable {
 	
 	public Company() {}
 
-	public Company(int clientsid, String companyphone, String companyname, String companyaddress, String cif,
+	public Company(Integer clientsid, String companyphone, String companyname, String companyaddress, String cif,
 			String regnr, String bank, String iban, String branchoffice) {
 		this.clientsid = clientsid;
 		this.companyphone = companyphone;
@@ -63,11 +63,11 @@ public class Company implements Serializable {
 		this.branchoffice = branchoffice;
 	}
 
-	public int getClientsid() {
+	public Integer getClientsid() {
 		return clientsid;
 	}
 
-	public void setClientsid(int clientsid) {
+	public void setClientsid(Integer clientsid) {
 		this.clientsid = clientsid;
 	}
 
@@ -141,8 +141,13 @@ public class Company implements Serializable {
 
 	public void setClients(Client clients) {
 		this.clients = clients;
-	};
+	}
+
 	
-	
-	
+	@Override
+	public String toString() {
+		return "Company [clientsid=" + clientsid + ", companyphone=" + companyphone + ", companyname=" + companyname
+				+ ", companyaddress=" + companyaddress + ", cif=" + cif + ", regnr=" + regnr + ", bank=" + bank
+				+ ", iban=" + iban + ", branchoffice=" + branchoffice + "]";
+	};	
 }

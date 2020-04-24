@@ -16,13 +16,13 @@ public class Job {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")
-	private int id;
+	private Integer id;
 	
 	@Column(name="jobname")
 	private String jobname;
 	
 	@Column(name="jobprice")
-	private float jobprice;
+	private Float jobprice;
 	
     @OneToMany(mappedBy="jobs")
     private Set<Registration_job> job_registration;
@@ -30,16 +30,16 @@ public class Job {
 	public Job() {
 	}
 
-	public Job(String jobname, float jobprice) {
+	public Job(String jobname, Float jobprice) {
 		this.jobname = jobname;
 		this.jobprice = jobprice;
 	}
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -51,11 +51,11 @@ public class Job {
 		this.jobname = jobname;
 	}
 
-	public float getJobprice() {
+	public Float getJobprice() {
 		return jobprice;
 	}
 
-	public void setJobprice(float jobprice) {
+	public void setJobprice(Float jobprice) {
 		this.jobprice = jobprice;
 	}
 

@@ -13,30 +13,28 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.license.Service.Models.RegistrationReport;
-
 @Entity(name="Inventory")
 @Table(name="inventory", catalog="postgres", schema="public")
 public class Inventory {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")
-	private int id;
+	private Integer id;
 	
 	@Column(name="autopiecesid")
 	private String autopiecesid;
 	
 	@Column(name="clientsid")
-	private int clientsid;
+	private Integer clientsid;
 	
 	@Column(name="quantity")
-	private float quantity;
+	private Float quantity;
 	
 	@Column(name="unitepricein")
-	private float unitepricein;
+	private Float unitepricein;
 	
 	@Column(name="unitepriceout")
-	private float unitepriceout;
+	private Float unitepriceout;
 	
 	@Column(name="datein")
 	private Date datein;
@@ -53,14 +51,10 @@ public class Inventory {
     @JoinColumn(name = "inventoryid")
     private Set<Registrations_inventory> registrations_inventory;
     
-    @OneToMany
-    @JoinColumn(name = "inventoryid")
-    private Set<RegistrationReport> registrationreport;
-    
 	public Inventory() {
 	}
 
-	public Inventory(String autopiecesid, int clientsid, float quantity, float unitepricein, float unitepriceout,
+	public Inventory(String autopiecesid, Integer clientsid, Float quantity, Float unitepricein, Float unitepriceout,
 			Date datein) {
 		this.autopiecesid = autopiecesid;
 		this.clientsid = clientsid;
@@ -70,116 +64,85 @@ public class Inventory {
 		this.datein = datein;
 	}
 
-
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
-
 	
 	public String getAutopiecesid() {
 		return autopiecesid;
 	}
-
 	
 	public void setAutopiecesid(String autopiecesid) {
 		this.autopiecesid = autopiecesid;
 	}
-
 	
-	public int getClientsid() {
+	public Integer getClientsid() {
 		return clientsid;
 	}
-
 	
-	public void setClientsid(int clientsid) {
+	public void setClientsid(Integer clientsid) {
 		this.clientsid = clientsid;
 	}
-
 	
-	public float getQuantity() {
+	public Float getQuantity() {
 		return quantity;
 	}
-
 	
-	public void setQuantity(float quantity) {
+	public void setQuantity(Float quantity) {
 		this.quantity = quantity;
 	}
-
 	
-	public float getUnitepricein() {
+	public Float getUnitepricein() {
 		return unitepricein;
 	}
-
 	
-	public void setUnitepricein(float unitepricein) {
+	public void setUnitepricein(Float unitepricein) {
 		this.unitepricein = unitepricein;
 	}
-
 	
-	public float getUnitepriceout() {
+	public Float getUnitepriceout() {
 		return unitepriceout;
 	}
-
 	
-	public void setUnitepriceout(float unitepriceout) {
+	public void setUnitepriceout(Float unitepriceout) {
 		this.unitepriceout = unitepriceout;
 	}
 
-	
 	public Date getDatein() {
 		return datein;
 	}
-
 	
 	public void setDatein(Date datein) {
 		this.datein = datein;
 	}
-
 	
 	public Client getClients() {
 		return clients;
 	}
-
 	
 	public void setClients(Client clients) {
 		this.clients = clients;
 	}
-
 	
 	public Auto_pieces getAuto_pieces() {
 		return auto_pieces;
 	}
-
 	
 	public void setAuto_pieces(Auto_pieces auto_pieces) {
 		this.auto_pieces = auto_pieces;
 	}
-
 	
 	public Set<Registrations_inventory> getRegistrations_inventory() {
 		return registrations_inventory;
 	}
-
 	
 	public void setRegistrations_inventory(Set<Registrations_inventory> registrations_inventory) {
 		this.registrations_inventory = registrations_inventory;
 	}
-
-	
-	public Set<RegistrationReport> getRegistrationreport() {
-		return registrationreport;
-	}
-
-	
-	public void setRegistrationreport(Set<RegistrationReport> registrationreport) {
-		this.registrationreport = registrationreport;
-	}
-
 	
 	@Override	
 	public String toString() {

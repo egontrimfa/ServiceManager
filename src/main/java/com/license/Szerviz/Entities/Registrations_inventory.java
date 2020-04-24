@@ -21,10 +21,10 @@ public class Registrations_inventory {
 	private Integer inventoryid;
 	
 	@Column(name="newuniteprice")
-	private float newuniteprice;
+	private Float newuniteprice;
 	
 	@Column(name="quantity")
-	private float quantity;
+	private Float quantity;
 	
     @ManyToOne
     @JoinColumn(name="registrationsid", insertable = false, updatable = false)
@@ -37,7 +37,7 @@ public class Registrations_inventory {
 	public Registrations_inventory() {
 	}
 
-	public Registrations_inventory(Integer registrationsid, Integer inventoryid, float newuniteprice, float quantity) {
+	public Registrations_inventory(Integer registrationsid, Integer inventoryid, Float newuniteprice, Float quantity) {
 		this.registrationsid = registrationsid;
 		this.inventoryid = inventoryid;
 		this.newuniteprice = newuniteprice;
@@ -60,19 +60,19 @@ public class Registrations_inventory {
 		this.inventoryid = inventoryid;
 	}
 
-	public float getNewuniteprice() {
+	public Float getNewuniteprice() {
 		return newuniteprice;
 	}
 
-	public void setNewuniteprice(float newuniteprice) {
+	public void setNewuniteprice(Float newuniteprice) {
 		this.newuniteprice = newuniteprice;
 	}
 
-	public float getQuantity() {
+	public Float getQuantity() {
 		return quantity;
 	}
 
-	public void setQuantity(float quantity) {
+	public void setQuantity(Float quantity) {
 		this.quantity = quantity;
 	}
 

@@ -14,23 +14,23 @@ import javax.persistence.Table;
 public class Receptions_auto_pieces {
 	@Id
 	@Column(name="receptionsid")
-	private int receptionsid;
+	private Integer receptionsid;
 	
 	@Id
 	@Column(name="autopiecesid")
 	private String autopiecesid;
 	
 	@Column(name="quantity")
-	private float quantity;
+	private Float quantity;
 	
 	@Column(name="unitepricein")
-	private float unitepricein;
+	private Float unitepricein;
 	
 	@Column(name="unitepriceout")
-	private float unitepriceout;
+	private Float unitepriceout;
 	
 	@Column(name="vatitem")
-	private float vatitem;
+	private Float vatitem;
 	
     @ManyToOne
     @JoinColumn(name="receptionsid", insertable = false, updatable = false)
@@ -43,8 +43,8 @@ public class Receptions_auto_pieces {
 	public Receptions_auto_pieces() {
 	}
 
-	public Receptions_auto_pieces(int receptionsid, String autopiecesid, float quantity, float unitepricein,
-			float unitepriceout, float vatitem) {
+	public Receptions_auto_pieces(Integer receptionsid, String autopiecesid, Float quantity, Float unitepricein,
+			Float unitepriceout, Float vatitem) {
 		this.receptionsid = receptionsid;
 		this.autopiecesid = autopiecesid;
 		this.quantity = quantity;
@@ -53,11 +53,11 @@ public class Receptions_auto_pieces {
 		this.vatitem = vatitem;
 	}
 	
-	public int getReceptionsid() {
+	public Integer getReceptionsid() {
 		return receptionsid;
 	}
 
-	public void setReceptionsid(int receptionsid) {
+	public void setReceptionsid(Integer receptionsid) {
 		this.receptionsid = receptionsid;
 	}
 
@@ -69,35 +69,35 @@ public class Receptions_auto_pieces {
 		this.autopiecesid = autopiecesid;
 	}
 
-	public float getQuantity() {
+	public Float getQuantity() {
 		return quantity;
 	}
 
-	public void setQuantity(float quantity) {
+	public void setQuantity(Float quantity) {
 		this.quantity = quantity;
 	}
 
-	public float getUnitepricein() {
+	public Float getUnitepricein() {
 		return unitepricein;
 	}
 
-	public void setUnitepricein(float unitepricein) {
+	public void setUnitepricein(Float unitepricein) {
 		this.unitepricein = unitepricein;
 	}
 
-	public float getUnitepriceout() {
+	public Float getUnitepriceout() {
 		return unitepriceout;
 	}
 
-	public void setUnitepriceout(float unitepriceout) {
+	public void setUnitepriceout(Float unitepriceout) {
 		this.unitepriceout = unitepriceout;
 	}
 
-	public float getVatitem() {
+	public Float getVatitem() {
 		return vatitem;
 	}
 
-	public void setVatitem(float vatitem) {
+	public void setVatitem(Float vatitem) {
 		this.vatitem = vatitem;
 	}
 

@@ -19,7 +19,7 @@ public class Invoice {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")
-	private int id;
+	private Integer id;
 	
 	@OneToOne
 	@JoinColumn(name = "registrationsid")
@@ -39,18 +39,18 @@ public class Invoice {
 	public Invoice() {
 	}
 
-	public Invoice(int id, Registration registrations, User users, Client clients) {
+	public Invoice(Integer id, Registration registrations, User users, Client clients) {
 		this.id = id;
 		this.registrations = registrations;
 		this.users = users;
 		this.clients = clients;
 	}
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 	
