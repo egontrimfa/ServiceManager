@@ -1236,7 +1236,7 @@ public class MainFrame extends JFrame {
 		});
 		JB_selectClient_CL.setEnabled(false);
 		JB_selectClient_CL.setVisible(false);
-		JB_selectClient_CL.setBounds(68, 667, 286, 37);
+		JB_selectClient_CL.setBounds(68, 606, 286, 37);
 		JP_clientInfo_CL.add(JB_selectClient_CL);
 		
 		JPanel JP_clientQuickSearch_CL = new JPanel();
@@ -1730,6 +1730,10 @@ public class MainFrame extends JFrame {
 		JP_chosePieceTo_AR.add(JTF_pieceNameTo_AR);
 		
 		JButton JB_pieceNameToSelect_AR = new JButton("Selectare");
+		JB_pieceNameToSelect_AR.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
 		JB_pieceNameToSelect_AR.setFont(new Font("Tahoma", Font.BOLD, 16));
 		JB_pieceNameToSelect_AR.addMouseListener(new MouseAdapter() {
 			@Override
@@ -2745,6 +2749,10 @@ public class MainFrame extends JFrame {
 		JP_prevCars_AA.setViewportView(JT_prevCars_AA);
 		
 		JB_addCar_AA = new JButton("Adauga nou");
+		JB_addCar_AA.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			}
+		});
 		JB_addCar_AA.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -2772,7 +2780,7 @@ public class MainFrame extends JFrame {
 			}
 		});
 		JB_addCar_AA.setFont(new Font("Tahoma", Font.PLAIN, 24));
-		JB_addCar_AA.setBounds(278, 267, 362, 50);
+		JB_addCar_AA.setBounds(263, 301, 362, 50);
 		panelSC.add(JB_addCar_AA);
 		
 		JLabel JL_prevInfo_AA = new JLabel("Mașini recente");
@@ -2869,6 +2877,10 @@ public class MainFrame extends JFrame {
 		panelANR.add(JB_saveRegistrtation_ANR);
 		
 		JButton JB_generateNewRegistrationNumber_ANR = new JButton("Genereaza noua");
+		JB_generateNewRegistrationNumber_ANR.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
 		JB_generateNewRegistrationNumber_ANR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -2976,7 +2988,7 @@ public class MainFrame extends JFrame {
 		JL_selectWorker_ANR = new JLabel("Selectati lucratori");
 		JL_selectWorker_ANR.setHorizontalAlignment(SwingConstants.CENTER);
 		JL_selectWorker_ANR.setFont(new Font("Tahoma", Font.BOLD, 32));
-		JL_selectWorker_ANR.setBounds(226, 425, 450, 141);
+		JL_selectWorker_ANR.setBounds(188, 425, 450, 141);
 		panelANR.add(JL_selectWorker_ANR);
 		
 		JLabel SMC_piece_ANR = new JLabel("");
@@ -3363,24 +3375,6 @@ public class MainFrame extends JFrame {
 				JTF_invoiceNRInfo_SL.setText(selectedReception.getIncominginvoicenr());
 				JDC_dateINInfo_SL.setDate(selectedReception.getDatein());
 				JDC_dueDateInfo_SL.setDate(selectedReception.getDuedate());
-				/*if(!model.getValueAt(index, 3).toString().equals("")) {
-					try {
-						JDC_dateINInfo_SL.setDate(new SimpleDateFormat("yyyy-MM-dd").parse(model.getValueAt(index, 3).toString()));
-					} catch (ParseException e) {
-						e.printStackTrace();
-					}
-				}else {
-					JDC_dateINInfo_SL.setDate(null);
-				}*/
-				/*if(!model.getValueAt(index, 4).toString().equals("")) {
-					try {
-						JDC_dueDateInfo_SL.setDate(new SimpleDateFormat("yyyy-MM-dd").parse(model.getValueAt(index, 4).toString()));
-					} catch (ParseException e) {
-						e.printStackTrace();
-					}
-				}else {
-					JDC_dueDateInfo_SL.setDate(null);
-				}*/
 				
 				panelStateChangeHelper(panelSL, null, "selected");
 			}
@@ -3862,7 +3856,7 @@ public class MainFrame extends JFrame {
 			}
 		});
 		JB_addJobToList_SJ.setFont(new Font("Tahoma", Font.PLAIN, 20));
-		JB_addJobToList_SJ.setBounds(280, 274, 230, 40);
+		JB_addJobToList_SJ.setBounds(280, 343, 230, 40);
 		panelSJ.add(JB_addJobToList_SJ);
 		
 		JB_updateRegistrationJob_SJ = new JButton("Actualizare");
@@ -4078,16 +4072,16 @@ public class MainFrame extends JFrame {
 						panelStateChangeHelper(panelSII, "all", "primary");
 					}
 				}else {
-					//MESSAGEBOX HERE
 					MissingStatementInformer("Select a inventory item first!");
 				}
 			}
 		});
 		JB_addInventoryItemToList_SII.setFont(new Font("Tahoma", Font.PLAIN, 20));
-		JB_addInventoryItemToList_SII.setBounds(280, 274, 230, 40);
+		JB_addInventoryItemToList_SII.setBounds(280, 327, 230, 40);
 		panelSII.add(JB_addInventoryItemToList_SII);
 		
 		JB_updateRegistrationInventory_SII = new JButton("Actualizare");
+
 		JB_updateRegistrationInventory_SII.setName("secondary");
 		JB_updateRegistrationInventory_SII.addMouseListener(new MouseAdapter() {
 			@Override
@@ -4122,7 +4116,7 @@ public class MainFrame extends JFrame {
 			}
 		});
 		JB_clearInvenoryItem_SII.setFont(new Font("Tahoma", Font.PLAIN, 20));
-		JB_clearInvenoryItem_SII.setBounds(522, 274, 158, 40);
+		JB_clearInvenoryItem_SII.setBounds(522, 314, 158, 40);
 		panelSII.add(JB_clearInvenoryItem_SII);
 		
 		JScrollPane JSP_inventory_SII = new JScrollPane();
