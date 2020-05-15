@@ -11,11 +11,15 @@ import javax.swing.JOptionPane;
 
 import com.license.HibernateUtil.HibernateUtil;
 import com.license.Szerviz.Entities.Auto_pieces;
+import com.license.Szerviz.Entities.Brand;
 import com.license.Szerviz.Entities.Car;
 import com.license.Szerviz.Entities.Client;
 import com.license.Szerviz.Entities.Company;
 import com.license.Szerviz.Entities.Inventory;
+import com.license.Szerviz.Entities.Invoice;
+import com.license.Szerviz.Entities.Invoice_item;
 import com.license.Szerviz.Entities.Job;
+import com.license.Szerviz.Entities.Model;
 import com.license.Szerviz.Entities.Reception;
 import com.license.Szerviz.Entities.Receptions_auto_pieces;
 import com.license.Szerviz.Entities.Registration;
@@ -24,6 +28,7 @@ import com.license.Szerviz.Entities.Registrations_inventory;
 import com.license.Szerviz.Entities.Replaced;
 import com.license.Szerviz.Entities.Role;
 import com.license.Szerviz.Entities.User;
+import com.license.Szerviz.Helpers.ItemRenderer;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.ImageIcon;
 import javax.swing.BorderFactory;
@@ -53,7 +58,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
+import java.util.Vector;
 import java.awt.Cursor;
 import java.awt.Dimension;
 
@@ -71,7 +78,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.beans.PropertyChangeEvent;
+import javax.swing.JSeparator;
+import javax.swing.JTextArea;
+import javax.swing.border.LineBorder;
 
 public class ServiceFrame {
 	//BASE
@@ -103,6 +115,9 @@ public class ServiceFrame {
 	private Registration_job selectedRegistrationJob;
 	private Job selectedJob;
 	private User selectedUser;
+	private Brand selectedBrand;
+	private Model selectedModel;
+	private Invoice selectedInvoice;
 	
 	//Other
 	static private String selectPiece;
@@ -127,6 +142,7 @@ public class ServiceFrame {
 	static private JPanel panelSII;
 	static private JPanel panelSJ;
 	static private JPanel panelANR;
+	static private JPanel panelRL;
 	
 	//Client Registration Panel<components>
 	private JTextField JTF_clientName_CR;
@@ -231,6 +247,7 @@ public class ServiceFrame {
 	private JTable JT_users_UL;
 	private JTextField JTF_userNameInfo_UL;
 	private JTextField JTF_userQuickSearch_UL;
+	private JComboBox<Role> JCB_userRoleInfo_UL;
 	
 	//Add Replaceable Panel<components>
 	private JTable JT_pieces_AR;
@@ -247,11 +264,11 @@ public class ServiceFrame {
 	//Add Auto Panel<components>
 	private JTable JT_prevCars_AA;
 	private JTextField JTF_carLicenseNumber_AA;
-	private JTextField JTF_carBrand_AA;
-	private JTextField JTF_carModel_AA;
 	private JTextField JTF_carChassisNR_AA;
 	private JTextField JTF_carEngineNR_AA;
 	private JTextField JTF_carMilometer_AA;
+	private JComboBox<Brand> JCB_carBrand_SC;
+	private JComboBox<Model> JCB_carModel_SC;
 	
 	//Select Inventory Item Panel<components>
 	private JTable JT_inventory_SII;
@@ -262,7 +279,6 @@ public class ServiceFrame {
 	
 	//Select Job Panel<components>
 	private JTable JT_jobs_SJ;
-	private JTextField JTF_jobSearch_SJ;
 	private JTextField JTF_jobName_SJ;
 	private JTextField JTF_jobPrice_SJ;
 	
@@ -285,7 +301,32 @@ public class ServiceFrame {
 	private JLabel SC_addJob_ANR;
 	private JLabel SC_editJob_ANR;
 	private JLabel SC_infoJob_ANR;
-	private JDateChooser JDC_registrationNumber_ANR;
+	private JDateChooser JDC_registrationDate_ANR;
+	private JTextField JTF_carTireDim_SC;
+	private JTextField JTF_carBody_SC;
+	private JTextField JTF_carWarrantyKM_AA;
+	private JTextField JTF_carYear_AA;
+	private JTextField JTF_carOwnerNR_AA;
+	private JTextField JTF_carSeatNR_AA;
+	private JTextField JTF_jobUniteName_ANJ;
+	private JTextField JTF_jobLenght_ANJ;
+	private JTextField JTF_jobUniteName_SJ;
+	private JTextField JTF_jobLenght_SJ;
+	private JTextField JTF_jobUniteNameInfo_JL;
+	private JTextField JTF_jobLenghtInfo_JL;
+	private JTextField textField;
+	private JTextField JTF_jobUser_SJ;
+	private JTextField JTF_userName_SJ;
+	private JTextField JTF_clientCNP_CR;
+	private JTextField JTF_clientCNPInfo_CL;
+	private JTextField JTF_regNRInfo_RL;
+	private JTable JT_registrations_RL;
+	private JTextField JTF_regQuickSearch_RL;
+	private JTextField JTF_clientNameInfo_RL;
+	private JTextField JTF_carLicenseInfo_RL;
+	private JTextField JTF_inventoryItemUniteName_SII;
+	private JTextField JTF_inventoryItemID_SII;
+	private JTextArea JTA_registrationComment_ANR;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -294,15 +335,7 @@ public class ServiceFrame {
 					ServiceFrame window = new ServiceFrame();
 					window.frmServiceManagerSoftware.setVisible(true);
 					
-					//Panel option initializations
-					panels.push(panelDB);
-					currentPanel = panelDB;
-					
-					//Global UI settings
-					UIManager.put("OptionPane.minimumSize", new Dimension(350,75));
-					
-					//Open new hibernate session
-					session = HibernateUtil.getSessionFactory().openSession();
+					frameStart();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -313,6 +346,11 @@ public class ServiceFrame {
 	public ServiceFrame() {
 		initialize();
 	}
+	
+	public ServiceFrame(String msg) {
+		initialize();
+		frameStart();
+	}
 
 	private void initialize() {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -320,9 +358,10 @@ public class ServiceFrame {
 		frmServiceManagerSoftware = new JFrame();
 		frmServiceManagerSoftware.setTitle("Service Manager Software (Development)");
 		frmServiceManagerSoftware.getContentPane().setBackground(Color.WHITE);
-		frmServiceManagerSoftware.setBounds(100, 100, (int)(screenSize.width*1.15), (int)(screenSize.height*0.9));
+		frmServiceManagerSoftware.setBounds(100, 100, (int)(screenSize.width*0.85), (int)(screenSize.height*0.85));
 		frmServiceManagerSoftware.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmServiceManagerSoftware.getContentPane().setLayout(new BorderLayout(0, 0));
+		frmServiceManagerSoftware.setVisible(true);
 		
 		JPanel centralPanel = new JPanel();
 		centralPanel.setBackground(Color.WHITE);
@@ -414,8 +453,8 @@ public class ServiceFrame {
 				panelSelectionHelper(panelDB, panelANR);
 				
 				generateRegistrationNumber();
-				JDC_registrationNumber_ANR.setDate(new Date());
-				saveRegistration(JTF_registrationNumber_ANR.getText(), JDC_registrationNumber_ANR.getDate());
+				JDC_registrationDate_ANR.setDate(new Date());
+				initializeRegistration(JTF_registrationNumber_ANR.getText(), JDC_registrationDate_ANR.getDate());
 			}
 		});
 		MC_addRegistration_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -458,7 +497,7 @@ public class ServiceFrame {
 			public void mouseClicked(MouseEvent e) {
 				panelSelectionHelper(panelDB, panelJL);
 				
-				SetDefaultTable(JT_jobs_JL, new String[]{"Job", "Numele jobului", "Tarifa jobului"});				
+				SetDefaultTable(JT_jobs_JL, new String[]{"Job", "Numele jobului", "Tarifa jobului", "UM", "Durata"});				
 				LoadJobs();
 			}
 		});
@@ -470,10 +509,14 @@ public class ServiceFrame {
 		MC_listUser_DB.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelSelectionHelper(panelDB, panelANU);
+				panelSelectionHelper(panelDB, panelUL);
 				
-				if(JCB_userRole_ANU.getItemCount()==0) {
-					LoadRoles(JCB_userRole_ANU);
+				SetDefaultTable(JT_users_UL, new String[]{"User", "Numele lucratorului", "Rolul"});				
+				LoadUsers();
+
+				//load roles to combo box, if it is empty
+				if(JCB_userRoleInfo_UL.getItemCount()==0) {
+					LoadRoles(JCB_userRoleInfo_UL);
 				}
 			}
 		});
@@ -490,6 +533,20 @@ public class ServiceFrame {
 				SetDefaultTable(JT_pieces_AR, new String[]{"COD", "Nume", "Unitate/Masura"});
 			}
 		});
+		
+		JLabel MC_listRegistration_DB = new JLabel("");
+		MC_listRegistration_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		MC_listRegistration_DB.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				panelSelectionHelper(panelDB, panelRL);
+				
+				SetDefaultTable(JT_registrations_RL, new String[]{"Registration", "Client", "Nr. de inmatriculare", "Numarul de registratie", "Date"});				
+				loadRegistrtaions();
+			}
+		});
+		MC_listRegistration_DB.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/add_registration_154.png")));
+		panelDB.add(MC_listRegistration_DB, "cell 5 1");
 		MC_replaceAutoPiece_DB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		MC_replaceAutoPiece_DB.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/auto_piece_replace_154.png")));
 		panelDB.add(MC_replaceAutoPiece_DB, "cell 1 2");
@@ -524,7 +581,7 @@ public class ServiceFrame {
 		JPanel JP_center_CR = new JPanel();
 		JP_center_CR.setBackground(Color.WHITE);
 		panelCR.add(JP_center_CR, BorderLayout.CENTER);
-		JP_center_CR.setLayout(new MigLayout("", "[][grow][][grow]", "[][][][][][][][][][]"));
+		JP_center_CR.setLayout(new MigLayout("", "[][grow][][grow]", "[][][][][][][][][][][]"));
 		
 		JToggleButton JTB_isCompany_CR = new JToggleButton("Client legal");
 		JTB_isCompany_CR.addActionListener(new ActionListener() {
@@ -581,17 +638,28 @@ public class ServiceFrame {
 		
 		JLabel JL_legalClient_CR = new JLabel("Client juridic");
 		JL_legalClient_CR.setVisible(false);
+		
+		JLabel JL_clientCNP_CR = new JLabel("Numele contactului:");
+		JL_clientCNP_CR.setName("permanent");
+		JL_clientCNP_CR.setHorizontalAlignment(SwingConstants.LEFT);
+		JL_clientCNP_CR.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		JP_center_CR.add(JL_clientCNP_CR, "cell 0 3,alignx left");
+		
+		JTF_clientCNP_CR = new JTextField();
+		JTF_clientCNP_CR.setName("permanent");
+		JTF_clientCNP_CR.setColumns(10);
+		JP_center_CR.add(JTF_clientCNP_CR, "cell 1 3,growx");
 		JL_legalClient_CR.setName("secondary");
 		JL_legalClient_CR.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 18));
 		JL_legalClient_CR.setHorizontalAlignment(SwingConstants.CENTER);
-		JP_center_CR.add(JL_legalClient_CR, "cell 0 3 4 1,growx");
+		JP_center_CR.add(JL_legalClient_CR, "cell 0 4 4 1,growx");
 		
 		JLabel JL_companyName_CR = new JLabel("Numele companiei:");
 		JL_companyName_CR.setVisible(false);
 		JL_companyName_CR.setName("secondary");
 		JL_companyName_CR.setHorizontalAlignment(SwingConstants.LEFT);
 		JL_companyName_CR.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		JP_center_CR.add(JL_companyName_CR, "cell 0 4,alignx left,aligny center");
+		JP_center_CR.add(JL_companyName_CR, "cell 0 5,alignx left,aligny center");
 		
 		JTF_companyName_CR = new JTextField();
 		JTF_companyName_CR.addKeyListener(new KeyAdapter() {
@@ -603,14 +671,14 @@ public class ServiceFrame {
 		JTF_companyName_CR.setVisible(false);
 		JTF_companyName_CR.setName("secondary");
 		JTF_companyName_CR.setColumns(10);
-		JP_center_CR.add(JTF_companyName_CR, "cell 1 4,growx");
+		JP_center_CR.add(JTF_companyName_CR, "cell 1 5,growx");
 		
 		JLabel JL_companyPhone_CR = new JLabel("Numarul de telefon al companiei");
 		JL_companyPhone_CR.setVisible(false);
 		JL_companyPhone_CR.setName("secondary");
 		JL_companyPhone_CR.setHorizontalAlignment(SwingConstants.LEFT);
 		JL_companyPhone_CR.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		JP_center_CR.add(JL_companyPhone_CR, "cell 2 4,alignx left,aligny center");
+		JP_center_CR.add(JL_companyPhone_CR, "cell 2 5,alignx left,aligny center");
 		
 		JTF_companyPhone_CR = new JTextField();
 		JTF_companyPhone_CR.addKeyListener(new KeyAdapter() {
@@ -622,14 +690,14 @@ public class ServiceFrame {
 		JTF_companyPhone_CR.setVisible(false);
 		JTF_companyPhone_CR.setName("secondary");
 		JTF_companyPhone_CR.setColumns(10);
-		JP_center_CR.add(JTF_companyPhone_CR, "cell 3 4,growx");
+		JP_center_CR.add(JTF_companyPhone_CR, "cell 3 5,growx");
 		
 		JLabel JL_companyRegNR_CR = new JLabel("Numarul de inregistrare:");
 		JL_companyRegNR_CR.setVisible(false);
 		JL_companyRegNR_CR.setName("secondary");
 		JL_companyRegNR_CR.setHorizontalAlignment(SwingConstants.LEFT);
 		JL_companyRegNR_CR.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		JP_center_CR.add(JL_companyRegNR_CR, "cell 0 5,alignx left,aligny center");
+		JP_center_CR.add(JL_companyRegNR_CR, "cell 0 6,alignx left,aligny center");
 		
 		JTF_companyRegNR_CR = new JTextField();
 		JTF_companyRegNR_CR.addKeyListener(new KeyAdapter() {
@@ -641,14 +709,14 @@ public class ServiceFrame {
 		JTF_companyRegNR_CR.setVisible(false);
 		JTF_companyRegNR_CR.setName("secondary");
 		JTF_companyRegNR_CR.setColumns(10);
-		JP_center_CR.add(JTF_companyRegNR_CR, "cell 1 5,growx");
+		JP_center_CR.add(JTF_companyRegNR_CR, "cell 1 6,growx");
 		
 		JLabel JL_companyCIF_CR = new JLabel("CIF:");
 		JL_companyCIF_CR.setVisible(false);
 		JL_companyCIF_CR.setName("secondary");
 		JL_companyCIF_CR.setHorizontalAlignment(SwingConstants.LEFT);
 		JL_companyCIF_CR.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		JP_center_CR.add(JL_companyCIF_CR, "cell 2 5,alignx left,aligny center");
+		JP_center_CR.add(JL_companyCIF_CR, "cell 2 6,alignx left,aligny center");
 		
 		JTF_companyCIF_CR = new JTextField();
 		JTF_companyCIF_CR.addKeyListener(new KeyAdapter() {
@@ -660,14 +728,14 @@ public class ServiceFrame {
 		JTF_companyCIF_CR.setVisible(false);
 		JTF_companyCIF_CR.setName("secondary");
 		JTF_companyCIF_CR.setColumns(10);
-		JP_center_CR.add(JTF_companyCIF_CR, "cell 3 5,growx");
+		JP_center_CR.add(JTF_companyCIF_CR, "cell 3 6,growx");
 		
 		JLabel JL_companyBank_CR = new JLabel("Bank:");
 		JL_companyBank_CR.setVisible(false);
 		JL_companyBank_CR.setName("secondary");
 		JL_companyBank_CR.setHorizontalAlignment(SwingConstants.LEFT);
 		JL_companyBank_CR.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		JP_center_CR.add(JL_companyBank_CR, "cell 0 6,alignx left,aligny center");
+		JP_center_CR.add(JL_companyBank_CR, "cell 0 7,alignx left,aligny center");
 		
 		JTF_companyBank_CR = new JTextField();
 		JTF_companyBank_CR.addKeyListener(new KeyAdapter() {
@@ -679,14 +747,14 @@ public class ServiceFrame {
 		JTF_companyBank_CR.setVisible(false);
 		JTF_companyBank_CR.setName("secondary");
 		JTF_companyBank_CR.setColumns(10);
-		JP_center_CR.add(JTF_companyBank_CR, "cell 1 6,growx");
+		JP_center_CR.add(JTF_companyBank_CR, "cell 1 7,growx");
 		
 		JLabel JL_companyIBAN_CR = new JLabel("IBAN:");
 		JL_companyIBAN_CR.setVisible(false);
 		JL_companyIBAN_CR.setName("secondary");
 		JL_companyIBAN_CR.setHorizontalAlignment(SwingConstants.LEFT);
 		JL_companyIBAN_CR.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		JP_center_CR.add(JL_companyIBAN_CR, "cell 2 6,alignx left,aligny center");
+		JP_center_CR.add(JL_companyIBAN_CR, "cell 2 7,alignx left,aligny center");
 		
 		JTF_companyIBAN_CR = new JTextField();
 		JTF_companyIBAN_CR.addKeyListener(new KeyAdapter() {
@@ -698,14 +766,14 @@ public class ServiceFrame {
 		JTF_companyIBAN_CR.setVisible(false);
 		JTF_companyIBAN_CR.setName("secondary");
 		JTF_companyIBAN_CR.setColumns(10);
-		JP_center_CR.add(JTF_companyIBAN_CR, "cell 3 6,growx");
+		JP_center_CR.add(JTF_companyIBAN_CR, "cell 3 7,growx");
 		
 		JLabel JL_companyAddress_CR = new JLabel("Addresa companiei:");
 		JL_companyAddress_CR.setVisible(false);
 		JL_companyAddress_CR.setName("secondary");
 		JL_companyAddress_CR.setHorizontalAlignment(SwingConstants.LEFT);
 		JL_companyAddress_CR.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		JP_center_CR.add(JL_companyAddress_CR, "cell 0 7,alignx left,aligny center");
+		JP_center_CR.add(JL_companyAddress_CR, "cell 0 8,alignx left,aligny center");
 		
 		JTF_companyAddress_CR = new JTextField();
 		JTF_companyAddress_CR.addKeyListener(new KeyAdapter() {
@@ -717,14 +785,14 @@ public class ServiceFrame {
 		JTF_companyAddress_CR.setVisible(false);
 		JTF_companyAddress_CR.setName("secondary");
 		JTF_companyAddress_CR.setColumns(10);
-		JP_center_CR.add(JTF_companyAddress_CR, "cell 1 7,growx");
+		JP_center_CR.add(JTF_companyAddress_CR, "cell 1 8,growx");
 		
 		JLabel JL_companyBranchOffice_CR = new JLabel("Office:");
 		JL_companyBranchOffice_CR.setVisible(false);
 		JL_companyBranchOffice_CR.setName("secondary");
 		JL_companyBranchOffice_CR.setHorizontalAlignment(SwingConstants.LEFT);
 		JL_companyBranchOffice_CR.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		JP_center_CR.add(JL_companyBranchOffice_CR, "cell 2 7,alignx left,aligny center");
+		JP_center_CR.add(JL_companyBranchOffice_CR, "cell 2 8,alignx left,aligny center");
 		
 		JTF_companyBranchOffice_CR = new JTextField();
 		JTF_companyBranchOffice_CR.addKeyListener(new KeyAdapter() {
@@ -736,7 +804,7 @@ public class ServiceFrame {
 		JTF_companyBranchOffice_CR.setVisible(false);
 		JTF_companyBranchOffice_CR.setName("secondary");
 		JTF_companyBranchOffice_CR.setColumns(10);
-		JP_center_CR.add(JTF_companyBranchOffice_CR, "cell 3 7,growx");
+		JP_center_CR.add(JTF_companyBranchOffice_CR, "cell 3 8,growx");
 		
 		JPanel JP_south_CR = new JPanel();
 		JP_south_CR.setBackground(Color.WHITE);
@@ -749,6 +817,7 @@ public class ServiceFrame {
 				List<JTextField> jtf_list = new ArrayList<JTextField>();
 				jtf_list.add(JTF_clientName_CR);
 				jtf_list.add(JTF_clientPhone_CR);
+				jtf_list.add(JTF_clientCNP_CR);
 				
 				if(JTB_isCompany_CR.isSelected()) {
 					jtf_list.add(JTF_companyName_CR);
@@ -877,7 +946,7 @@ public class ServiceFrame {
 		JPanel JP_center_ANJ = new JPanel();
 		JP_center_ANJ.setBackground(Color.WHITE);
 		panelANJ.add(JP_center_ANJ, BorderLayout.CENTER);
-		JP_center_ANJ.setLayout(new MigLayout("", "[][grow]", "[][]"));
+		JP_center_ANJ.setLayout(new MigLayout("", "[][grow]", "[][][][]"));
 		
 		JLabel JL_jobName_ANJ = new JLabel("Denumirea lucrarii:");
 		JL_jobName_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
@@ -893,9 +962,9 @@ public class ServiceFrame {
 		JTF_jobName_ANJ.setColumns(10);
 		JP_center_ANJ.add(JTF_jobName_ANJ, "cell 1 0,growx");
 		
-		JLabel JB_jobPrice_ANJ = new JLabel("Tarifa lucrarii:");
-		JB_jobPrice_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		JP_center_ANJ.add(JB_jobPrice_ANJ, "cell 0 1,alignx left,aligny center");
+		JLabel JL_jobPrice_ANJ = new JLabel("Tarifa lucrarii:");
+		JL_jobPrice_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JP_center_ANJ.add(JL_jobPrice_ANJ, "cell 0 1,alignx left,aligny center");
 		
 		JTF_jobPrice_ANJ = new JTextField();
 		JTF_jobPrice_ANJ.addKeyListener(new KeyAdapter() {
@@ -906,6 +975,34 @@ public class ServiceFrame {
 		});
 		JTF_jobPrice_ANJ.setColumns(10);
 		JP_center_ANJ.add(JTF_jobPrice_ANJ, "cell 1 1,growx");
+		
+		JLabel JL_jobUniteName_ANJ = new JLabel("Unitate de masura:");
+		JL_jobUniteName_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JP_center_ANJ.add(JL_jobUniteName_ANJ, "cell 0 2,alignx left");
+		
+		JTF_jobUniteName_ANJ = new JTextField();
+		JTF_jobUniteName_ANJ.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				textfieldBorderResetter(JTF_jobUniteName_ANJ);
+			}
+		});
+		JTF_jobUniteName_ANJ.setColumns(10);
+		JP_center_ANJ.add(JTF_jobUniteName_ANJ, "cell 1 2,growx");
+		
+		JLabel JL_jobLenght_ANJ = new JLabel("Durata lucrarii:");
+		JL_jobLenght_ANJ.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JP_center_ANJ.add(JL_jobLenght_ANJ, "cell 0 3,alignx left");
+		
+		JTF_jobLenght_ANJ = new JTextField();
+		JTF_jobLenght_ANJ.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				textfieldBorderResetter(JTF_jobLenght_ANJ);
+			}
+		});
+		JTF_jobLenght_ANJ.setColumns(10);
+		JP_center_ANJ.add(JTF_jobLenght_ANJ, "cell 1 3,growx");
 		
 		JPanel JP_south_ANJ = new JPanel();
 		JP_south_ANJ.setBackground(Color.WHITE);
@@ -919,9 +1016,17 @@ public class ServiceFrame {
 				List<JTextField> jtf_list = new ArrayList<JTextField>();
 				jtf_list.add(JTF_jobName_ANJ);
 				jtf_list.add(JTF_jobPrice_ANJ);
+				jtf_list.add(JTF_jobUniteName_ANJ);
+				jtf_list.add(JTF_jobLenght_ANJ);
 				
-				if(emptyFieldValidation(jtf_list)) {
-					SaveJob(JTF_jobName_ANJ.getText(), Float.valueOf(JTF_jobPrice_ANJ.getText()));
+				//for number format validation
+				List<JTextField> jtf_list_nf = new ArrayList<JTextField>();
+				jtf_list_nf.add(JTF_jobPrice_ANJ);
+				jtf_list_nf.add(JTF_jobLenght_ANJ);
+				
+				if(emptyFieldValidation(jtf_list) && numberFormatValidation(jtf_list_nf)) {
+					//_SaveJob(JTF_jobName_ANJ.getText(), Float.valueOf(JTF_jobPrice_ANJ.getText()));
+					saveJob(JTF_jobName_ANJ.getText(), Float.valueOf(JTF_jobPrice_ANJ.getText()), JTF_jobUniteName_ANJ.getText(), Float.valueOf(JTF_jobLenght_ANJ.getText()));
 					
 					panelAbandationHelper(panels.pop(), panels.peek(), false);
 				}else {
@@ -1014,7 +1119,7 @@ public class ServiceFrame {
 		JB_saveUser_ANU.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(UserRegistrtationValidation(JTF_userName_ANU, JPF_userPassword_ANU, JPF_userPasswordRE_ANU)) {
-					SaveUser(selectedRole.getId(),JTF_userName_ANU.getText(), String.valueOf(JPF_userPassword_ANU.getPassword()));
+					SaveUser(selectedRole.getId(),JTF_userName_ANU.getText(), encryptPassword(String.valueOf(JPF_userPassword_ANU.getPassword())));
 					
 					panelAbandationHelper(panels.pop(), panels.peek(), false);
 				}else {
@@ -1032,10 +1137,11 @@ public class ServiceFrame {
 		JPanel JP_west_ANS = new JPanel();
 		JP_west_ANS.setBackground(Color.WHITE);
 		panelANS.add(JP_west_ANS, BorderLayout.WEST);
+		JP_west_ANS.setLayout(new BorderLayout(0, 0));
 		
 		JLabel BC_reception_ANS = new JLabel("");
 		BC_reception_ANS.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/supplie_512.png")));
-		JP_west_ANS.add(BC_reception_ANS);
+		JP_west_ANS.add(BC_reception_ANS, BorderLayout.NORTH);
 		
 		JPanel JP_center_ANS = new JPanel();
 		JP_center_ANS.setBackground(Color.WHITE);
@@ -1096,7 +1202,7 @@ public class ServiceFrame {
 		JTF_selectedClientName_ANS.setFont(new Font("Tahoma", Font.BOLD, 22));
 		JTF_selectedClientName_ANS.setEnabled(false);
 		JTF_selectedClientName_ANS.setEditable(false);
-		JP_center_ANS.add(JTF_selectedClientName_ANS, "cell 0 1 4 1,growx");
+		JP_center_ANS.add(JTF_selectedClientName_ANS, "cell 0 1 2 1,growx");
 		JTF_selectedClientName_ANS.setColumns(10);
 		
 		JLabel JB_invoiceNR_ANS = new JLabel("NR de factura:");
@@ -1107,6 +1213,13 @@ public class ServiceFrame {
 		JTF_invoiceNR_ANS.setName("permanent");
 		JTF_invoiceNR_ANS.setColumns(10);
 		JP_center_ANS.add(JTF_invoiceNR_ANS, "cell 1 2,growx");
+		
+		JTextArea txtrCommentPetruReceptie = new JTextArea();
+		txtrCommentPetruReceptie.setLineWrap(true);
+		JP_center_ANS.add(txtrCommentPetruReceptie, "cell 2 2 2 3,grow");
+		txtrCommentPetruReceptie.setFont(new Font("Monospaced", Font.PLAIN, 14));
+		txtrCommentPetruReceptie.setText("Comment petru receptie...");
+		txtrCommentPetruReceptie.setBorder(new LineBorder(new Color(0, 0, 0)));
 		
 		JLabel JL_dateIN_ANS = new JLabel("Date in:");
 		JL_dateIN_ANS.setFont(new Font("Tahoma", Font.PLAIN, 21));
@@ -1207,7 +1320,7 @@ public class ServiceFrame {
 		JTF_pieceVAT_ANS.setColumns(10);
 		JP_center_ANS.add(JTF_pieceVAT_ANS, "cell 1 10,growx");
 		
-		JButton JB_addPieceToList_ANS = new JButton("Adauga pe list");
+		JButton JB_addPieceToList_ANS = new JButton("Adauga la list");
 		JB_addPieceToList_ANS.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//all required textfields
@@ -1242,7 +1355,13 @@ public class ServiceFrame {
 		JB_addPieceToList_ANS.setName("primary");
 		JB_addPieceToList_ANS.setFont(new Font("Tahoma", Font.BOLD, 20));
 		JB_addPieceToList_ANS.setEnabled(false);
-		JP_center_ANS.add(JB_addPieceToList_ANS, "cell 2 11 2 1,growx");
+		JP_center_ANS.add(JB_addPieceToList_ANS, "cell 2 11,growx");
+		
+		JButton JB_pieceSearch_ANS_1 = new JButton("Sterge");
+		JB_pieceSearch_ANS_1.setName("primary");
+		JB_pieceSearch_ANS_1.setFont(new Font("Tahoma", Font.BOLD, 20));
+		JB_pieceSearch_ANS_1.setEnabled(false);
+		JP_center_ANS.add(JB_pieceSearch_ANS_1, "cell 3 11,growx");
 		
 		JScrollPane SP_pieces_ANS = new JScrollPane();
 		JP_center_ANS.add(SP_pieces_ANS, "cell 0 12 4 1,grow");
@@ -1250,26 +1369,6 @@ public class ServiceFrame {
 		JT_pieces_ANS = new JTable();
 		JT_pieces_ANS.setModel(new DefaultTableModel(
 			new Object[][] {
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
 			},
 			new String[] {
 				"New column", "New column", "New column", "New column", "New column", "New column"
@@ -1304,7 +1403,7 @@ public class ServiceFrame {
 						if(dateFormatValidation(jdc_list)) {
 							DefaultTableModel dtm = (DefaultTableModel) JT_pieces_ANS.getModel();
 							if(dtm.getRowCount()>0) {						
-								SaveReception(JTF_invoiceNR_ANS.getText(), JDC_dateIN_ANS.getDate(), JDC_dueDate_ANS.getDate());
+								_SaveReception(JTF_invoiceNR_ANS.getText(), JDC_dateIN_ANS.getDate(), JDC_dueDate_ANS.getDate());
 								
 								panelAbandationHelper(panels.pop(), panels.peek(), false);
 								dtm.setRowCount(0);
@@ -1346,7 +1445,7 @@ public class ServiceFrame {
 		
 		JPanel JP_infoDetails_CL = new JPanel();
 		JP_west_CL.add(JP_infoDetails_CL, BorderLayout.CENTER);
-		JP_infoDetails_CL.setLayout(new MigLayout("", "[][grow]", "[][][][][][][][][][][]"));
+		JP_infoDetails_CL.setLayout(new MigLayout("", "[][grow]", "[][][][][][][][][][][][]"));
 		
 		JLabel JL_clientNameInfo_CL = new JLabel("Numele:");
 		JL_clientNameInfo_CL.setName("");
@@ -1366,103 +1465,112 @@ public class ServiceFrame {
 		JTF_clientPhoneInfo_CL.setColumns(10);
 		JP_infoDetails_CL.add(JTF_clientPhoneInfo_CL, "cell 1 1,growx");
 		
+		JLabel JL_clientCNPInfo_CL = new JLabel("CNP:");
+		JL_clientCNPInfo_CL.setName("");
+		JP_infoDetails_CL.add(JL_clientCNPInfo_CL, "cell 0 2,alignx trailing");
+		
+		JTF_clientCNPInfo_CL = new JTextField();
+		JTF_clientCNPInfo_CL.setName("");
+		JTF_clientCNPInfo_CL.setColumns(10);
+		JP_infoDetails_CL.add(JTF_clientCNPInfo_CL, "cell 1 2,growx");
+		
 		JLabel JL_clientCompanyInfo_CL = new JLabel("Statutul clientului:");
 		JL_clientCompanyInfo_CL.setName("");
-		JP_infoDetails_CL.add(JL_clientCompanyInfo_CL, "cell 0 2,alignx trailing");
+		JP_infoDetails_CL.add(JL_clientCompanyInfo_CL, "cell 0 3,alignx trailing");
 		
 		JTF_clientCompanyInfo_CL = new JTextField();
 		JTF_clientCompanyInfo_CL.setName("");
 		JTF_clientCompanyInfo_CL.setEditable(false);
 		JTF_clientCompanyInfo_CL.setColumns(10);
-		JP_infoDetails_CL.add(JTF_clientCompanyInfo_CL, "cell 1 2,growx");
+		JP_infoDetails_CL.add(JTF_clientCompanyInfo_CL, "cell 1 3,growx");
 		
 		JLabel JL_companyNameInfo_CL = new JLabel("Numele companiei:");
 		JL_companyNameInfo_CL.setVisible(false);
 		JL_companyNameInfo_CL.setName("secondary");
-		JP_infoDetails_CL.add(JL_companyNameInfo_CL, "cell 0 3,alignx trailing");
+		JP_infoDetails_CL.add(JL_companyNameInfo_CL, "cell 0 4,alignx trailing");
 		
 		JTF_companyNameInfo_CL = new JTextField();
 		JTF_companyNameInfo_CL.setVisible(false);
 		JTF_companyNameInfo_CL.setName("secondary");
 		JTF_companyNameInfo_CL.setColumns(10);
-		JP_infoDetails_CL.add(JTF_companyNameInfo_CL, "cell 1 3,growx");
+		JP_infoDetails_CL.add(JTF_companyNameInfo_CL, "cell 1 4,growx");
 		
 		JLabel JL_companyAddressInfo_CL = new JLabel("Addresa companiei:");
 		JL_companyAddressInfo_CL.setVisible(false);
 		JL_companyAddressInfo_CL.setName("secondary");
-		JP_infoDetails_CL.add(JL_companyAddressInfo_CL, "cell 0 4,alignx trailing");
+		JP_infoDetails_CL.add(JL_companyAddressInfo_CL, "cell 0 5,alignx trailing");
 		
 		JTF_companyAddressInfo_CL = new JTextField();
 		JTF_companyAddressInfo_CL.setVisible(false);
 		JTF_companyAddressInfo_CL.setName("secondary");
 		JTF_companyAddressInfo_CL.setColumns(10);
-		JP_infoDetails_CL.add(JTF_companyAddressInfo_CL, "cell 1 4,growx");
+		JP_infoDetails_CL.add(JTF_companyAddressInfo_CL, "cell 1 5,growx");
 		
 		JLabel JL_companyPhoneInfo_CL = new JLabel("Num. tel. comp.:");
 		JL_companyPhoneInfo_CL.setVisible(false);
 		JL_companyPhoneInfo_CL.setName("secondary");
-		JP_infoDetails_CL.add(JL_companyPhoneInfo_CL, "cell 0 5,alignx trailing");
+		JP_infoDetails_CL.add(JL_companyPhoneInfo_CL, "cell 0 6,alignx trailing");
 		
 		JTF_companyPhoneInfo_CL = new JTextField();
 		JTF_companyPhoneInfo_CL.setVisible(false);
 		JTF_companyPhoneInfo_CL.setName("secondary");
 		JTF_companyPhoneInfo_CL.setColumns(10);
-		JP_infoDetails_CL.add(JTF_companyPhoneInfo_CL, "cell 1 5,growx");
+		JP_infoDetails_CL.add(JTF_companyPhoneInfo_CL, "cell 1 6,growx");
 		
 		JLabel JL_companyCIFInfo_CL = new JLabel("CIF:");
 		JL_companyCIFInfo_CL.setVisible(false);
 		JL_companyCIFInfo_CL.setName("secondary");
-		JP_infoDetails_CL.add(JL_companyCIFInfo_CL, "cell 0 6,alignx trailing");
+		JP_infoDetails_CL.add(JL_companyCIFInfo_CL, "cell 0 7,alignx trailing");
 		
 		JTF_companyCIFInfo_CL = new JTextField();
 		JTF_companyCIFInfo_CL.setVisible(false);
 		JTF_companyCIFInfo_CL.setName("secondary");
 		JTF_companyCIFInfo_CL.setColumns(10);
-		JP_infoDetails_CL.add(JTF_companyCIFInfo_CL, "cell 1 6,growx");
+		JP_infoDetails_CL.add(JTF_companyCIFInfo_CL, "cell 1 7,growx");
 		
 		JLabel JL_companyRegNRInfo_CL = new JLabel("NR de irgesitrare:");
 		JL_companyRegNRInfo_CL.setVisible(false);
 		JL_companyRegNRInfo_CL.setName("secondary");
-		JP_infoDetails_CL.add(JL_companyRegNRInfo_CL, "cell 0 7,alignx trailing");
+		JP_infoDetails_CL.add(JL_companyRegNRInfo_CL, "cell 0 8,alignx trailing");
 		
 		JTF_companyRegNRInfo_CL = new JTextField();
 		JTF_companyRegNRInfo_CL.setVisible(false);
 		JTF_companyRegNRInfo_CL.setName("secondary");
 		JTF_companyRegNRInfo_CL.setColumns(10);
-		JP_infoDetails_CL.add(JTF_companyRegNRInfo_CL, "cell 1 7,growx");
+		JP_infoDetails_CL.add(JTF_companyRegNRInfo_CL, "cell 1 8,growx");
 		
 		JLabel JL_companyBankInfo_CL = new JLabel("Bank:");
 		JL_companyBankInfo_CL.setVisible(false);
 		JL_companyBankInfo_CL.setName("secondary");
-		JP_infoDetails_CL.add(JL_companyBankInfo_CL, "cell 0 8,alignx trailing");
+		JP_infoDetails_CL.add(JL_companyBankInfo_CL, "cell 0 9,alignx trailing");
 		
 		JTF_companyBankInfo_CL = new JTextField();
 		JTF_companyBankInfo_CL.setVisible(false);
 		JTF_companyBankInfo_CL.setName("secondary");
 		JTF_companyBankInfo_CL.setColumns(10);
-		JP_infoDetails_CL.add(JTF_companyBankInfo_CL, "cell 1 8,growx");
+		JP_infoDetails_CL.add(JTF_companyBankInfo_CL, "cell 1 9,growx");
 		
 		JLabel JL_companyIBANInfo_CL = new JLabel("IBAN:");
 		JL_companyIBANInfo_CL.setVisible(false);
 		JL_companyIBANInfo_CL.setName("secondary");
-		JP_infoDetails_CL.add(JL_companyIBANInfo_CL, "cell 0 9,alignx trailing");
+		JP_infoDetails_CL.add(JL_companyIBANInfo_CL, "cell 0 10,alignx trailing");
 		
 		JTF_companyIBANInfo_CL = new JTextField();
 		JTF_companyIBANInfo_CL.setVisible(false);
 		JTF_companyIBANInfo_CL.setName("secondary");
 		JTF_companyIBANInfo_CL.setColumns(10);
-		JP_infoDetails_CL.add(JTF_companyIBANInfo_CL, "cell 1 9,growx");
+		JP_infoDetails_CL.add(JTF_companyIBANInfo_CL, "cell 1 10,growx");
 		
 		JLabel JL_companyBranchOfficeInfo_CL = new JLabel("Branch office:");
 		JL_companyBranchOfficeInfo_CL.setVisible(false);
 		JL_companyBranchOfficeInfo_CL.setName("secondary");
-		JP_infoDetails_CL.add(JL_companyBranchOfficeInfo_CL, "cell 0 10,alignx trailing");
+		JP_infoDetails_CL.add(JL_companyBranchOfficeInfo_CL, "cell 0 11,alignx trailing");
 		
 		JTF_companyBranchOfficeInfo_CL = new JTextField();
 		JTF_companyBranchOfficeInfo_CL.setVisible(false);
 		JTF_companyBranchOfficeInfo_CL.setName("secondary");
 		JTF_companyBranchOfficeInfo_CL.setColumns(10);
-		JP_infoDetails_CL.add(JTF_companyBranchOfficeInfo_CL, "cell 1 10,growx");
+		JP_infoDetails_CL.add(JTF_companyBranchOfficeInfo_CL, "cell 1 11,growx");
 		
 		JPanel JP_infoActions_CL = new JPanel();
 		JP_west_CL.add(JP_infoActions_CL, BorderLayout.SOUTH);
@@ -1480,6 +1588,14 @@ public class ServiceFrame {
 					
 					SC_addClient_ANR.setEnabled(false);
 					SC_editClient_ANR.setEnabled(true);
+					SC_infoClient_ANR.setEnabled(true);
+					
+					SC_addCar_ANR.setEnabled(true);
+					SC_editCar_ANR.setEnabled(false);
+					SC_infoCar_ANR.setEnabled(false);
+					JL_selectCar_ANR.setText("Selectati masina");
+					
+					expandRegistration(selectedClient.getId(), null, JTF_registrationNumber_ANR.getText(), JDC_registrationDate_ANR.getDate(), null);
 				}	
 				panelAbandationHelper(currentPanel, panels.peek(), false);
 			}
@@ -1618,6 +1734,7 @@ public class ServiceFrame {
 				//basic client data
 				JTF_clientNameInfo_CL.setText(selectedClient.getContactname());
 				JTF_clientPhoneInfo_CL.setText(selectedClient.getContactphone());
+				JTF_clientCNPInfo_CL.setText(selectedClient.getCnp());
 				JTF_clientCompanyInfo_CL.setText(String.valueOf(selectedClient.getIscompany()));
 			}
 		});
@@ -2225,8 +2342,13 @@ public class ServiceFrame {
 				if(panels.peek()==panelSII) {
 					nextPanel = panelSII;
 					
-					JTF_inventoryItemName_SII.setText(selectedInventoryItem.getAuto_pieces().getAutopiecename());
+					Auto_pieces ap = selectedInventoryItem.getAuto_pieces();
+					
+					JTF_inventoryItemID_SII.setText(selectedInventoryItem.getAutopiecesid());
+					JTF_inventoryItemName_SII.setText(ap.getAutopiecename());
+					JTF_inventoryItemUniteName_SII.setText(ap.getAutopieceunitename());
 					JTF_inventoryItemPrice_SII.setText(String.valueOf(selectedInventoryItem.getUnitepriceout()));
+					JTF_invenotyItemQuantity_SII.setText("max " + String.valueOf(selectedInventoryItem.getQuantity()));
 				}else {
 					System.out.println("Error in panel navigation.");
 					nextPanel = panelSII;
@@ -2386,7 +2508,7 @@ public class ServiceFrame {
 		
 		JPanel JP_infoDetails_JL = new JPanel();
 		JP_west_JL.add(JP_infoDetails_JL, BorderLayout.CENTER);
-		JP_infoDetails_JL.setLayout(new MigLayout("", "[][grow]", "[][]"));
+		JP_infoDetails_JL.setLayout(new MigLayout("", "[][grow]", "[][][][]"));
 		
 		JLabel JL_jobNameInfo_JL = new JLabel("Numele jobului:");
 		JP_infoDetails_JL.add(JL_jobNameInfo_JL, "cell 0 0,alignx trailing");
@@ -2403,6 +2525,20 @@ public class ServiceFrame {
 		JTF_jobPriceInfo_JL.setColumns(10);
 		JP_infoDetails_JL.add(JTF_jobPriceInfo_JL, "cell 1 1,growx");
 		
+		JLabel JL_jobUniteNameInfo_JL = new JLabel("Unitate de masura:");
+		JP_infoDetails_JL.add(JL_jobUniteNameInfo_JL, "cell 0 2,alignx trailing");
+		
+		JTF_jobUniteNameInfo_JL = new JTextField();
+		JTF_jobUniteNameInfo_JL.setColumns(10);
+		JP_infoDetails_JL.add(JTF_jobUniteNameInfo_JL, "cell 1 2,growx");
+		
+		JLabel JL_jobLenghtInfo_JL = new JLabel("Durata:");
+		JP_infoDetails_JL.add(JL_jobLenghtInfo_JL, "cell 0 3,alignx trailing");
+		
+		JTF_jobLenghtInfo_JL = new JTextField();
+		JTF_jobLenghtInfo_JL.setColumns(10);
+		JP_infoDetails_JL.add(JTF_jobLenghtInfo_JL, "cell 1 3,growx");
+		
 		JPanel JP_infoActions_JL = new JPanel();
 		JP_west_JL.add(JP_infoActions_JL, BorderLayout.SOUTH);
 		JP_infoActions_JL.setLayout(new MigLayout("", "[grow][grow]", "[][]"));
@@ -2417,7 +2553,9 @@ public class ServiceFrame {
 					nextPanel = panelSJ;
 					
 					JTF_jobName_SJ.setText(selectedJob.getJobname());
-					JTF_jobPrice_SJ.setText(String.valueOf(selectedJob.getJobprice()));
+					JTF_jobPrice_SJ.setText(String.valueOf(selectedJob.getJobprice()!=null?selectedJob.getJobprice():""));
+					JTF_jobUniteName_SJ.setText(selectedJob.getJobunitename());
+					JTF_jobLenght_SJ.setText(String.valueOf(selectedJob.getJoblenght()!=null?selectedJob.getJobprice():""));
 				}else {
 					System.out.println("Error in panel navigation.");
 				}	
@@ -2472,7 +2610,7 @@ public class ServiceFrame {
 			public void mouseClicked(MouseEvent e) {
 				panelStateChangeHelper(panels.peek(), "all", "unselected");
 				
-				SetDefaultTable(JT_jobs_JL, new String[]{"Job", "Numele jobului", "Tarifa jobului"});
+				SetDefaultTable(JT_jobs_JL, new String[]{"Job", "Numele jobului", "Tarifa jobului", "UM", "Durata"});
 				LoadJobs();
 			}
 		});
@@ -2505,7 +2643,9 @@ public class ServiceFrame {
 				TableModel model = JT_jobs_JL.getModel();
 				selectedJob = (Job) model.getValueAt(index, 0);
 				JTF_jobNameInfo_JL.setText(selectedJob.getJobname());
-				JTF_jobPriceInfo_JL.setText(String.valueOf(selectedJob.getJobprice()!=0?selectedJob.getJobprice():""));
+				JTF_jobPriceInfo_JL.setText(String.valueOf(selectedJob.getJobprice()!=null?selectedJob.getJobprice():""));
+				JTF_jobUniteNameInfo_JL.setText(selectedJob.getJobunitename());
+				JTF_jobLenghtInfo_JL.setText(String.valueOf(selectedJob.getJoblenght()!=null?selectedJob.getJoblenght():""));
 				
 				panelStateChangeHelper(panelJL, null, "selected");
 			}
@@ -2542,7 +2682,7 @@ public class ServiceFrame {
 		JLabel JL_userRoleInfo_UL = new JLabel("Role:");
 		JP_infoDetails_UL.add(JL_userRoleInfo_UL, "cell 0 1,alignx trailing");
 		
-		JComboBox JCB_userRoleInfo_UL = new JComboBox();
+		JCB_userRoleInfo_UL = new JComboBox<Role>();
 		JCB_userRoleInfo_UL.setEditable(true);
 		JP_infoDetails_UL.add(JCB_userRoleInfo_UL, "cell 1 1,growx");
 		
@@ -2550,16 +2690,27 @@ public class ServiceFrame {
 		JP_west_UL.add(JP_infoActions_UL, BorderLayout.SOUTH);
 		JP_infoActions_UL.setLayout(new MigLayout("", "[grow][grow]", "[][]"));
 		
-		JButton JB_deleteUser_UL_1 = new JButton("Selectare");
-		JB_deleteUser_UL_1.addActionListener(new ActionListener() {
+		JButton JB_selectUser_UL = new JButton("Selectare");
+		JB_selectUser_UL.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				currentPanel = panels.pop();
+				JPanel nextPanel = null;
+
+				if(panels.peek()==panelSJ) {
+					nextPanel = panelSJ;
+					
+					JTF_userName_SJ.setText(selectedUser.getUsername());					
+				}else {
+					System.out.println("Error in panel navigation.");
+				}	
+				panelAbandationHelper(currentPanel, nextPanel, false);
 			}
 		});
-		JB_deleteUser_UL_1.setVisible(false);
-		JB_deleteUser_UL_1.setName("secondary");
-		JB_deleteUser_UL_1.setFont(new Font("Tahoma", Font.BOLD, 20));
-		JB_deleteUser_UL_1.setEnabled(false);
-		JP_infoActions_UL.add(JB_deleteUser_UL_1, "cell 0 0 2 1,growx");
+		JB_selectUser_UL.setVisible(false);
+		JB_selectUser_UL.setName("secondary");
+		JB_selectUser_UL.setFont(new Font("Tahoma", Font.BOLD, 20));
+		JB_selectUser_UL.setEnabled(false);
+		JP_infoActions_UL.add(JB_selectUser_UL, "cell 0 0 2 1,growx");
 		
 		JButton JB_updateUser_UL = new JButton("Update");
 		JB_updateUser_UL.setName("primary");
@@ -2959,7 +3110,7 @@ public class ServiceFrame {
 		panelSC.add(JP_west_SC, BorderLayout.WEST);
 		
 		JLabel HC_car_SC = new JLabel("");
-		HC_car_SC.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/client_512.png")));
+		HC_car_SC.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/job_256.png")));
 		JP_west_SC.add(HC_car_SC);
 		
 		JPanel JP_center_SC = new JPanel();
@@ -2974,13 +3125,25 @@ public class ServiceFrame {
 		lblAdaugaMasinaNoua.setFont(new Font("Tahoma", Font.PLAIN, 21));
 		JP_carSelectionHeader_SC.add(lblAdaugaMasinaNoua);
 		
-		JPanel JP_carSelectionDetails_SC = new JPanel();
-		JP_center_SC.add(JP_carSelectionDetails_SC, BorderLayout.CENTER);
-		JP_carSelectionDetails_SC.setLayout(new MigLayout("", "[][grow]", "[][][][][][]"));
+		JPanel JDC_carTireDim_SC = new JPanel();
+		JP_center_SC.add(JDC_carTireDim_SC, BorderLayout.CENTER);
+		JDC_carTireDim_SC.setLayout(new MigLayout("", "[][grow][][][grow]", "[][][][][][][][][][][][][][][][][][]"));
+		
+		JLabel lblNewLabel = new JLabel("Datele autovihicului");
+		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 18));
+		JDC_carTireDim_SC.add(lblNewLabel, "cell 0 0");
+		
+		JSeparator separator = new JSeparator();
+		separator.setOrientation(SwingConstants.VERTICAL);
+		JDC_carTireDim_SC.add(separator, "cell 2 0 1 18");
+		
+		JLabel lblAlteDateAutovihicului = new JLabel("Alte date autovihicului");
+		lblAlteDateAutovihicului.setFont(new Font("Tahoma", Font.BOLD, 18));
+		JDC_carTireDim_SC.add(lblAlteDateAutovihicului, "cell 3 0");
 		
 		JLabel JL_carLicenseNumber_AA = new JLabel("Numarul de înmatriculare:");
 		JL_carLicenseNumber_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		JP_carSelectionDetails_SC.add(JL_carLicenseNumber_AA, "cell 0 0,alignx trailing");
+		JDC_carTireDim_SC.add(JL_carLicenseNumber_AA, "cell 0 1,alignx left");
 		
 		JTF_carLicenseNumber_AA = new JTextField();
 		JTF_carLicenseNumber_AA.addKeyListener(new KeyAdapter() {
@@ -2990,39 +3153,63 @@ public class ServiceFrame {
 			}
 		});
 		JTF_carLicenseNumber_AA.setColumns(10);
-		JP_carSelectionDetails_SC.add(JTF_carLicenseNumber_AA, "cell 1 0,growx");
+		JDC_carTireDim_SC.add(JTF_carLicenseNumber_AA, "cell 1 1,growx");
+		
+		JLabel JL_carTireDim_SC = new JLabel("Dim. anvelope:");
+		JL_carTireDim_SC.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JDC_carTireDim_SC.add(JL_carTireDim_SC, "cell 3 1,alignx left");
+		
+		JTF_carTireDim_SC = new JTextField();
+		JTF_carTireDim_SC.setColumns(10);
+		JDC_carTireDim_SC.add(JTF_carTireDim_SC, "cell 4 1,growx");
 		
 		JLabel JL_carBrand_AA = new JLabel("Brand:");
 		JL_carBrand_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		JP_carSelectionDetails_SC.add(JL_carBrand_AA, "cell 0 1,alignx trailing");
+		JDC_carTireDim_SC.add(JL_carBrand_AA, "cell 0 2,alignx left");
 		
-		JTF_carBrand_AA = new JTextField();
-		JTF_carBrand_AA.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyTyped(KeyEvent e) {
-				textfieldBorderResetter(JTF_carBrand_AA);
+		JCB_carBrand_SC = new JComboBox<Brand>();
+		JCB_carBrand_SC.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+		        JComboBox jcb = (JComboBox) e.getSource();
+		        Brand brand = (Brand) jcb.getSelectedItem();
+		        selectedBrand = brand;
+		        
+		        try {
+			        JCB_carModel_SC.removeAllItems();
+			        
+			        loadModels(JCB_carModel_SC, selectedBrand.getId());
+		        }catch(Exception ex) {
+		        	System.out.println(ex);
+		        }
 			}
 		});
-		JTF_carBrand_AA.setColumns(10);
-		JP_carSelectionDetails_SC.add(JTF_carBrand_AA, "cell 1 1,growx");
+		JDC_carTireDim_SC.add(JCB_carBrand_SC, "cell 1 2,growx");
+		
+		JLabel JL_carBody_SC = new JLabel("Caroserie:");
+		JL_carBody_SC.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JDC_carTireDim_SC.add(JL_carBody_SC, "cell 3 2,alignx left");
+		
+		JTF_carBody_SC = new JTextField();
+		JTF_carBody_SC.setColumns(10);
+		JDC_carTireDim_SC.add(JTF_carBody_SC, "cell 4 2,growx");
 		
 		JLabel JL_carModel_AA = new JLabel("Model:");
 		JL_carModel_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		JP_carSelectionDetails_SC.add(JL_carModel_AA, "cell 0 2,alignx trailing");
+		JDC_carTireDim_SC.add(JL_carModel_AA, "cell 0 3,alignx left");
 		
-		JTF_carModel_AA = new JTextField();
-		JTF_carModel_AA.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyTyped(KeyEvent e) {
-				textfieldBorderResetter(JTF_carModel_AA);
+		JCB_carModel_SC = new JComboBox<Model>();
+		JCB_carModel_SC.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+		        JComboBox jcb = (JComboBox) e.getSource();
+		        Model model = (Model) jcb.getSelectedItem();
+		        selectedModel = model;
 			}
 		});
-		JTF_carModel_AA.setColumns(10);
-		JP_carSelectionDetails_SC.add(JTF_carModel_AA, "cell 1 2,growx");
+		JDC_carTireDim_SC.add(JCB_carModel_SC, "cell 1 3,growx");
 		
 		JLabel JL_carChassisNR_AA = new JLabel("Serie sasiu:");
 		JL_carChassisNR_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		JP_carSelectionDetails_SC.add(JL_carChassisNR_AA, "cell 0 3,alignx trailing");
+		JDC_carTireDim_SC.add(JL_carChassisNR_AA, "cell 0 4,alignx left");
 		
 		JTF_carChassisNR_AA = new JTextField();
 		JTF_carChassisNR_AA.addKeyListener(new KeyAdapter() {
@@ -3032,11 +3219,11 @@ public class ServiceFrame {
 			}
 		});
 		JTF_carChassisNR_AA.setColumns(10);
-		JP_carSelectionDetails_SC.add(JTF_carChassisNR_AA, "cell 1 3,growx");
+		JDC_carTireDim_SC.add(JTF_carChassisNR_AA, "cell 1 4,growx");
 		
 		JLabel JL_carEngineNR_AA = new JLabel("Serie motor:");
 		JL_carEngineNR_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		JP_carSelectionDetails_SC.add(JL_carEngineNR_AA, "cell 0 4,alignx trailing");
+		JDC_carTireDim_SC.add(JL_carEngineNR_AA, "cell 0 5,alignx left");
 		
 		JTF_carEngineNR_AA = new JTextField();
 		JTF_carEngineNR_AA.addKeyListener(new KeyAdapter() {
@@ -3046,11 +3233,61 @@ public class ServiceFrame {
 			}
 		});
 		JTF_carEngineNR_AA.setColumns(10);
-		JP_carSelectionDetails_SC.add(JTF_carEngineNR_AA, "cell 1 4,growx");
+		JDC_carTireDim_SC.add(JTF_carEngineNR_AA, "cell 1 5,growx");
 		
-		JLabel JL_carMilometer_AA = new JLabel("Milometer(NR KM):");
+		JLabel JL_carYear_AA = new JLabel("An fabricatie:");
+		JL_carYear_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JDC_carTireDim_SC.add(JL_carYear_AA, "cell 0 6,alignx left");
+		
+		JTF_carYear_AA = new JTextField();
+		JTF_carYear_AA.setColumns(10);
+		JDC_carTireDim_SC.add(JTF_carYear_AA, "cell 1 6,growx");
+		
+		JLabel JL_carOwnerNR_AA = new JLabel("Nr proprietari:");
+		JL_carOwnerNR_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JDC_carTireDim_SC.add(JL_carOwnerNR_AA, "cell 0 7,alignx left");
+		
+		JTF_carOwnerNR_AA = new JTextField();
+		JTF_carOwnerNR_AA.setColumns(10);
+		JDC_carTireDim_SC.add(JTF_carOwnerNR_AA, "cell 1 7,growx");
+		
+		JLabel JL_carSeatNR_AA = new JLabel("Nr de locuri:");
+		JL_carSeatNR_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JDC_carTireDim_SC.add(JL_carSeatNR_AA, "cell 0 8,alignx left");
+		
+		JTF_carSeatNR_AA = new JTextField();
+		JTF_carSeatNR_AA.setColumns(10);
+		JDC_carTireDim_SC.add(JTF_carSeatNR_AA, "cell 1 8,growx");
+		
+		JLabel JL_carFirstRegDate_AA = new JLabel("Prima inregistrare");
+		JL_carFirstRegDate_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JDC_carTireDim_SC.add(JL_carFirstRegDate_AA, "cell 0 9,alignx left");
+		
+		JDateChooser JDC_carFirstRegDate_AA = new JDateChooser();
+		JDC_carTireDim_SC.add(JDC_carFirstRegDate_AA, "cell 1 9,grow");
+		
+		JLabel lblDateDeGarantie = new JLabel("Date de garantie");
+		lblDateDeGarantie.setFont(new Font("Tahoma", Font.BOLD, 18));
+		JDC_carTireDim_SC.add(lblDateDeGarantie, "cell 0 10");
+		
+		JLabel JL_carWarrantyDate_AA = new JLabel("Expira garantia(date):");
+		JL_carWarrantyDate_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JDC_carTireDim_SC.add(JL_carWarrantyDate_AA, "cell 0 11");
+		
+		JDateChooser JDC_carWarrantyDate_AA = new JDateChooser();
+		JDC_carTireDim_SC.add(JDC_carWarrantyDate_AA, "cell 1 11,grow");
+		
+		JLabel JL_carWarrantyKM_AA = new JLabel("Expira garantia(km):");
+		JL_carWarrantyKM_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JDC_carTireDim_SC.add(JL_carWarrantyKM_AA, "cell 0 12,alignx left");
+		
+		JTF_carWarrantyKM_AA = new JTextField();
+		JTF_carWarrantyKM_AA.setColumns(10);
+		JDC_carTireDim_SC.add(JTF_carWarrantyKM_AA, "cell 1 12,growx");
+		
+		JLabel JL_carMilometer_AA = new JLabel("Pozitie km:");
 		JL_carMilometer_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		JP_carSelectionDetails_SC.add(JL_carMilometer_AA, "cell 0 5,alignx trailing");
+		JDC_carTireDim_SC.add(JL_carMilometer_AA, "cell 0 13,alignx left");
 		
 		JTF_carMilometer_AA = new JTextField();
 		JTF_carMilometer_AA.addKeyListener(new KeyAdapter() {
@@ -3060,50 +3297,86 @@ public class ServiceFrame {
 			}
 		});
 		JTF_carMilometer_AA.setColumns(10);
-		JP_carSelectionDetails_SC.add(JTF_carMilometer_AA, "cell 1 5,growx");
+		JDC_carTireDim_SC.add(JTF_carMilometer_AA, "cell 1 13,growx");
+		
+		JLabel lblDateDeValabilitate = new JLabel("Date de valabilitate");
+		lblDateDeValabilitate.setFont(new Font("Tahoma", Font.BOLD, 18));
+		JDC_carTireDim_SC.add(lblDateDeValabilitate, "cell 0 14");
+		
+		JLabel JL_carValidityFrom_AA = new JLabel("Expirare ITP/CV:");
+		JL_carValidityFrom_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JDC_carTireDim_SC.add(JL_carValidityFrom_AA, "cell 0 15");
+		
+		JDateChooser JDC_carValidityFrom_AA = new JDateChooser();
+		JDC_carTireDim_SC.add(JDC_carValidityFrom_AA, "cell 1 15,grow");
+		
+		JDateChooser JDC_carValidityTo_AA = new JDateChooser();
+		JDC_carTireDim_SC.add(JDC_carValidityTo_AA, "cell 1 16,grow");
+		
+		JLabel JL_carLastVerificationDate_AA = new JLabel("Ultima verificare:");
+		JL_carLastVerificationDate_AA.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		JDC_carTireDim_SC.add(JL_carLastVerificationDate_AA, "cell 0 17");
+		
+		JDateChooser JDC_carLastVerificationDate_AA = new JDateChooser();
+		JDC_carTireDim_SC.add(JDC_carLastVerificationDate_AA, "cell 1 17,grow");
 		
 		JPanel JP_carSelectionActions_SC = new JPanel();
 		FlowLayout flowLayout_16 = (FlowLayout) JP_carSelectionActions_SC.getLayout();
 		flowLayout_16.setAlignment(FlowLayout.RIGHT);
 		JP_center_SC.add(JP_carSelectionActions_SC, BorderLayout.SOUTH);
 		
-		JButton JB_clearCar_AA = new JButton("Anulare");
-		JB_clearCar_AA.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				panelStateChangeHelper(panels.peek(), "all", null);
-			}
-		});
-		JB_clearCar_AA.setFont(new Font("Tahoma", Font.PLAIN, 24));
-		JP_carSelectionActions_SC.add(JB_clearCar_AA);
-		
 		JButton JB_addCar_AA = new JButton("Adauga nou");
 		JB_addCar_AA.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				List<JTextField> jtf_list = new ArrayList<JTextField>();
 				jtf_list.add(JTF_carLicenseNumber_AA);
-				jtf_list.add(JTF_carBrand_AA);
-				jtf_list.add(JTF_carModel_AA);
 				jtf_list.add(JTF_carChassisNR_AA);
-				jtf_list.add(JTF_carEngineNR_AA);
-				jtf_list.add(JTF_carMilometer_AA);
+				/*jtf_list.add(JTF_carEngineNR_AA);
+				jtf_list.add(JTF_carMilometer_AA);*/
+				
+				//for number format validation
+				List<JTextField> jtf_list_nf = new ArrayList<JTextField>();
+				jtf_list_nf.add(JTF_carYear_AA);
+				jtf_list_nf.add(JTF_carOwnerNR_AA);
+				jtf_list_nf.add(JTF_carSeatNR_AA);
+				jtf_list_nf.add(JTF_carWarrantyKM_AA);
+				jtf_list_nf.add(JTF_carMilometer_AA);
 				
 				if(emptyFieldValidation(jtf_list)) {
-					
-					saveCar(JTF_carLicenseNumber_AA.getText(), JTF_carBrand_AA.getText(), JTF_carModel_AA.getText(), JTF_carChassisNR_AA.getText(), JTF_carEngineNR_AA.getText(), Integer.valueOf(JTF_carMilometer_AA.getText()));
-					JL_selectCar_ANR.setText(selectedCar.getLicenseNumber());
-
-					SC_addCar_ANR.setEnabled(false);
-					SC_editCar_ANR.setEnabled(true);
-					
-					panelAbandationHelper(panels.pop(), panels.peek(), false);
-					
-				}else {
-					unsavedInformer();
+					//if(numberFormatValidation(jtf_list_nf)){
+						try {
+							saveCar(selectedBrand!=null?selectedBrand.getId():1, selectedModel!=null?selectedModel.getId():1, JTF_carLicenseNumber_AA.getText(), JTF_carChassisNR_AA.getText(), JTF_carEngineNR_AA.getText(),
+									stringToInteger(JTF_carMilometer_AA.getText()), stringToInteger(JTF_carYear_AA.getText()), stringToInteger(JTF_carOwnerNR_AA.getText()), stringToInteger(JTF_carSeatNR_AA.getText()), JDC_carFirstRegDate_AA.getDate(), JDC_carWarrantyDate_AA.getDate(),
+									stringToInteger(JTF_carWarrantyKM_AA.getText()), JDC_carValidityFrom_AA.getDate(), JDC_carValidityTo_AA.getDate(), JDC_carValidityTo_AA.getDate(), JTF_carTireDim_SC.getText(),
+									JTF_carBody_SC.getText());
+							
+							JL_selectCar_ANR.setText(selectedCar.getLicenseNumber());
+	
+							SC_addCar_ANR.setEnabled(false);
+							SC_editCar_ANR.setEnabled(true);
+							SC_infoCar_ANR.setEnabled(true);
+							
+							panelAbandationHelper(panels.pop(), panels.peek(), false);
+						}catch(Exception ex) {
+							System.out.println(ex.toString());
+						}
+					//}	
 				}
 			}
 		});
 		JB_addCar_AA.setFont(new Font("Tahoma", Font.PLAIN, 24));
 		JP_carSelectionActions_SC.add(JB_addCar_AA);
+		
+		JButton JB_clearCar_AA = new JButton("Anulare");
+		JB_clearCar_AA.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				panelStateChangeHelper(panels.peek(), "all", null);
+				selectedCar = null;
+				JB_addCar_AA.setText("Adauga nou");
+			}
+		});
+		JB_clearCar_AA.setFont(new Font("Tahoma", Font.PLAIN, 24));
+		JP_carSelectionActions_SC.add(JB_clearCar_AA);
 		
 		JPanel JP_east_SC = new JPanel();
 		panelSC.add(JP_east_SC, BorderLayout.EAST);
@@ -3121,6 +3394,34 @@ public class ServiceFrame {
 		JP_east_SC.add(JP_prevCars_AA, BorderLayout.CENTER);
 		
 		JT_prevCars_AA = new JTable();
+		JT_prevCars_AA.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				int index = JT_prevCars_AA.convertRowIndexToModel(JT_prevCars_AA.getSelectedRow());
+				TableModel model = JT_prevCars_AA.getModel();
+				selectedCar = (Car) model.getValueAt(index, 0);
+				
+				JTF_carLicenseNumber_AA.setText(selectedCar.getLicenseNumber());
+				JCB_carBrand_SC.setSelectedItem(selectedCar.getBrands());
+				JCB_carModel_SC.setSelectedItem(selectedCar.getModels());
+				JTF_carChassisNR_AA.setText(selectedCar.getChassisnr());
+				JTF_carEngineNR_AA.setText(selectedCar.getEnginenr());
+				JTF_carYear_AA.setText(String.valueOf(selectedCar.getYear()));
+				JTF_carOwnerNR_AA.setText(String.valueOf(selectedCar.getOwnernr()));
+				JTF_carSeatNR_AA.setText(String.valueOf(selectedCar.getSeatnr()));
+				JDC_carFirstRegDate_AA.setDate(selectedCar.getFirstregdate());
+				JDC_carWarrantyDate_AA.setDate(selectedCar.getWarrantydate());
+				JTF_carWarrantyKM_AA.setText(String.valueOf(selectedCar.getWarrantykm()));
+				JTF_carMilometer_AA.setText(String.valueOf(selectedCar.getMilometer()));
+				JDC_carValidityFrom_AA.setDate(selectedCar.getValidityfrom());
+				JDC_carValidityTo_AA.setDate(selectedCar.getValidityto());
+				JDC_carLastVerificationDate_AA.setDate(selectedCar.getLastverificationdate());
+				JTF_carTireDim_SC.setText(selectedCar.getTiredimension());
+				JTF_carBody_SC.setText(selectedCar.getCarbody());
+				
+				JB_addCar_AA.setText("Adauga masina");
+			}
+		});
 		JP_prevCars_AA.setViewportView(JT_prevCars_AA);
 		
 		panelSII = new JPanel();
@@ -3167,8 +3468,13 @@ public class ServiceFrame {
 					if(getInventoryItemByAutoPieceID(JTF_inventoryItemSearch_SII.getText())) {
 						panelStateChangeHelper(panels.peek(), "all", "primary");
 						
-						JTF_inventoryItemName_SII.setText(selectedInventoryItem.getAuto_pieces().getAutopiecename());
+						Auto_pieces ap = selectedInventoryItem.getAuto_pieces();
+						
+						JTF_inventoryItemID_SII.setText(selectedInventoryItem.getAutopiecesid());
+						JTF_inventoryItemName_SII.setText(ap.getAutopiecename());
+						JTF_inventoryItemUniteName_SII.setText(ap.getAutopieceunitename());
 						JTF_inventoryItemPrice_SII.setText(String.valueOf(selectedInventoryItem.getUnitepriceout()));
+						JTF_invenotyItemQuantity_SII.setText("max " + String.valueOf(selectedInventoryItem.getQuantity()));
 					}else {
 						MissingStatementInformer("The item you have entered does not exist, or it is out of stock!");
 					}
@@ -3194,20 +3500,38 @@ public class ServiceFrame {
 		
 		JPanel JP_addInventoryDetails_SII = new JPanel();
 		JP_center_SII.add(JP_addInventoryDetails_SII, BorderLayout.CENTER);
-		JP_addInventoryDetails_SII.setLayout(new MigLayout("", "[][grow]", "[][][]"));
+		JP_addInventoryDetails_SII.setLayout(new MigLayout("", "[][]", "[][][][][]"));
+		
+		JLabel JL_inventoryItemID_SII = new JLabel("Cod:");
+		JL_inventoryItemID_SII.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JP_addInventoryDetails_SII.add(JL_inventoryItemID_SII, "cell 0 0,alignx trailing");
+		
+		JTF_inventoryItemID_SII = new JTextField();
+		JTF_inventoryItemID_SII.setEditable(false);
+		JTF_inventoryItemID_SII.setColumns(30);
+		JP_addInventoryDetails_SII.add(JTF_inventoryItemID_SII, "cell 1 0,growx");
 		
 		JLabel JL_inventoryItemName_SII = new JLabel("Denumire:");
 		JL_inventoryItemName_SII.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		JP_addInventoryDetails_SII.add(JL_inventoryItemName_SII, "cell 0 0,alignx trailing");
+		JP_addInventoryDetails_SII.add(JL_inventoryItemName_SII, "cell 0 1,alignx trailing");
 		
 		JTF_inventoryItemName_SII = new JTextField();
 		JTF_inventoryItemName_SII.setEditable(false);
-		JTF_inventoryItemName_SII.setColumns(10);
-		JP_addInventoryDetails_SII.add(JTF_inventoryItemName_SII, "cell 1 0,growx");
+		JTF_inventoryItemName_SII.setColumns(30);
+		JP_addInventoryDetails_SII.add(JTF_inventoryItemName_SII, "cell 1 1,growx");
+		
+		JLabel JL_inventoryItemUniteName_SII = new JLabel("Unitate de masura:");
+		JL_inventoryItemUniteName_SII.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JP_addInventoryDetails_SII.add(JL_inventoryItemUniteName_SII, "cell 0 2,alignx trailing");
+		
+		JTF_inventoryItemUniteName_SII = new JTextField();
+		JTF_inventoryItemUniteName_SII.setEditable(false);
+		JTF_inventoryItemUniteName_SII.setColumns(30);
+		JP_addInventoryDetails_SII.add(JTF_inventoryItemUniteName_SII, "cell 1 2,growx");
 		
 		JLabel JL_inventoryItemPrice_SII = new JLabel("Pret:");
 		JL_inventoryItemPrice_SII.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		JP_addInventoryDetails_SII.add(JL_inventoryItemPrice_SII, "cell 0 1,alignx trailing");
+		JP_addInventoryDetails_SII.add(JL_inventoryItemPrice_SII, "cell 0 3,alignx trailing");
 		
 		JTF_inventoryItemPrice_SII = new JTextField();
 		JTF_inventoryItemPrice_SII.addKeyListener(new KeyAdapter() {
@@ -3217,11 +3541,11 @@ public class ServiceFrame {
 			}
 		});
 		JTF_inventoryItemPrice_SII.setColumns(10);
-		JP_addInventoryDetails_SII.add(JTF_inventoryItemPrice_SII, "cell 1 1,growx");
+		JP_addInventoryDetails_SII.add(JTF_inventoryItemPrice_SII, "cell 1 3,growx");
 		
 		JLabel JL_invenoryItemQuantity_SII = new JLabel("Quantity:");
 		JL_invenoryItemQuantity_SII.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		JP_addInventoryDetails_SII.add(JL_invenoryItemQuantity_SII, "cell 0 2,alignx trailing");
+		JP_addInventoryDetails_SII.add(JL_invenoryItemQuantity_SII, "cell 0 4,alignx trailing");
 		
 		JTF_invenotyItemQuantity_SII = new JTextField();
 		JTF_invenotyItemQuantity_SII.addKeyListener(new KeyAdapter() {
@@ -3231,7 +3555,7 @@ public class ServiceFrame {
 			}
 		});
 		JTF_invenotyItemQuantity_SII.setColumns(10);
-		JP_addInventoryDetails_SII.add(JTF_invenotyItemQuantity_SII, "cell 1 2,growx");
+		JP_addInventoryDetails_SII.add(JTF_invenotyItemQuantity_SII, "cell 1 4,growx");
 		
 		JPanel JP_addInventoryActions_SII = new JPanel();
 		FlowLayout fl_JP_addInventoryActions_SII = (FlowLayout) JP_addInventoryActions_SII.getLayout();
@@ -3266,9 +3590,14 @@ public class ServiceFrame {
 					List<JTextField> jtf_list = new ArrayList<JTextField>();
 					jtf_list.add(JTF_inventoryItemPrice_SII);
 					jtf_list.add(JTF_invenotyItemQuantity_SII);
+					jtf_list.add(JTF_inventoryItemID_SII);
+					jtf_list.add(JTF_inventoryItemName_SII);
+					jtf_list.add(JTF_inventoryItemUniteName_SII);
 					
 					if(emptyFieldValidation(jtf_list)) {
-						saveRegistrationInventory(Float.valueOf(JTF_inventoryItemPrice_SII.getText()), Float.valueOf(JTF_invenotyItemQuantity_SII.getText()));
+						saveRegistrationInventory(selectedRegistration.getId(), selectedInventoryItem.getId(), Float.valueOf(JTF_inventoryItemPrice_SII.getText()), 
+								Float.valueOf(JTF_invenotyItemQuantity_SII.getText()), JTF_inventoryItemID_SII.getText(),
+								JTF_inventoryItemName_SII.getText(), JTF_inventoryItemUniteName_SII.getText());
 						
 						SetDefaultTable(JT_inventory_SII, new String[]{"Inventory", "Piece ID","Numele piesei", "Pret final", "Quantity"});
 						loadRegistrationInventory(selectedRegistration.getId());
@@ -3306,7 +3635,9 @@ public class ServiceFrame {
 				TableModel model = JT_inventory_SII.getModel();
 				selectedRegistrationInventory = (Registrations_inventory) model.getValueAt(index, 0);
 				
-				JTF_inventoryItemName_SII.setText(selectedRegistrationInventory.getInventory().getAutopiecesid());
+				JTF_inventoryItemID_SII.setText(selectedRegistrationInventory.getAutopiecesid());
+				JTF_inventoryItemName_SII.setText(selectedRegistrationInventory.getAutopiecename());
+				JTF_inventoryItemUniteName_SII.setText(selectedRegistrationInventory.getAutopieceunitename());
 				JTF_inventoryItemPrice_SII.setText(String.valueOf(selectedRegistrationInventory.getNewuniteprice()));
 				JTF_invenotyItemQuantity_SII.setText(String.valueOf(selectedRegistrationInventory.getQuantity()));
 				
@@ -3354,16 +3685,21 @@ public class ServiceFrame {
 		panelSJ.add(JP_center_SJ, BorderLayout.CENTER);
 		JP_center_SJ.setLayout(new BorderLayout(0, 0));
 		
+		JPanel JP_addHeader_SJ = new JPanel();
+		JP_center_SJ.add(JP_addHeader_SJ, BorderLayout.NORTH);
+		JP_addHeader_SJ.setLayout(new BorderLayout(0, 0));
+		
 		JPanel JP_addJobHeader_SJ = new JPanel();
 		FlowLayout flowLayout_20 = (FlowLayout) JP_addJobHeader_SJ.getLayout();
 		flowLayout_20.setAlignment(FlowLayout.LEFT);
-		JP_center_SJ.add(JP_addJobHeader_SJ, BorderLayout.NORTH);
+		JP_addHeader_SJ.add(JP_addJobHeader_SJ, BorderLayout.NORTH);
 		
 		JLabel lblNewLabel_23 = new JLabel("Job:");
+		lblNewLabel_23.setPreferredSize(new Dimension(90, 20));
 		lblNewLabel_23.setFont(new Font("Tahoma", Font.BOLD, 18));
 		JP_addJobHeader_SJ.add(lblNewLabel_23);
 		
-		JTF_jobSearch_SJ = new JTextField();
+		JTextField JTF_jobSearch_SJ = new JTextField();
 		JTF_jobSearch_SJ.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
@@ -3382,7 +3718,9 @@ public class ServiceFrame {
 				if(emptyFieldValidation(jtf_list)) {
 					if(getJobByName(JTF_jobSearch_SJ.getText())) {
 						JTF_jobName_SJ.setText(selectedJob.getJobname());
-						JTF_jobPrice_SJ.setText(String.valueOf(selectedJob.getJobprice()));
+						JTF_jobPrice_SJ.setText(String.valueOf(selectedJob.getJobprice()!=null?selectedJob.getJobprice():""));
+						JTF_jobUniteName_SJ.setText(selectedJob.getJobunitename());
+						JTF_jobLenght_SJ.setText(String.valueOf(selectedJob.getJoblenght()!=null?selectedJob.getJobprice():""));
 					}
 				}
 			}
@@ -3395,16 +3733,63 @@ public class ServiceFrame {
 			public void actionPerformed(ActionEvent e) {
 				itemSelectionHelper(panelSJ, panelJL);
 				
-				SetDefaultTable(JT_jobs_JL, new String[]{"Job", "Numele jobului", "Tarifa jobului"});				
+				SetDefaultTable(JT_jobs_JL, new String[]{"Job", "Numele jobului", "Tarifa jobului", "UM", "Durata"});			
 				LoadJobs();
 			}
 		});
 		JB_searchJob_SJ.setFont(new Font("Tahoma", Font.PLAIN, 20));
 		JP_addJobHeader_SJ.add(JB_searchJob_SJ);
 		
+		JPanel JP_addJUserHeader_SJ = new JPanel();
+		FlowLayout flowLayout_21 = (FlowLayout) JP_addJUserHeader_SJ.getLayout();
+		flowLayout_21.setAlignment(FlowLayout.LEFT);
+		JP_addHeader_SJ.add(JP_addJUserHeader_SJ, BorderLayout.SOUTH);
+		
+		JLabel lblNewLabel_23_1 = new JLabel("Operator:");
+		lblNewLabel_23_1.setPreferredSize(new Dimension(90, 20));
+		lblNewLabel_23_1.setFont(new Font("Tahoma", Font.BOLD, 18));
+		JP_addJUserHeader_SJ.add(lblNewLabel_23_1);
+		
+		JTF_jobUser_SJ = new JTextField();
+		JTF_jobUser_SJ.setColumns(30);
+		JP_addJUserHeader_SJ.add(JTF_jobUser_SJ);
+		
+		JButton JB_selectUser_SJ = new JButton("Selectare");
+		JB_selectUser_SJ.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				List<JTextField> jtf_list = new ArrayList<JTextField>();
+				jtf_list.add(JTF_jobUser_SJ);
+				
+				if(emptyFieldValidation(jtf_list)) {
+					if(getUserByName(JTF_jobUser_SJ.getText())) {
+						JTF_userName_SJ.setText(selectedUser.getUsername());
+					}
+				}
+			}
+		});
+		JB_selectUser_SJ.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		JP_addJUserHeader_SJ.add(JB_selectUser_SJ);
+		
+		JButton JB_searchUser_SJ = new JButton("Cautare");
+		JB_searchUser_SJ.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				itemSelectionHelper(panelSJ, panelUL);
+				
+				SetDefaultTable(JT_users_UL, new String[]{"User", "Numele lucratorului", "Rolul"});				
+				LoadUsers();
+
+				//load roles to combo box, if it is empty
+				if(JCB_userRoleInfo_UL.getItemCount()==0) {
+					LoadRoles(JCB_userRoleInfo_UL);
+				}
+			}
+		});
+		JB_searchUser_SJ.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		JP_addJUserHeader_SJ.add(JB_searchUser_SJ);
+		
 		JPanel JP_addJobDetails_SJ = new JPanel();
 		JP_center_SJ.add(JP_addJobDetails_SJ, BorderLayout.CENTER);
-		JP_addJobDetails_SJ.setLayout(new MigLayout("", "[][grow]", "[][]"));
+		JP_addJobDetails_SJ.setLayout(new MigLayout("", "[][grow]", "[][][][][][]"));
 		
 		JLabel JL_jobName_SJ = new JLabel("Denumire:");
 		JL_jobName_SJ.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -3415,9 +3800,27 @@ public class ServiceFrame {
 		JTF_jobName_SJ.setColumns(10);
 		JP_addJobDetails_SJ.add(JTF_jobName_SJ, "cell 1 0,growx");
 		
+		JLabel JL_jobUniteName_SJ = new JLabel("Unitate de masura:");
+		JL_jobUniteName_SJ.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JP_addJobDetails_SJ.add(JL_jobUniteName_SJ, "cell 0 1,alignx trailing");
+		
+		JTF_jobUniteName_SJ = new JTextField();
+		JTF_jobUniteName_SJ.setEditable(false);
+		JTF_jobUniteName_SJ.setColumns(10);
+		JP_addJobDetails_SJ.add(JTF_jobUniteName_SJ, "cell 1 1,growx");
+		
+		JLabel JL_jobLenght_SJ = new JLabel("Durata:");
+		JL_jobLenght_SJ.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JP_addJobDetails_SJ.add(JL_jobLenght_SJ, "cell 0 2,alignx trailing");
+		
+		JTF_jobLenght_SJ = new JTextField();
+		JTF_jobLenght_SJ.setEditable(false);
+		JTF_jobLenght_SJ.setColumns(10);
+		JP_addJobDetails_SJ.add(JTF_jobLenght_SJ, "cell 1 2,growx");
+		
 		JLabel JL_jobPrice_SJ = new JLabel("Tarifa:");
 		JL_jobPrice_SJ.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		JP_addJobDetails_SJ.add(JL_jobPrice_SJ, "cell 0 1,alignx trailing");
+		JP_addJobDetails_SJ.add(JL_jobPrice_SJ, "cell 0 3,alignx trailing");
 		
 		JTF_jobPrice_SJ = new JTextField();
 		JTF_jobPrice_SJ.addKeyListener(new KeyAdapter() {
@@ -3427,42 +3830,52 @@ public class ServiceFrame {
 			}
 		});
 		JTF_jobPrice_SJ.setColumns(10);
-		JP_addJobDetails_SJ.add(JTF_jobPrice_SJ, "cell 1 1,growx");
+		JP_addJobDetails_SJ.add(JTF_jobPrice_SJ, "cell 1 3,growx");
+		
+		JSeparator separator_1 = new JSeparator();
+		separator_1.setBorder(new LineBorder(new Color(0, 0, 0)));
+		JP_addJobDetails_SJ.add(separator_1, "cell 0 4 2 1");
+		
+		JLabel JL_userName_SJ = new JLabel("Operator:");
+		JL_userName_SJ.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		JP_addJobDetails_SJ.add(JL_userName_SJ, "cell 0 5,alignx trailing");
+		
+		JTF_userName_SJ = new JTextField();
+		JTF_userName_SJ.setEditable(false);
+		JTF_userName_SJ.setColumns(10);
+		JP_addJobDetails_SJ.add(JTF_userName_SJ, "cell 1 5,growx");
 		
 		JPanel JP_addJobActions_SJ = new JPanel();
 		FlowLayout fl_JP_addJobActions_SJ = (FlowLayout) JP_addJobActions_SJ.getLayout();
 		fl_JP_addJobActions_SJ.setAlignment(FlowLayout.RIGHT);
 		JP_center_SJ.add(JP_addJobActions_SJ, BorderLayout.SOUTH);
 		
-		JButton JB_updateRegistrationJob_SJ = new JButton("Actualizare");
-		JB_updateRegistrationJob_SJ.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				//TODO
-			}
-		});
-		JB_updateRegistrationJob_SJ.setVisible(false);
-		JB_updateRegistrationJob_SJ.setName("secondary");
-		JB_updateRegistrationJob_SJ.setFont(new Font("Tahoma", Font.PLAIN, 20));
-		JP_addJobActions_SJ.add(JB_updateRegistrationJob_SJ);
-		
 		JButton JB_addJobToList_SJ = new JButton("Adauga la list");
 		JB_addJobToList_SJ.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(selectedJob!=null) {
-					List<JTextField> jtf_list = new ArrayList<JTextField>();
-					jtf_list.add(JTF_jobName_SJ);
-					jtf_list.add(JTF_jobPrice_SJ);
-					
-					if(emptyFieldValidation(jtf_list)) {
-						saveRegistrationJob(Float.parseFloat(JTF_jobPrice_SJ.getText()));
-						
-						SetDefaultTable(JT_jobs_SJ, new String[]{"Job", "Numele jobului", "Tarif final"});
-						loadRegistrationJob(selectedRegistration.getId());
-						
-						panelStateChangeHelper(panelSJ, "all", null);
+				List<JTextField> jtf_list = new ArrayList<JTextField>();
+				jtf_list.add(JTF_jobName_SJ);
+				jtf_list.add(JTF_jobUniteName_SJ);
+				jtf_list.add(JTF_jobPrice_SJ);
+				jtf_list.add(JTF_userName_SJ);
+				
+				List<JTextField> jtf_list_nf = new ArrayList<JTextField>();
+				jtf_list.add(JTF_jobPrice_SJ);
+				
+				if(emptyFieldValidation(jtf_list)) {
+					if(numberFormatValidation(jtf_list_nf)) {
+						try {
+							saveRegistrationJob(selectedJob.getId(), selectedRegistration.getId(), selectedUser.getId(), Float.parseFloat(JTF_jobPrice_SJ.getText()), 
+									JTF_jobName_SJ.getText(), JTF_jobUniteName_SJ.getText());
+							
+							SetDefaultTable(JT_jobs_SJ, new String[]{"Job", "Numele jobului", "Tarif final"});
+							loadRegistrationJob(selectedRegistration.getId());
+								
+							panelStateChangeHelper(panelSJ, "all", null);
+						}catch(Exception ex) {
+							System.out.println(ex.toString());
+						}
 					}
-				}else {
-					System.out.println("Select a job first.");
 				}
 			}
 		});
@@ -3476,6 +3889,17 @@ public class ServiceFrame {
 		JB_clearJob_SJ.setName("");
 		JB_clearJob_SJ.setFont(new Font("Tahoma", Font.PLAIN, 20));
 		JP_addJobActions_SJ.add(JB_clearJob_SJ);
+		
+		JButton JB_updateRegistrationJob_SJ = new JButton("Actualizare");
+		JB_updateRegistrationJob_SJ.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//TODO
+			}
+		});
+		JB_updateRegistrationJob_SJ.setVisible(false);
+		JB_updateRegistrationJob_SJ.setName("secondary");
+		JB_updateRegistrationJob_SJ.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		JP_addJobActions_SJ.add(JB_updateRegistrationJob_SJ);
 		JB_addJobToList_SJ.setName("");
 		JB_addJobToList_SJ.setFont(new Font("Tahoma", Font.PLAIN, 20));
 		JP_addJobActions_SJ.add(JB_addJobToList_SJ);
@@ -3495,6 +3919,13 @@ public class ServiceFrame {
 		JP_east_SJ.add(JSP_jobs_SJ, BorderLayout.CENTER);
 		
 		JT_jobs_SJ = new JTable();
+		JT_jobs_SJ.setModel(new DefaultTableModel(
+			new Object[][] {
+			},
+			new String[] {
+				"New column", "New column"
+			}
+		));
 		JT_jobs_SJ.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -3502,8 +3933,11 @@ public class ServiceFrame {
 				TableModel model = JT_jobs_SJ.getModel();
 				selectedRegistrationJob = (Registration_job) model.getValueAt(index, 0);
 				
-				JTF_jobName_SJ.setText(selectedRegistrationJob.getJobs().getJobname());
+				JTF_jobName_SJ.setText(selectedRegistrationJob.getJobname());
 				JTF_jobPrice_SJ.setText(String.valueOf(selectedRegistrationJob.getNewjobprice()));
+				JTF_jobUniteName_SJ.setText(selectedRegistrationJob.getJobs().getJobunitename());
+				JTF_jobLenght_SJ.setText(String.valueOf(selectedRegistrationJob.getJobs().getJoblenght()!=null?selectedRegistrationJob.getJobs().getJoblenght():""));
+				JTF_userName_SJ.setText(selectedRegistrationJob.getUsers().getUsername());
 				
 				JB_updateRegistrationJob_SJ.setVisible(true);
 				JB_addJobToList_SJ.setVisible(false);
@@ -3524,10 +3958,12 @@ public class ServiceFrame {
 				SetDefaultTable(JT_info_ANR, new String[]{"Numele jobului", "Tarif final"});
 				loadRegistrationInfo(selectedRegistration.getId(), "Registration_job");
 				
+				//temp
 				JL_selectJob_ANR.setText("Joburi selectate: " + count);
 				SC_addJob_ANR.setEnabled(false);
 				SC_editJob_ANR.setEnabled(true);
 				SC_infoJob_ANR.setEnabled(true);
+				
 				panelAbandationHelper(panels.pop(), panels.peek(), false);
 			}
 		});
@@ -3597,13 +4033,14 @@ public class ServiceFrame {
 		JP_regDate_ANR.add(JL_registrationDate_ANR, "cell 0 0,alignx left,aligny top");
 		JL_registrationDate_ANR.setFont(new Font("Tahoma", Font.BOLD, 28));
 		
-		JDC_registrationNumber_ANR = new JDateChooser();
-		JP_regDate_ANR.add(JDC_registrationNumber_ANR, "cell 1 0,growx,aligny center");
-		JDC_registrationNumber_ANR.setFont(new Font("Tahoma", Font.BOLD, 20));
+		JDC_registrationDate_ANR = new JDateChooser();
+		JP_regDate_ANR.add(JDC_registrationDate_ANR, "cell 1 0,growx,aligny center");
+		JDC_registrationDate_ANR.setFont(new Font("Tahoma", Font.BOLD, 20));
 		
 		JPanel JP_registrationDetails_ANR = new JPanel();
+		JP_registrationDetails_ANR.setBackground(Color.WHITE);
 		JP_west_ANR.add(JP_registrationDetails_ANR, BorderLayout.CENTER);
-		JP_registrationDetails_ANR.setLayout(new MigLayout("", "[][][][][]", "[][][][][]"));
+		JP_registrationDetails_ANR.setLayout(new MigLayout("", "[][][][][][grow]", "[][][][][][][][][][][250px,grow]"));
 		
 		JLabel SMC_client_ANR = new JLabel("");
 		SMC_client_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/natural_person_128.png")));
@@ -3619,10 +4056,14 @@ public class ServiceFrame {
 		SC_addClient_ANR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				itemSelectionHelper(panelANR, panelCL);
-				
-				SetDefaultTable(JT_clients_CL, new String[]{"Client", "Numele clientului", "Numarul de telefon", "Firm?"});				
-				LoadClients();
+				try{
+					itemSelectionHelper(panelANR, panelCL);
+					
+					SetDefaultTable(JT_clients_CL, new String[]{"Client", "Numele clientului", "Numarul de telefon", "Firm?"});				
+					LoadClients();
+				}catch(Exception ex) {
+					System.out.println(ex.toString());
+				}
 			}
 		});
 		SC_addClient_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/add_new_64.png")));
@@ -3633,10 +4074,14 @@ public class ServiceFrame {
 		SC_editClient_ANR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				itemSelectionHelper(panelANR, panelCL);
-				
-				SetDefaultTable(JT_clients_CL, new String[]{"Client", "Numele clientului", "Numarul de telefon", "Firm?"});				
-				LoadClients();
+				if(SC_editClient_ANR.isEnabled() && selectedClient!=null) {
+					if(selectedClient.getContactname().equals(JL_selectClient_ANR.getText())){
+						itemSelectionHelper(panelANR, panelCL);
+						
+						SetDefaultTable(JT_clients_CL, new String[]{"Client", "Numele clientului", "Numarul de telefon", "Firm?"});				
+						LoadClients();
+					}
+				}
 			}
 		});
 		SC_editClient_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/edit_64.png")));
@@ -3644,6 +4089,24 @@ public class ServiceFrame {
 		JP_registrationDetails_ANR.add(SC_editClient_ANR, "cell 3 0");
 		
 		SC_infoClient_ANR = new JLabel("");
+		SC_infoClient_ANR.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if(SC_infoClient_ANR.isEnabled() && selectedClient!=null) {
+					if(selectedClient.getContactname().equals(JL_selectClient_ANR.getText())) {
+						List<String> list_items = new ArrayList<String>();
+						list_items.add("NUMELE CLIENTULUI:");
+						list_items.add(selectedClient.getContactname());
+						list_items.add("STATUTUL CLIENTULUI:");
+						list_items.add(String.valueOf(selectedClient.getIscompany()));
+						list_items.add("NUMARUL DE TELEPHONE:");
+						list_items.add(selectedClient.getContactphone());
+						
+						SetAlternativeTable(JT_info_ANR, new String[]{"Datele clientului"}, list_items);
+					}
+				}
+			}
+		});
 		SC_infoClient_ANR.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		SC_infoClient_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/info_64.png")));
 		SC_infoClient_ANR.setEnabled(false);
@@ -3659,26 +4122,104 @@ public class ServiceFrame {
 		JP_registrationDetails_ANR.add(JL_selectCar_ANR, "cell 1 1,growx");
 		
 		SC_addCar_ANR = new JLabel("");
+		SC_addCar_ANR.setEnabled(false);
 		SC_addCar_ANR.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		SC_addCar_ANR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				panelSelectionHelper(panelANR, panelSC);
-				
-				SetDefaultTable(JT_prevCars_AA, new String[]{"Car", "Brand", "Model", "NR de inmatruculare", "Serie sasiu"});
-				loadPreviousCars();
+				if(SC_addCar_ANR.isEnabled() && selectedClient!=null) {
+					if(selectedClient.getContactname().equals(JL_selectClient_ANR.getText())) {
+						panelSelectionHelper(panelANR, panelSC);
+						
+						if(JCB_carBrand_SC.getItemCount()==0) {
+							loadBrands(JCB_carBrand_SC);
+						}else {
+							JCB_carBrand_SC.setSelectedIndex(0);
+						}
+						
+						if(JCB_carModel_SC.getItemCount()==0) {
+							loadModels(JCB_carModel_SC, 1);
+						}else {
+							JCB_carModel_SC.removeAllItems();
+							loadModels(JCB_carModel_SC, 1);
+							JCB_carModel_SC.setSelectedIndex(0);
+						}
+						
+						SetDefaultTable(JT_prevCars_AA, new String[]{"Car", "NR de inmatruculare", "Brand", "Model"});
+						loadPreviousCars();
+					}
+				}
 			}
 		});
 		SC_addCar_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/add_new_64.png")));
 		JP_registrationDetails_ANR.add(SC_addCar_ANR, "cell 2 1");
 		
 		SC_editCar_ANR = new JLabel("");
+		SC_editCar_ANR.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				try {
+					Car car = getCar(selectedRegistration.getId());
+					
+					if(SC_editCar_ANR.isEnabled() && selectedCar!=null) {
+						JTF_carLicenseNumber_AA.setText(car.getLicenseNumber());
+						JCB_carBrand_SC.setSelectedItem(car.getBrands());
+						JCB_carModel_SC.setSelectedItem(car.getModels());
+						JTF_carChassisNR_AA.setText(car.getChassisnr());
+						JTF_carEngineNR_AA.setText(car.getEnginenr());
+						JTF_carYear_AA.setText(Objects.toString(car.getYear(), ""));
+						JTF_carOwnerNR_AA.setText(Objects.toString(car.getOwnernr(), ""));
+						JTF_carSeatNR_AA.setText(Objects.toString(car.getSeatnr(), ""));
+						JDC_carFirstRegDate_AA.setDate(car.getFirstregdate());
+						JDC_carWarrantyDate_AA.setDate(car.getWarrantydate());
+						JTF_carWarrantyKM_AA.setText(Objects.toString(car.getWarrantykm(), ""));
+						JTF_carMilometer_AA.setText(Objects.toString(car.getMilometer(), ""));
+						JDC_carValidityFrom_AA.setDate(car.getValidityfrom());
+						JDC_carValidityTo_AA.setDate(car.getValidityto());
+						JDC_carLastVerificationDate_AA.setDate(car.getLastverificationdate());
+						JTF_carTireDim_SC.setText(car.getTiredimension());
+						JTF_carBody_SC.setText(car.getCarbody());
+						
+						panelSelectionHelper(panelANR, panelSC);
+						
+						SetDefaultTable(JT_prevCars_AA, new String[]{"Car", "NR de inmatruculare", "Brand", "Model"});
+						loadPreviousCars();
+					}
+				}catch(Exception ex) {
+					System.out.println(ex.toString() + " SC_editCar_ANR.");
+				}
+			}
+		});
 		SC_editCar_ANR.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		SC_editCar_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/edit_64.png")));
 		SC_editCar_ANR.setEnabled(false);
 		JP_registrationDetails_ANR.add(SC_editCar_ANR, "cell 3 1");
 		
 		SC_infoCar_ANR = new JLabel("");
+		SC_infoCar_ANR.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+					Car car = getCar(selectedRegistration.getId());
+
+					if(SC_infoCar_ANR.isEnabled() && selectedCar!=null) {
+						if(selectedCar.getLicenseNumber().equals(JL_selectCar_ANR.getText())) {					
+							List<String> list_items = new ArrayList<String>();
+							list_items.add("NUMARUL DE INMATRICULARE:");
+							list_items.add(car.getLicenseNumber());
+							list_items.add("MARCA:");
+							list_items.add(car.getBrands().getBrandname());
+							list_items.add("MODELUL:");
+							list_items.add(car.getModels().getModelname());
+							
+							SetAlternativeTable(JT_info_ANR, new String[]{"Datele masinii"}, list_items);
+						}
+					}
+				}catch(Exception ex) {
+					System.out.println(ex.toString() + ": SC_infoCar_ANR");
+				}
+			}
+		});
 		SC_infoCar_ANR.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		SC_infoCar_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/info_64.png")));
 		SC_infoCar_ANR.setEnabled(false);
@@ -3711,10 +4252,12 @@ public class ServiceFrame {
 		SC_editPiece_ANR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelSelectionHelper(panelANR, panelSII);
-				
-				SetDefaultTable(JT_inventory_SII, new String[]{"Inventory item", "Piece ID","Numele piesei", "Pret final", "Quantity"});
-				loadRegistrationInventory(selectedRegistration.getId());
+				if(SC_editPiece_ANR.isEnabled()) {
+					panelSelectionHelper(panelANR, panelSII);
+					
+					SetDefaultTable(JT_inventory_SII, new String[]{"Inventory item", "Piece ID","Numele piesei", "Pret final", "Quantity"});
+					loadRegistrationInventory(selectedRegistration.getId());
+				}
 			}
 		});
 		SC_editPiece_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/edit_64.png")));
@@ -3726,8 +4269,10 @@ public class ServiceFrame {
 		SC_infoPiece_ANR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				SetDefaultTable(JT_info_ANR, new String[]{"Piece ID", "Pret final", "Quantity"});
-				loadRegistrationInfo(selectedRegistration.getId(), "Registrations_inventory");
+				if(SC_infoPiece_ANR.isEnabled()) {
+					SetDefaultTable(JT_info_ANR, new String[]{"Piece ID", "Pret final", "Quantity"});
+					loadRegistrationInfo(selectedRegistration.getId(), "Registrations_inventory");
+				}
 			}
 		});
 		SC_infoPiece_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/info_64.png")));
@@ -3761,10 +4306,12 @@ public class ServiceFrame {
 		SC_editJob_ANR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				panelSelectionHelper(panelANR, panelSJ);
-				
-				SetDefaultTable(JT_jobs_SJ, new String[]{"Job", "Numele jobului", "Tarif final"});
-				loadRegistrationJob(selectedRegistration.getId());
+				if(SC_editJob_ANR.isEnabled()) {
+					panelSelectionHelper(panelANR, panelSJ);
+					
+					SetDefaultTable(JT_jobs_SJ, new String[]{"Job", "Numele jobului", "Tarif final"});
+					loadRegistrationJob(selectedRegistration.getId());
+				}
 			}
 		});
 		SC_editJob_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/edit_64.png")));
@@ -3776,13 +4323,21 @@ public class ServiceFrame {
 		SC_infoJob_ANR.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				SetDefaultTable(JT_info_ANR, new String[]{"Numele jobului", "Tarif final",});
-				loadRegistrationInfo(selectedRegistration.getId(), "Registration_job");
+				if(SC_infoJob_ANR.isEnabled()) {
+					SetDefaultTable(JT_info_ANR, new String[]{"Numele jobului", "Tarif final",});
+					loadRegistrationInfo(selectedRegistration.getId(), "Registration_job");
+				}
 			}
 		});
 		SC_infoJob_ANR.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/info_64.png")));
 		SC_infoJob_ANR.setEnabled(false);
 		JP_registrationDetails_ANR.add(SC_infoJob_ANR, "cell 4 3");
+		
+		JTA_registrationComment_ANR = new JTextArea();
+		JTA_registrationComment_ANR.setBorder(new LineBorder(new Color(0, 0, 0)));
+		JTA_registrationComment_ANR.setFont(new Font("Monospaced", Font.PLAIN, 14));
+		JTA_registrationComment_ANR.setText("Comment pentru registratie...");
+		JP_registrationDetails_ANR.add(JTA_registrationComment_ANR, "cell 5 10,grow");
 		
 		JPanel JP_east_ANR = new JPanel();
 		panelANR.add(JP_east_ANR, BorderLayout.EAST);
@@ -3802,7 +4357,215 @@ public class ServiceFrame {
 		JSP_info_ANR.setViewportView(JT_info_ANR);
 		
 		JPanel JP_south_ANR = new JPanel();
+		FlowLayout flowLayout_22 = (FlowLayout) JP_south_ANR.getLayout();
+		flowLayout_22.setAlignment(FlowLayout.RIGHT);
 		panelANR.add(JP_south_ANR, BorderLayout.SOUTH);
+		
+		JButton JB_saveRegistrtaion_ANR = new JButton("Salvare si imprimare");
+		JB_saveRegistrtaion_ANR.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					expandRegistration(selectedClient.getId(), selectedCar.getId(), selectedRegistration.getRegnr(), selectedRegistration.getRegdate(), JTA_registrationComment_ANR.getText());
+					saveInvoice(2, selectedRegistration.getId(), selectedClient.getId());
+				}catch(Exception ex) {
+					System.out.println(ex.toString());
+				}
+			}
+		});
+		JB_saveRegistrtaion_ANR.setFont(new Font("Tahoma", Font.BOLD, 24));
+		JP_south_ANR.add(JB_saveRegistrtaion_ANR);
+		
+		JButton JB_saveRegistrtaion_ANR_1 = new JButton("Salvare");
+		JB_saveRegistrtaion_ANR_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(selectedClient.getContactname().equals(JL_selectClient_ANR.getText())) {
+					if(selectedCar.getLicenseNumber().equals(JL_selectCar_ANR.getText())) {
+						try {
+							expandRegistration(selectedClient.getId(), selectedCar.getId(), JTF_registrationNumber_ANR.getText(), JDC_registrationDate_ANR.getDate(), JTA_registrationComment_ANR.getText());
+							
+							panelAbandationHelper(panels.pop(), panels.peek(), false);
+						}catch(Exception ex) {
+							System.out.println(ex.toString());
+						}
+					}else {
+						MissingStatementInformer("Selecteaza un client inainte de salvare.");
+					}
+				}else {
+					MissingStatementInformer("Selecteaza un client inainte de salvare.");
+				}
+			}
+		});
+		JB_saveRegistrtaion_ANR_1.setFont(new Font("Tahoma", Font.BOLD, 24));
+		JP_south_ANR.add(JB_saveRegistrtaion_ANR_1);
+		
+		panelRL = new JPanel();
+		centralPanel.add(panelRL, "name_93811491635800");
+		panelRL.setLayout(new BorderLayout(0, 0));
+		
+		JPanel JP_west_RL = new JPanel();
+		panelRL.add(JP_west_RL, BorderLayout.WEST);
+		JP_west_RL.setLayout(new BorderLayout(0, 0));
+		
+		JPanel JP_infoHeader_RL = new JPanel();
+		JP_west_RL.add(JP_infoHeader_RL, BorderLayout.NORTH);
+		
+		JLabel lblNewLabel_1 = new JLabel("Detalii comandei");
+		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 18));
+		JP_infoHeader_RL.add(lblNewLabel_1);
+		
+		JPanel JP_infoDetails_RL = new JPanel();
+		JP_west_RL.add(JP_infoDetails_RL, BorderLayout.CENTER);
+		JP_infoDetails_RL.setLayout(new MigLayout("", "[grow][grow]", "[][][][][][100px:150px]"));
+		
+		JLabel JL_clientNameInfo_RL = new JLabel("Numele clientului:");
+		JP_infoDetails_RL.add(JL_clientNameInfo_RL, "cell 0 0,alignx trailing");
+		
+		JTF_clientNameInfo_RL = new JTextField();
+		JTF_clientNameInfo_RL.setEditable(false);
+		JTF_clientNameInfo_RL.setColumns(20);
+		JP_infoDetails_RL.add(JTF_clientNameInfo_RL, "cell 1 0,growx");
+		
+		JLabel JL_carLicenseInfo_RL = new JLabel("Numarul de inmatriculare:");
+		JP_infoDetails_RL.add(JL_carLicenseInfo_RL, "cell 0 1,alignx trailing");
+		
+		JTF_carLicenseInfo_RL = new JTextField();
+		JTF_carLicenseInfo_RL.setEditable(false);
+		JTF_carLicenseInfo_RL.setColumns(20);
+		JP_infoDetails_RL.add(JTF_carLicenseInfo_RL, "cell 1 1,growx");
+		
+		JLabel JL_regNRInfo_RL = new JLabel("Numarul de registratie:");
+		JP_infoDetails_RL.add(JL_regNRInfo_RL, "cell 0 2,alignx trailing");
+		
+		JTF_regNRInfo_RL = new JTextField();
+		JTF_regNRInfo_RL.setEditable(false);
+		JP_infoDetails_RL.add(JTF_regNRInfo_RL, "cell 1 2,growx");
+		JTF_regNRInfo_RL.setColumns(20);
+		
+		JLabel JL_regDateInfo_RL = new JLabel("Datele registratiei:");
+		JP_infoDetails_RL.add(JL_regDateInfo_RL, "cell 0 3,alignx trailing");
+		
+		JDateChooser JDC_regDate_RL = new JDateChooser();
+		JDC_regDate_RL.setEnabled(false);
+		JP_infoDetails_RL.add(JDC_regDate_RL, "cell 1 3,grow");
+		
+		JLabel JL_regCommentInfo_RL = new JLabel("Comment:");
+		JP_infoDetails_RL.add(JL_regCommentInfo_RL, "cell 0 4 2 1,alignx center,aligny center");
+		
+		JTextArea JTA_regCommentInfo_RL = new JTextArea();
+		JTA_regCommentInfo_RL.setEditable(false);
+		JTA_regCommentInfo_RL.setBorder(new LineBorder(new Color(0, 0, 0)));
+		JP_infoDetails_RL.add(JTA_regCommentInfo_RL, "cell 0 5 2 1,grow");
+		
+		JPanel JP_infoActions_RL = new JPanel();
+		JP_west_RL.add(JP_infoActions_RL, BorderLayout.SOUTH);
+		JP_infoActions_RL.setLayout(new MigLayout("", "[grow]", "[]"));
+		
+		JButton JB_selectRegistrations_RL = new JButton("Selectare");
+		JB_selectRegistrations_RL.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {	
+				panelSelectionHelper(panels.peek(), panelANR);
+				
+				if(selectedRegistration.getClients()!=null) {
+					JL_selectClient_ANR.setText(selectedRegistration.getClients().getContactname());
+					selectedClient = selectedRegistration.getClients();
+					
+					SC_addClient_ANR.setEnabled(false);
+					SC_editClient_ANR.setEnabled(true);
+					SC_infoClient_ANR.setEnabled(true);
+					
+					SC_addCar_ANR.setEnabled(true);
+					SC_editCar_ANR.setEnabled(false);
+					SC_infoCar_ANR.setEnabled(false);
+				}
+				if(selectedRegistration.getCars()!=null) {
+					JL_selectCar_ANR.setText(selectedRegistration.getCars().getLicenseNumber());
+					selectedCar = selectedRegistration.getCars();
+					
+					SC_addCar_ANR.setEnabled(false);
+					SC_editCar_ANR.setEnabled(true);
+					SC_infoCar_ANR.setEnabled(true);
+				}
+				if(selectedRegistration.getRegistrations_inventory()!=null) {
+					JL_selectPiece_ANR.setText("Piese selectate: "+selectedRegistration.getRegistrations_inventory().size());
+					
+					SC_addPiece_ANR.setEnabled(false);
+					SC_editPiece_ANR.setEnabled(true);
+					SC_infoPiece_ANR.setEnabled(true);
+				}
+				if(selectedRegistration.getJob_registration()!=null) {
+					JL_selectJob_ANR.setText("Joburi selectate: "+selectedRegistration.getJob_registration().size());
+					
+					SC_addJob_ANR.setEnabled(false);
+					SC_editJob_ANR.setEnabled(true);
+					SC_infoJob_ANR.setEnabled(true);
+				}
+				JTF_registrationNumber_ANR.setText(selectedRegistration.getRegnr());
+				JDC_registrationDate_ANR.setDate(selectedRegistration.getRegdate());
+				JTA_registrationComment_ANR.setText(selectedRegistration.getRegistrationcomment());
+			}
+		});
+		JB_selectRegistrations_RL.setEnabled(false);
+		JB_selectRegistrations_RL.setFont(new Font("Tahoma", Font.BOLD, 20));
+		JP_infoActions_RL.add(JB_selectRegistrations_RL, "cell 0 0,growx");
+		
+		JPanel JP_center_RL = new JPanel();
+		panelRL.add(JP_center_RL, BorderLayout.CENTER);
+		JP_center_RL.setLayout(new BorderLayout(0, 0));
+		
+		JPanel JP_toolkit_RL = new JPanel();
+		JP_center_RL.add(JP_toolkit_RL, BorderLayout.NORTH);
+		JP_toolkit_RL.setLayout(new BorderLayout(0, 0));
+		
+		JPanel JP_tableActions_RL = new JPanel();
+		FlowLayout fl_JP_tableActions_RL = (FlowLayout) JP_tableActions_RL.getLayout();
+		fl_JP_tableActions_RL.setAlignment(FlowLayout.LEFT);
+		JP_toolkit_RL.add(JP_tableActions_RL, BorderLayout.NORTH);
+		
+		JLabel lblNewLabel_4 = new JLabel("");
+		lblNewLabel_4.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		lblNewLabel_4.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/add_32.png")));
+		JP_tableActions_RL.add(lblNewLabel_4);
+		
+		JLabel lblNewLabel_5 = new JLabel("");
+		lblNewLabel_5.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		lblNewLabel_5.setIcon(new ImageIcon(ServiceFrame.class.getResource("/images/reload_32.png")));
+		JP_tableActions_RL.add(lblNewLabel_5);
+		
+		JPanel JP_tableQuickSearch_RL = new JPanel();
+		JP_toolkit_RL.add(JP_tableQuickSearch_RL, BorderLayout.SOUTH);
+		JP_tableQuickSearch_RL.setLayout(new MigLayout("", "[grow]", "[]"));
+		
+		JTF_regQuickSearch_RL = new JTextField();
+		JP_tableQuickSearch_RL.add(JTF_regQuickSearch_RL, "cell 0 0,growx");
+		JTF_regQuickSearch_RL.setColumns(10);
+		
+		JPanel JP_navigations_RL = new JPanel();
+		JP_center_RL.add(JP_navigations_RL, BorderLayout.SOUTH);
+		
+		JLabel JL_navigations_RL = new JLabel("Navigations");
+		JP_navigations_RL.add(JL_navigations_RL);
+		
+		JScrollPane scrollPane_1 = new JScrollPane();
+		JP_center_RL.add(scrollPane_1, BorderLayout.CENTER);
+		
+		JT_registrations_RL = new JTable();
+		JT_registrations_RL.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int index = JT_registrations_RL.convertRowIndexToModel(JT_registrations_RL.getSelectedRow());
+				TableModel model = JT_registrations_RL.getModel();
+				selectedRegistration = (Registration) model.getValueAt(index, 0);
+				
+				JTF_clientNameInfo_RL.setText(selectedRegistration.getClients().getContactname());
+				JTF_carLicenseInfo_RL.setText(selectedRegistration.getCars().getLicenseNumber());
+				JTF_regNRInfo_RL.setText(selectedRegistration.getRegnr());
+				JDC_regDate_RL.setDate(selectedRegistration.getRegdate());
+				JTA_regCommentInfo_RL.setText(selectedRegistration.getRegistrationcomment());
+				
+				panelStateChangeHelper(panelRL, null, "selected");
+			}
+		});
+		scrollPane_1.setViewportView(JT_registrations_RL);
 		
 		JPanel northPanel = new JPanel();
 		northPanel.setBackground(Color.WHITE);
@@ -3862,32 +4625,65 @@ public class ServiceFrame {
 
 	
 	//APPLICATION METHODS
+	//Initialize frame basics
+	private static void frameStart() {
+		//Panel option initializations
+		panels.push(panelDB);
+		currentPanel = panelDB;
+		
+		//Global UI settings
+		UIManager.put("OptionPane.minimumSize", new Dimension(350,75));
+		
+		//Open new hibernate session
+		session = HibernateUtil.getSessionFactory().openSession();
+	}
 	//Panel navigation, component state modifiers, component validators, modals, others
 	
 	//Navigates to new panel
 	private void panelSelectionHelper(JPanel from, JPanel to) {
-		//panel change on input
-		from.setVisible(false);
-		to.setVisible(true);
-		
-		//add panel to stack
-		panels.push(to);
-		
-		//If we are on the Dashboard, the back arrow shouldnt be visible
-		if(panels.size()<2) {
-			back.setVisible(false);
-		}else {
-			back.setVisible(true);
+		try {
+			//panel change on input
+			from.setVisible(false);
+			to.setVisible(true);
+			
+			//add panel to stack
+			panels.push(to);
+
+			//If we are on the Dashboard, the back arrow shouldnt be visible
+			if(panels.size()<2) {
+				back.setVisible(false);
+			}else {
+				back.setVisible(true);
+			}
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
 		}
 	}
 	//Navigates to the previous panel
 	private void panelAbandationHelper(JPanel from, JPanel to, Boolean checkForUnsaved) {
-		if(checkForUnsaved && unsavedFieldHelper(from)) {
-			if(backDialog()) {
+		try {
+			if(checkForUnsaved && unsavedFieldHelper(from)) {
+				if(backDialog()) {
+					//panel change on input
+					from.setVisible(false);
+					to.setVisible(true);
+						
+					//If we are on the Dashboard, the back arrow shouldnt be visible
+					if(panels.size()<2) {
+						back.setVisible(false);
+					}else {
+						back.setVisible(true);
+					}
+					
+					panelStateChangeHelper(from, "all", "primary");	
+				}else {
+					panels.push(from);
+				}
+			}else {
 				//panel change on input
 				from.setVisible(false);
 				to.setVisible(true);
-					
+				
 				//If we are on the Dashboard, the back arrow shouldnt be visible
 				if(panels.size()<2) {
 					back.setVisible(false);
@@ -3896,22 +4692,9 @@ public class ServiceFrame {
 				}
 				
 				panelStateChangeHelper(from, "all", "primary");	
-			}else {
-				panels.add(from);
 			}
-		}else {
-			//panel change on input
-			from.setVisible(false);
-			to.setVisible(true);
-			
-			//If we are on the Dashboard, the back arrow shouldnt be visible
-			if(panels.size()<2) {
-				back.setVisible(false);
-			}else {
-				back.setVisible(true);
-			}
-			
-			panelStateChangeHelper(from, "all", "primary");	
+		}catch(Exception ex) {
+			System.out.println(ex.toString() + " panelAbandationHelper");
 		}
 	}
 	//Navigates to a given panel to select an item from there
@@ -3926,14 +4709,13 @@ public class ServiceFrame {
 	}
 	//Sets every components state to desired
 	private void panelStateChangeHelper(Container container, String fieldmode, String buttonmode) {
+    	Border border = new JTextField().getBorder();
 		for (Component component : container.getComponents()) {
 			if(component instanceof JPanel) panelStateChangeHelper((Container)component, fieldmode, buttonmode);
 			if(fieldmode!=null) {
 	            if (component instanceof JTextField) {
-	            	JTextField textfield = (JTextField) component;
-	            	Border border = new JTextField().getBorder();
-	            	
 	            	try {
+	        	    	JTextField textfield = (JTextField) component;
 	            		if(fieldmode.equals("all")) {
 		                	textfield.setText(null);
 		                	textfield.setBorder(border);
@@ -3962,7 +4744,7 @@ public class ServiceFrame {
 	                		}
 	            		}
 	            	}catch(Exception ex) {
-	            		System.out.println(ex.toString());
+	            		System.out.println(ex.toString() + " panelStateChangeHelper");
 	            	}
 	            }
 	            if (component instanceof JLabel) {
@@ -4028,7 +4810,11 @@ public class ServiceFrame {
 	//Checks if there is any unsaved textfields on the given panel
 	private Boolean unsavedFieldHelper(Container container) {
 		for (Component component : container.getComponents()) {
-			//if component:JPanel=> Boolean unsaved = unsavedFieldHelper(container); return unsaved;
+			if(component instanceof JPanel) {
+				if(unsavedFieldHelper((Container)component)) {
+					return true;
+				}
+			}
 			if(component instanceof JTextField) {
 				if(!((JTextField) component).getText().isEmpty()) {
 					return true;
@@ -4047,6 +4833,22 @@ public class ServiceFrame {
 			DefaultTableModel dtm = new DefaultTableModel(cols, 0);
 			table.setModel(dtm);
 	}
+	//Resets the table to my preferred default state
+	private void SetAlternativeTable(JTable table, String[] cols, List<String> list_items) {
+			table.setRowSorter(null);
+			table.setRowHeight(30);
+			table.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 21));
+			table.setFont(new Font("Tahoma", Font.PLAIN, 18));
+			
+			DefaultTableModel dtm = new DefaultTableModel(cols, 0);
+			
+			int count = list_items.size();
+			for(int i=0; i<count; i++) {				
+				dtm.addRow(new Object[]{list_items.get(i)});
+			}
+			
+			table.setModel(dtm);
+	}	
 	//Sets textfield border to the system default
 	private void textfieldBorderResetter(JTextField textfield) {
 		Border border = new JTextField().getBorder();
@@ -4218,6 +5020,21 @@ public class ServiceFrame {
 		
 		rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + querry, column));
 	}
+	//Converts string to number	
+	private Integer stringToInteger(String str) {
+		int number = 0;
+		try
+		{
+		    if(str != null) {
+		    	number = Integer.parseInt(str);
+		    }
+		    return number;
+		}catch (NumberFormatException ex){
+		    return 0;
+		}catch(NullPointerException ex)	{
+		    return 0;
+		}
+	}
 	
 	//Hibernate CRUD
 	private void LoadClients() {
@@ -4286,7 +5103,7 @@ public class ServiceFrame {
 			
 			for(Job j:jobs) 
 			{
-			    Object[] row= {j , j.getJobname(), j.getJobprice()};
+			    Object[] row= {j , j.getJobname(), j.getJobprice(), j.getJobunitename(), j.getJoblenght()};
 			    dtm.addRow( row );
 			}
 
@@ -4524,18 +5341,21 @@ public class ServiceFrame {
 			session.beginTransaction();
 		    
 			Car car = null;
-			
-			List<Registration> registrations = new ArrayList<Registration>();
-			registrations.addAll(selectedClient.getRegistrations());
-			
 			DefaultTableModel dtm = (DefaultTableModel) JT_prevCars_AA.getModel();
 			
-			for(Registration r:registrations) 
-			{
-				car = r.getCars();
+			List<Registration> registrations = new ArrayList<Registration>();
+			if(selectedClient.getRegistrations()!=null) {			
+				registrations.addAll(selectedClient.getRegistrations());
 				
-			    Object[] row= {car, car.getBrand() , car.getModel(), car.getLicenseNumber(), car.getChassisnr()};
-			    dtm.addRow( row );
+				for(Registration r:registrations) 
+				{
+					if(r.getCars()!=null) {						
+						car = r.getCars();
+						
+					    Object[] row= {car, car.getLicenseNumber(), car.getBrands().getBrandname() , car.getModels().getModelname()};
+					    dtm.addRow( row );
+					}
+				}
 			}
 
 			JT_prevCars_AA.setModel(dtm);
@@ -4548,6 +5368,7 @@ public class ServiceFrame {
 		    //HibernateUtil.shutDown();
 		}catch(Exception ex) {
 			System.out.println(ex.toString());
+		    restartSession();
 		}
 	}
 	
@@ -4657,6 +5478,86 @@ public class ServiceFrame {
 		}
 	}
 	
+	private void loadBrands(JComboBox comboBox) {
+		try {
+			//Set Combobox parameters
+			comboBox.setMaximumRowCount(5);
+			
+			//Begin transaction
+			session.beginTransaction();
+		    
+			List<Brand> brands= (List<Brand>)session.createQuery("from Brand").list();
+			
+			for(Brand b:brands) {
+				comboBox.addItem(b);
+			}
+			      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
+	private void loadModels(JComboBox comboBox, int brandsID) {
+		try {
+			//Set Combobox parameters
+			comboBox.setMaximumRowCount(5);
+			
+			//Begin transaction
+			session.beginTransaction();
+		    
+			List<Model> models= (List<Model>)session
+					.createQuery("from Model where brandsID=:brandsID")
+					.setParameter("brandsID", brandsID)
+					.list();
+			
+			for(Model m:models) {
+				comboBox.addItem(m);
+			}
+			      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
+	private void loadRegistrtaions() {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+			
+			List<Registration> registrations = (List<Registration>)session.createQuery("from Registration").list();
+			
+			DefaultTableModel dtm = (DefaultTableModel) JT_registrations_RL.getModel();
+			
+			for(Registration r:registrations) 
+			{
+				if(r.getClients()!=null && r.getCars()!=null) {
+				    Object[] row= {r, r.getClients().getContactname(), r.getCars().getLicenseNumber(), r.getRegnr(), r.getRegdate()};
+				    dtm.addRow( row );
+				}
+			}
+			JT_registrations_RL.setModel(dtm);
+			JT_registrations_RL.removeColumn(JT_registrations_RL.getColumnModel().getColumn(0));
+			
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString() + " loadRegistrtaions");
+		}
+	}
+	
 	private void saveClient(Boolean isCompany, String clientName,String clientPhone,String companyName,String companyPhone,String companyAdress,String companyCIF,String companyRegNR,String companyBank,String companyIBAN, String companyOffice) {
 		try {
 			//Begin transaction
@@ -4709,7 +5610,7 @@ public class ServiceFrame {
 		}
 	}
 
-	private void SaveJob(String jobName, Float jobPrice) {
+	private void _SaveJob(String jobName, Float jobPrice) {
 		try {
 			//Begin transaction
 			session.beginTransaction();
@@ -4729,8 +5630,29 @@ public class ServiceFrame {
 			System.out.println(ex.toString());
 		}
 	}
+
+	private void saveJob(String jobName, Float jobPrice, String jobUniteName, Float jobLenght) {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+		    
+		    //Create new Client object
+		    Job job = new Job(jobName, jobPrice, jobUniteName, jobLenght);
+		    
+		    //Save Client
+		    session.save(job);
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
 	
-	private void SaveReception(String incomingInvoiceNR, Date dateIN, Date dueDate) {
+	private void _SaveReception(String incomingInvoiceNR, Date dateIN, Date dueDate) {
 		try {
 			//Begin transaction
 			session.beginTransaction();
@@ -4759,6 +5681,35 @@ public class ServiceFrame {
 		}
 	}
 
+	private void SaveReception(String incomingInvoiceNR, Date dateIN, Date dueDate, String receptionComment) {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+			
+			Reception reception = null;
+			
+		    //Create new Reception object
+			reception = new Reception(selectedClient.getId(), incomingInvoiceNR, dateIN, dueDate, receptionComment);	    
+			    
+			//Save Reception
+			session.save(reception);
+			
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+			//Reopen the session factory, needed for releasing the cash, further research is required
+			session.close();
+			session = HibernateUtil.getSessionFactory().openSession();
+		    
+		    SaveReceptionAutoPiece(reception.getId());
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
 	private void SaveReceptionAutoPiece(int receptionID) {
 		try {
 	    //Begin transaction
@@ -4811,13 +5762,13 @@ public class ServiceFrame {
 		}
 	}
 	
-	private void saveCar(String licenseNumber, String brand, String model, String chassisNR, String engineNR, Integer miloMeter) {
+	private void _saveCar(String licenseNumber, Integer brandsid, Integer modelsid, String chassisNR, String engineNR, Integer miloMeter) {
 		try {
 			//Begin transaction
 			session.beginTransaction();
 		    
 		    //Create new Client object
-		    Car car = new Car(licenseNumber, brand, model, chassisNR, engineNR, miloMeter);
+		    Car car = new Car(licenseNumber, brandsid, modelsid, chassisNR, engineNR, miloMeter);
 		    
 		    //Save Client
 		    session.save(car);
@@ -4834,7 +5785,43 @@ public class ServiceFrame {
 		}
 	}
 	
-	private void saveRegistration(String registrationNR, Date registrationDate) {	
+	private void saveCar(Integer brandsID, Integer modelsID, String licenseNumber, String chassisNR, String engineNR,
+			Integer miloMeter, Integer year, Integer ownerNR, Integer seatNR, Date firstRegDate, Date warrantyDate,
+			Integer warrantyKM, Date validityFrom, Date validityTo, Date lastVerificationDate, String tireDimension,
+			String carBody) {
+		try {
+			//Begin transaction
+			session.beginTransaction();
+		    
+		    //Create new Client object
+		    Car car = new Car(brandsID, modelsID, licenseNumber, chassisNR, engineNR,
+					miloMeter, year, ownerNR, seatNR, firstRegDate, warrantyDate,
+					warrantyKM, validityFrom, validityTo, lastVerificationDate, tireDimension,
+					carBody);
+		    
+		    //Save Client
+		    session.saveOrUpdate(car);
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Store global value
+		    selectedCar = car;
+		    
+		    //Restart current session
+		    restartSession();
+		    
+			expandRegistration(selectedClient.getId(), car.getId(), JTF_registrationNumber_ANR.getText(), JDC_registrationDate_ANR.getDate(), null);
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		    restartSession();
+		}
+	}
+	//The registration saving process is build by three different save method
+	private void initializeRegistration(String registrationNR, Date registrationDate) {	
 		try {
 			//Begin transaction
 			session.beginTransaction();
@@ -4847,24 +5834,87 @@ public class ServiceFrame {
 			    
 			//Save Registration
 			session.save(registration);
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
 		}catch(Exception ex) {
 			System.out.println(ex.toString());
 		}
-	      
-	    //Committing the transaction
-	    session.getTransaction().commit();
-	    
-	    //Shotting down the session factory
-	    //HibernateUtil.shutDown();
 	}
 
-	private void saveRegistrationInventory(Float newUnitPprice, Float quantity) {		
+	private void expandRegistration(Integer clientsID, Integer carsID, String regNR, Date regDate, String registrationComment) {	
+		try {
+			//Begin transaction
+			session.beginTransaction();
+			
+		    //Create new Registration object
+			Registration registration = session.get(Registration.class, selectedRegistration.getId());
+			registration.setClientsid(clientsID);
+			registration.setCarsid(carsID);
+			registration.setRegnr(regNR);
+			registration.setRegdate(regDate);
+			registration.setRegistrationcomment(registrationComment);
+			    
+			//Update same Registration
+			session.update(registration);
+			//session.save(registration);
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Store global value
+		    selectedRegistration = registration;
+		    
+		    //Restart current session
+		    restartSession();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		    restartSession();
+		}
+	}
+	
+	private void terminateRegistration(Integer clientsID, Integer carsID, String regNR, Date regDate, String registrationComment) {	
+		try {
+			//Begin transaction
+			session.beginTransaction();
+			
+		    //Create new Registration object
+			Registration registration = new Registration(clientsID, carsID, regNR, regDate, registrationComment);
+			    
+			//Save Registration
+			session.saveOrUpdate(registration);
+			//session.save(registration);
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Store the registration
+		    selectedRegistration = registration;
+		    
+		    //Restart current session
+		    restartSession();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
+	private void saveRegistrationInventory(Integer registrationsID, Integer inventoryID, Float newUnitePrice, Float quantity, String autopiecesID,
+			String autiPieceName, String autoPieceUniteName) {		
 		try {
 			//Begin transaction
 			session.beginTransaction();
 		
 			//Create new Registration Inventory object
-			Registrations_inventory registrations_inventory = new Registrations_inventory(selectedRegistration.getId(), selectedInventoryItem.getId(), newUnitPprice, quantity);
+			Registrations_inventory registrations_inventory = new Registrations_inventory(registrationsID, inventoryID, newUnitePrice, quantity, autopiecesID, autiPieceName, autoPieceUniteName);
 			
 			//Save Registration Inventory
 			session.save(registrations_inventory);
@@ -4883,13 +5933,13 @@ public class ServiceFrame {
 	    //HibernateUtil.shutDown();
 	}
 
-	private void saveRegistrationJob(Float newjobprice) {
+	private void saveRegistrationJob(Integer jobsID, Integer registrationsID, Integer usersID, Float newJobPrice, String jobName, String jobUniteName) {
 		try {
 			//Begin transaction
 			session.beginTransaction();
 		
 			//Create new Registration Job(Job registration) object
-			Registration_job registration_job = new Registration_job(selectedJob.getId(), selectedRegistration.getId(), newjobprice);
+			Registration_job registration_job = new Registration_job(jobsID, registrationsID, usersID, newJobPrice, jobName, jobUniteName);
 
 			//Save Registration Inventory
 			session.save(registration_job);		
@@ -4907,6 +5957,86 @@ public class ServiceFrame {
 			System.out.println(ex.toString());
 		}
 	}
+	
+	private void saveInvoice(Integer usersID, Integer registrationsID, Integer clientsID) {	
+		try {
+			//Begin transaction
+			session.beginTransaction();
+			
+		    //Create new Invoice object
+			Invoice invoice = new Invoice(usersID, registrationsID, clientsID);
+			    
+			//Save Registration
+			session.save(invoice);
+			//session.save(registration);
+			
+		    //Store the registration
+		    selectedInvoice = invoice;    
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Restart current session
+		    restartSession();
+		    
+		    saveInvoiceItems(invoice.getId(), registrationsID);
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
+	private void saveInvoiceItems(Integer invoiceID, Integer registrationsID){
+		Registration reg = null;
+		Invoice_item invoice_item = null;
+		try {
+			//Begin transaction
+			session.beginTransaction();
+			
+			System.out.println(registrationsID);
+			
+			List<Registrations_inventory> registrations_inventory= (List<Registrations_inventory>)session
+				.createQuery("from Registrations_inventory where registrationsid=:registrationsid")
+				.setParameter("registrationsid", registrationsID)
+				.list();
+			
+			System.out.println(registrations_inventory);
+			
+			List<Registration_job> registration_job= (List<Registration_job>)session
+					.createQuery("from Registration_job where registrationsid=:registrationsid")
+					.setParameter("registrationsid", registrationsID)
+					.list();
+			
+			System.out.println(registration_job);
+			
+			int i = 1;
+			
+			for(int j=0; j<registrations_inventory.size(); j++) {
+				invoice_item = new Invoice_item(invoiceID, i++, ( registrations_inventory.get(j).getAutopiecename() + " (" + registrations_inventory.get(j).getAutopiecesid() + ")" ),
+						registrations_inventory.get(j).getAutopieceunitename(), 
+						registrations_inventory.get(j).getNewuniteprice(), registrations_inventory.get(j).getQuantity());
+				session.save(invoice_item);
+			}
+
+			for(int j=0; j<registration_job.size(); j++) {
+				invoice_item = new Invoice_item(invoiceID, i++,( registration_job.get(j).getJobname() + " (" + registration_job.get(j).getJobsid() +")" ),
+						registration_job.get(j).getJobunitename(), 
+						registration_job.get(j).getNewjobprice(), registration_job.get(j).getJobs().getJoblenght());
+				session.save(invoice_item);
+			}
+			
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
 	private void AddNewAutoPieceToReplaced(String from, String to) {	
 		try {
 			//Begin transaction
@@ -5092,8 +6222,62 @@ public class ServiceFrame {
 		}
 	}
 
+	private Boolean getUserByName(String name) {
+		Boolean exists;
+		try {
+			//Begin transaction
+			session.beginTransaction();
+			
+			Query<User> querry = session.createQuery("from User where username=:username ");
+			querry.setParameter("username", name);
+			
+			User user = querry.uniqueResult();
+			
+			if(user!=null) {
+				selectedUser = user;
+				exists = true;
+			}else {
+				//no result
+				exists = false;
+			}
+		      
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+		    return exists;
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+			return false;
+		}
+	}
+	//Temporaly Car getter
+	private Car getCar(Integer regID) {
+		Registration reg = null;
+		Car car = null;
+		try {
+			//Begin transaction
+			session.beginTransaction();
+			
+			reg = session.get(Registration.class, regID);
+			car = reg.getCars();
+			
+		    //Committing the transaction
+		    session.getTransaction().commit();
+		    
+			return car;
+		    
+		    //Shotting down the session factory
+		    //HibernateUtil.shutDown();
+		}catch(Exception ex) {
+			System.out.println(ex.toString());
+			return null;
+		}
+	}
 	//Finalizate Registration Inventory
-	private Integer finalizateRegistrationInventory(int registrationID){
+ 	private Integer finalizateRegistrationInventory(int registrationID){
 		int count = 0;
 		try {			
 			//Begin transaction
@@ -5175,6 +6359,34 @@ public class ServiceFrame {
 	}
 	//Generating random registration number
 	//Generating unique string for registration number with 24 characters
+	//Generate MD5 encrypted password
+	private String encryptPassword(String passwordToHash) {
+        String generatedPassword = null;
+        try {
+            // Create MessageDigest instance for MD5
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            //Add password bytes to digest
+            md.update(passwordToHash.getBytes());
+            //Get the hash's bytes 
+            byte[] bytes = md.digest();
+            //This bytes[] has bytes in decimal format;
+            //Convert it to hexadecimal format
+            StringBuilder sb = new StringBuilder();
+            for(int i=0; i< bytes.length ;i++)
+            {
+                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            //Get complete hashed password in hex format
+            generatedPassword = sb.toString();
+            return generatedPassword;
+        } 
+        catch (NoSuchAlgorithmException e) 
+        {
+            e.printStackTrace();
+            return null;
+        }
+	}
+	
 	private void generateRegistrationNumber() {
 		try {
 			int count = 24;
@@ -5212,5 +6424,10 @@ public class ServiceFrame {
 			System.out.println(ex.toString());
 		}
 	}
-
+	//restart session
+	private void restartSession() {
+		//Reopen the session factory, needed for releasing the cash, further research is required
+		session.close();
+		session = HibernateUtil.getSessionFactory().openSession();
+	}
 }

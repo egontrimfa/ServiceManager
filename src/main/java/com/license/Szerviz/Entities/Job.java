@@ -24,6 +24,12 @@ public class Job {
 	@Column(name="jobprice")
 	private Float jobprice;
 	
+	@Column(name="jobunitename")
+	private String jobunitename;
+	
+	@Column(name="joblenght")
+	private Float joblenght;
+	
     @OneToMany(mappedBy="jobs")
     private Set<Registration_job> job_registration;
 
@@ -33,6 +39,13 @@ public class Job {
 	public Job(String jobname, Float jobprice) {
 		this.jobname = jobname;
 		this.jobprice = jobprice;
+	}
+
+	public Job(String jobname, Float jobprice, String jobunitename, Float joblenght) {
+		this.jobname = jobname;
+		this.jobprice = jobprice;
+		this.jobunitename = jobunitename;
+		this.joblenght = joblenght;
 	}
 
 	public Integer getId() {
@@ -58,6 +71,22 @@ public class Job {
 	public void setJobprice(Float jobprice) {
 		this.jobprice = jobprice;
 	}
+	
+	public String getJobunitename() {
+		return jobunitename;
+	}
+
+	public void setJobunitename(String jobunitename) {
+		this.jobunitename = jobunitename;
+	}
+
+	public Float getJoblenght() {
+		return joblenght;
+	}
+
+	public void setJoblenght(Float joblenght) {
+		this.joblenght = joblenght;
+	}
 
 	public Set<Registration_job> getJob_registration() {
 		return job_registration;
@@ -69,7 +98,7 @@ public class Job {
 
 	@Override
 	public String toString() {
-		return "Job [id=" + id + ", jobname=" + jobname + ", jobprice=" + jobprice + ", job_registration="
-				+ job_registration + "]";
+		return "Job [id=" + id + ", jobname=" + jobname + ", jobprice=" + jobprice + ", jobunitename=" + jobunitename
+				+ ", joblenght=" + joblenght + "]";
 	}
 }

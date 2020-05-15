@@ -19,7 +19,7 @@ public class Receptions_auto_pieces {
 	@Id
 	@Column(name="autopiecesid")
 	private String autopiecesid;
-	
+
 	@Column(name="quantity")
 	private Float quantity;
 	

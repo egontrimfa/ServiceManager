@@ -30,6 +30,9 @@ public class Client implements Serializable {
 	@Column(name="contactphone")
 	private String contactphone;
 	
+	@Column(name="cnp")
+	private String cnp;
+	
 	@Column(name="iscompany")
 	private Boolean iscompany;
 	
@@ -56,6 +59,13 @@ public class Client implements Serializable {
 		this.iscompany = iscompany;
 	}
 
+	public Client(String contactname, String contactphone, String cnp, Boolean iscompany) {
+		this.contactname = contactname;
+		this.contactphone = contactphone;
+		this.cnp = cnp;
+		this.iscompany = iscompany;
+	}
+
 	public Integer getId() {
 		return id;
 	}
@@ -74,8 +84,17 @@ public class Client implements Serializable {
 	public String getContactphone() {
 		return contactphone;
 	}
+	
 	public void setContactphone(String contactphone) {
 		this.contactphone = contactphone;
+	}
+
+	public String getCnp() {
+		return cnp;
+	}
+
+	public void setCnp(String cnp) {
+		this.cnp = cnp;
 	}
 
 	public Boolean getIscompany() {

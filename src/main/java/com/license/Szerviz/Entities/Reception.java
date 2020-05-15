@@ -33,6 +33,9 @@ public class Reception {
 	@Column(name="duedate")
 	private Date duedate;
 	
+	@Column(name="receptioncomment")
+	private String receptioncomment;
+	
     @ManyToOne
     @JoinColumn(name="clientsid", insertable = false, updatable = false)
     private Client clients;
@@ -48,6 +51,14 @@ public class Reception {
 		this.incominginvoicenr = incominginvoicenr;
 		this.datein = datein;
 		this.duedate = duedate;
+	}
+	
+	public Reception(Integer clientsid, String incominginvoicenr, Date datein, Date duedate, String receptioncomment) {
+		this.clientsid = clientsid;
+		this.incominginvoicenr = incominginvoicenr;
+		this.datein = datein;
+		this.duedate = duedate;
+		this.receptioncomment = receptioncomment;
 	}
 
 	public Integer getId() {
@@ -89,6 +100,16 @@ public class Reception {
 	public void setDuedate(Date duedate) {
 		this.duedate = duedate;
 	}
+	
+	
+
+	public String getReceptioncomment() {
+		return receptioncomment;
+	}
+
+	public void setReceptioncomment(String receptioncomment) {
+		this.receptioncomment = receptioncomment;
+	}
 
 	public void setClientsid(Integer clientsid) {
 		this.clientsid = clientsid;
@@ -109,6 +130,6 @@ public class Reception {
 	@Override
 	public String toString() {
 		return "Reception [id=" + id + ", clientsid=" + clientsid + ", incominginvoicenr=" + incominginvoicenr
-				+ ", datein=" + datein + ", duedate=" + duedate + "]";
+				+ ", datein=" + datein + ", duedate=" + duedate + ", receptioncomment=" + receptioncomment + "]";
 	}
 }

@@ -15,13 +15,12 @@ import javax.persistence.Table;
 @Table(name="invoice_items", catalog="postgres", schema="public")
 public class Invoice_item {
 	@Id
-	@Column(name="itemnumber")
-	private Integer itemnumber;
+	@Column(name="invoicesid")
+	private Integer invoicesid;
 	
 	@Id
-    @ManyToOne
-    @JoinColumn(name="invoicesid", insertable = false, updatable = false)
-    private Invoice invoices;
+	@Column(name="itemnumber")
+	private Integer itemnumber;
 	
 	@Column(name="itemname")
 	private String itemname;
@@ -34,18 +33,30 @@ public class Invoice_item {
 	
 	@Column(name="invoiceitemquantity")
 	private Float invoiceitemquantity;
+	
+    @ManyToOne
+    @JoinColumn(name="invoicesid", insertable = false, updatable = false)
+    private Invoice invoices;
 
 	public Invoice_item() {
 	}
 
-	public Invoice_item(Integer itemnumber, Invoice invoices, String itemname, String unitename, Float uniteprice,
+	public Invoice_item(Integer invoicesid, Integer itemnumber, String itemname, String unitename, Float uniteprice,
 			Float invoiceitemquantity) {
+		this.invoicesid = invoicesid;
 		this.itemnumber = itemnumber;
-		this.invoices = invoices;
 		this.itemname = itemname;
 		this.unitename = unitename;
 		this.uniteprice = uniteprice;
 		this.invoiceitemquantity = invoiceitemquantity;
+	}
+
+	public Integer getInvoicesid() {
+		return invoicesid;
+	}
+
+	public void setInvoicesid(Integer invoicesid) {
+		this.invoicesid = invoicesid;
 	}
 
 	public Integer getItemnumber() {
@@ -98,7 +109,7 @@ public class Invoice_item {
 
 	@Override
 	public String toString() {
-		return "Invoice_item [itemnumber=" + itemnumber + ", invoices=" + invoices + ", itemname=" + itemname
+		return "Invoice_item [invoicesid=" + invoicesid + ", itemnumber=" + itemnumber + ", itemname=" + itemname
 				+ ", unitename=" + unitename + ", uniteprice=" + uniteprice + ", invoiceitemquantity="
 				+ invoiceitemquantity + "]";
 	}

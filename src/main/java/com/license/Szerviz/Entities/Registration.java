@@ -34,6 +34,9 @@ public class Registration {
 	@Column(name="regdate")
 	private Date regdate;
 	
+	@Column(name="registrationcomment")
+	private String registrationcomment;
+	
     @ManyToOne
     @JoinColumn(name="clientsid", insertable = false, updatable = false)
     private Client clients;
@@ -59,6 +62,12 @@ public class Registration {
 		this.regdate = regdate;
 	}
 
+	public Registration(String regnr, Date regdate, String registrationcomment) {
+		this.regnr = regnr;
+		this.regdate = regdate;
+		this.registrationcomment = registrationcomment;
+	}
+
 	public Registration(Integer clientsid, String regnr, Date regdate) {
 		this.clientsid = clientsid;
 		this.regnr = regnr;
@@ -70,6 +79,14 @@ public class Registration {
 		this.carsid = carsid;
 		this.regnr = regnr;
 		this.regdate = regdate;
+	}
+	
+	public Registration(Integer clientsid, Integer carsid, String regnr, Date regdate, String registrationcomment) {
+		this.clientsid = clientsid;
+		this.carsid = carsid;
+		this.regnr = regnr;
+		this.regdate = regdate;
+		this.registrationcomment = registrationcomment;
 	}
 
 	public Integer getId() {
@@ -111,6 +128,14 @@ public class Registration {
 	public void setRegdate(Date regdate) {
 		this.regdate = regdate;
 	}
+	
+	public String getRegistrationcomment() {
+		return registrationcomment;
+	}
+
+	public void setRegistrationcomment(String registrationcomment) {
+		this.registrationcomment = registrationcomment;
+	}
 
 	public Client getClients() {
 		return clients;
@@ -148,16 +173,13 @@ public class Registration {
 		return invoice;
 	}
 	
-
 	public void setInvoice(Invoice invoice) {
 		this.invoice = invoice;
 	}
 
-	
 	@Override
 	public String toString() {
-		return "Registration [id=" + id + ", carsid=" + carsid + ", clientsid=" + clientsid + ", regnr=" + regnr
-				+ ", regdate=" + regdate + "]";
+		return "Registration [id=" + id + ", clientsid=" + clientsid + ", carsid=" + carsid + ", regnr=" + regnr
+				+ ", regdate=" + regdate + ", registrationcomment=" + registrationcomment + "]";
 	}
-
 }

@@ -5,6 +5,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 import com.license.Szerviz.Entities.Auto_pieces;
+import com.license.Szerviz.Entities.Brand;
 import com.license.Szerviz.Entities.Car;
 import com.license.Szerviz.Entities.Client;
 import com.license.Szerviz.Entities.Company;
@@ -13,6 +14,8 @@ import com.license.Szerviz.Entities.Invoice;
 import com.license.Szerviz.Entities.Invoice_item;
 import com.license.Szerviz.Entities.Invoice_itemPK;
 import com.license.Szerviz.Entities.Job;
+import com.license.Szerviz.Entities.Model;
+import com.license.Szerviz.Entities.Office;
 import com.license.Szerviz.Entities.Registration_job;
 import com.license.Szerviz.Entities.Registration_jobPK;
 import com.license.Szerviz.Entities.Reception;
@@ -56,6 +59,9 @@ public class HibernateUtil {
             configuration.addAnnotatedClass(Invoice_itemPK.class);
             configuration.addAnnotatedClass(Reception.class);
             configuration.addAnnotatedClass(Receptions_auto_pieces.class);
+            configuration.addAnnotatedClass(Brand.class);
+            configuration.addAnnotatedClass(Model.class);
+            configuration.addAnnotatedClass(Office.class);
 
             configuration.configure("hibernate.cfg.xml");
 

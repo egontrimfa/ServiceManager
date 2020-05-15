@@ -2,6 +2,7 @@ eclipse.preferences.version=1
 encoding//src/main/java=UTF-8
 encoding//src/main/java/com/license/Print/ClientInfo.jrxml=UTF-8
 encoding//src/main/java/com/license/Print/CommandInvoice.jrxml=UTF-8
+encoding//src/main/java/com/license/Print/CompanyInfo.jrxml=UTF-8
 encoding//src/main/java/com/license/Print/ReportTest.jrxml=UTF-8
 encoding//src/main/resources=UTF-8
 encoding//src/test/java=UTF-8

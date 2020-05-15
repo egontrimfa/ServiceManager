@@ -5,23 +5,23 @@ import java.io.Serializable;
 public class Invoice_itemPK implements Serializable {
 	private static final long serialVersionUID = -6001662181681020713L;
 	
+	protected Integer invoicesid;
 	protected Integer itemnumber;
-	protected Invoice invoices;
 	
 	public Invoice_itemPK() {
 	}
 
-	public Invoice_itemPK(Integer itemnumber, Invoice invoices) {
+	public Invoice_itemPK(Integer invoicesid, Integer itemnumber) {
+		this.invoicesid = invoicesid;
 		this.itemnumber = itemnumber;
-		this.invoices = invoices;
 	}
 
 	@Override
 	public int hashCode() {
-		final Integer prime = 31;
-		Integer result = 1;
-		result = prime * result + ((invoices == null) ? 0 : invoices.hashCode());
-		result = prime * result + itemnumber;
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((invoicesid == null) ? 0 : invoicesid.hashCode());
+		result = prime * result + ((itemnumber == null) ? 0 : itemnumber.hashCode());
 		return result;
 	}
 
@@ -34,13 +34,18 @@ public class Invoice_itemPK implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Invoice_itemPK other = (Invoice_itemPK) obj;
-		if (invoices == null) {
-			if (other.invoices != null)
+		if (invoicesid == null) {
+			if (other.invoicesid != null)
 				return false;
-		} else if (!invoices.equals(other.invoices))
+		} else if (!invoicesid.equals(other.invoicesid))
 			return false;
-		if (itemnumber != other.itemnumber)
+		if (itemnumber == null) {
+			if (other.itemnumber != null)
+				return false;
+		} else if (!itemnumber.equals(other.itemnumber))
 			return false;
 		return true;
 	}
+	
+	
 }

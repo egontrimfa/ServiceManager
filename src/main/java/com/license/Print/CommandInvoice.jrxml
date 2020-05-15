@@ -59,8 +59,10 @@
 		</queryString>
 	</subDataset>
 	<parameter name="REG_ID" class="java.lang.Integer"/>
+	<parameter name="OFFICE_ID" class="java.lang.Integer"/>
+	<parameter name="OFFICE_SUB_REPORT" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="CLIENT_ID" class="java.lang.Integer"/>
-	<parameter name="SUB_REPORT" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="CLIENT_SUB_REPORT" class="net.sf.jasperreports.engine.JasperReport"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT ap.autopiecename,
 	ap.autopieceunitename,
@@ -101,51 +103,14 @@ FROM registrations_inventory ri
 		<property name="com.jaspersoft.studio.field.label" value="total"/>
 	</field>
 	<title>
-		<band height="279" splitType="Stretch">
-			<staticText>
-				<reportElement x="0" y="90" width="280" height="25" uuid="57aed2b1-4f4e-40a3-a6ad-54dae8dd4c5a">
-					<property name="local_mesure_unitheight" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<textElement>
-					<font size="16" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Furnizor]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="115" width="280" height="25" uuid="33274f5d-5b7e-4be2-a2ff-65d452a618ed"/>
-				<textElement>
-					<font size="12"/>
-				</textElement>
-				<text><![CDATA[S.C. VAL CIUC SERVICE SRL]]></text>
-			</staticText>
+		<band height="241" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<line>
-				<reportElement x="0" y="80" width="555" height="1" uuid="806ce5df-1219-4876-ae0c-ca7405b1f246">
+				<reportElement x="0" y="50" width="555" height="1" uuid="806ce5df-1219-4876-ae0c-ca7405b1f246">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 			</line>
-			<staticText>
-				<reportElement x="0" y="140" width="140" height="15" uuid="1d3045ed-03d6-4253-a959-aeeb491b73ca"/>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[C.I.F.: RO34557724]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="155" width="140" height="15" uuid="235bf8b6-1e1e-49c7-b59f-7a46c30b8209"/>
-				<textElement textAlignment="Left">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[R.C.: J19/160/2015]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="170" width="140" height="15" uuid="665f25c2-8663-4951-b699-1ab863bdeb76"/>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Capital social: 200.00]]></text>
-			</staticText>
 			<staticText>
 				<reportElement x="415" y="10" width="50" height="20" uuid="0f86baff-6386-4f3f-b3fe-2388707babe8"/>
 				<box rightPadding="4"/>
@@ -167,65 +132,53 @@ FROM registrations_inventory ri
 				<text><![CDATA[Invoice #]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="95" y="0" width="210" height="25" uuid="e622555d-198b-4ccd-a4a1-c59c53304058">
+				<reportElement x="80" y="0" width="300" height="25" uuid="e622555d-198b-4ccd-a4a1-c59c53304058">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement>
 					<font size="19" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Your company name]]></text>
+				<text><![CDATA[S.C. VAL CIUC SERVICE SRL.]]></text>
 			</staticText>
-			<staticText>
-				<reportElement x="95" y="55" width="205" height="15" uuid="b8cc42fd-b569-497d-834d-7e854040ad18"/>
-				<text><![CDATA[Phone number, web address, ecc.]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="95" y="25" width="205" height="15" uuid="c226e44d-3bb5-4145-b0b3-903bf1d79fde"/>
-				<text><![CDATA[Street address]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="95" y="40" width="205" height="15" uuid="b96f7183-44f8-43ad-ba60-43d8fbf50b6e"/>
-				<text><![CDATA[City, street, ZIP code]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="185" width="280" height="16" uuid="c1f806dd-d0c4-45c2-b507-6143639e0328"/>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Adresa: Miercurea Ciuc str. Harghita nr. 113]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="201" width="280" height="20" uuid="dcbaf335-c7e3-40de-b37f-04421b3b47ee"/>
-				<textElement>
-					<font size="8" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Banca: Trezorerie operativa Municipiul Miercurea Ciuc M-CIUC]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="221" width="280" height="15" uuid="f54d3754-1d5b-4e12-947f-1558e7e28623"/>
-				<textElement>
-					<font size="8" isBold="true"/>
-				</textElement>
-				<text><![CDATA[IBAN: RO79TREZ3515069XXX005012]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="236" width="280" height="20" uuid="2b7786e0-ca88-4862-8329-21ef6ab8a5b7"/>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Tel.: 0747154612]]></text>
-			</staticText>
-			<subreport>
-				<reportElement x="280" y="90" width="275" height="189" uuid="fadd7392-c1a8-4fa9-9728-f70ca780d105"/>
+			<subreport overflowType="Stretch">
+				<reportElement x="-1" y="51" width="275" height="190" uuid="098b0fb9-fd6a-4a6f-80d8-cbf252db039b">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<subreportParameter name="OFFICE_ID">
+					<subreportParameterExpression><![CDATA[$P{OFFICE_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REG_ID">
+					<subreportParameterExpression><![CDATA[$P{REG_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="CLIENT_ID">
+					<subreportParameterExpression><![CDATA[$P{CLIENT_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="SUB_REPORT">
+					<subreportParameterExpression><![CDATA[$P{CLIENT_SUB_REPORT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["CompanyInfo.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport overflowType="Stretch">
+				<reportElement x="280" y="51" width="275" height="190" uuid="8b56d8b0-eb63-4682-b2c6-7bbb297955b2">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<subreportParameter name="CLIENT_ID">
 					<subreportParameterExpression><![CDATA[$P{CLIENT_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="REG_ID">
 					<subreportParameterExpression><![CDATA[$P{REG_ID}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="OFFICE_ID">
+					<subreportParameterExpression><![CDATA[$P{OFFICE_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="OFFICE_SUB_REPORT">
+					<subreportParameterExpression><![CDATA[$P{OFFICE_SUB_REPORT}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[$P{SUB_REPORT}]]></subreportExpression>
+				<subreportExpression><![CDATA["ClientInfo.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</title>

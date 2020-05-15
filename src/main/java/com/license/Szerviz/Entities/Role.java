@@ -60,7 +60,6 @@ public class Role {
 		this.users = users;
 	}
 
-
 	@Override
 	public String toString() {
 		return rolename.toUpperCase();

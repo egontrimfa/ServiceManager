@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.12.2.final using JasperReports Library version 6.12.2-75c5e90a222ab406e416cbf590a5397028a52de3  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompanyInfo" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ec7cc13c-f53e-491e-95ae-98f8f337af2a">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ServiceDB:5432"/>
+	<parameter name="OFFICE_ID" class="java.lang.Integer"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT offices.cif,
+	offices.globaldiff,
+	offices.county,
+	offices.id,
+	offices.address,
+	offices.bank,
+	offices.phonenumber,
+	offices.iban,
+	offices.capital,
+	offices.rc,
+	offices.name
+	FROM offices WHERE offices.id = $P!{OFFICE_ID}]]>
+	</queryString>
+	<field name="cif" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cif"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="offices"/>
+	</field>
+	<field name="county" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="county"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="offices"/>
+	</field>
+	<field name="id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="offices"/>
+	</field>
+	<field name="address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="address"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="offices"/>
+	</field>
+	<field name="bank" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bank"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="offices"/>
+	</field>
+	<field name="phonenumber" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="phonenumber"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="offices"/>
+	</field>
+	<field name="iban" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="iban"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="offices"/>
+	</field>
+	<field name="capital" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="capital"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="offices"/>
+	</field>
+	<field name="rc" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="rc"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="offices"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="offices"/>
+	</field>
+	<title>
+		<band height="150" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement x="-19" y="-20" width="269" height="30" uuid="39fe6665-6d7d-4a06-a1ab-d4b4092dff85"/>
+				<textElement verticalAlignment="Middle">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Furnizor]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="-19" y="10" width="269" height="20" uuid="d645f8b9-9335-4cf6-9ffd-5f71ae93604c">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="-19" y="30" width="39" height="19" uuid="f517996d-dbcd-4a01-8a04-28433724e9bd"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[C.I.F.:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="30" width="30" height="19" uuid="a98c259c-2c46-4c5c-8834-70d35f8936b4"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[R.C.:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="-19" y="50" width="39" height="20" uuid="724bc88c-8fa9-4ba8-98fb-359edab52ac8"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Adresa:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="-19" y="70" width="39" height="19" uuid="1e547673-6505-4fa5-945a-b18bff1dcf14"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Banca:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="-19" y="90" width="39" height="19" uuid="e13c5ecf-552f-4e1f-ade2-3a37e2bfad58"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[IBAN:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="-19" y="110" width="69" height="19" uuid="dc233be3-919a-4fa1-af97-219a883a5a35"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Capital social:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="130" y="110" width="39" height="19" uuid="1010d731-bddd-4528-ac0e-7e35720ef565"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Tel.:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="20" y="30" width="80" height="19" uuid="0a476e17-a5e9-4660-aec3-c865cd94349d"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cif}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="30" width="120" height="19" uuid="28c08e1c-52d8-4b01-8236-319b2a1a635e"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{rc}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="20" y="50" width="230" height="20" uuid="4433bcbc-c9b9-4a60-a697-7a2f39f5fa0b">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont">
+				<reportElement x="20" y="70" width="230" height="19" uuid="44c0fac4-a316-47f3-8de1-144950db4a7a">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bank}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="20" y="90" width="230" height="19" uuid="9e16524e-82b5-4803-bbc7-009d34437072"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{iban}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="50" y="110" width="80" height="19" uuid="d16382c1-0679-4977-8987-1428bfbdb685"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{capital}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="169" y="110" width="81" height="19" uuid="120add10-ca10-487e-ae92-be1a3a739d8e"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{phonenumber}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+</jasperReport>

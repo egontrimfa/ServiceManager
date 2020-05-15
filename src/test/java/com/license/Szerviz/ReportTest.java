@@ -47,17 +47,20 @@ public class ReportTest {
             conn = DriverManager.getConnection(url, user, password);
             System.out.println("Connected to the PostgreSQL server successfully.");
             
-            JasperReport jasperMasterReport = JasperCompileManager.compileReport("D:\\Sapientia\\licencework\\Eclipse\\Szerviz\\src\\main\\java\\com\\license\\Print\\CommandInvoice.jrxml");
-            JasperReport jasperSubReport = JasperCompileManager.compileReport("D:\\Sapientia\\licencework\\Eclipse\\Szerviz\\src\\main\\java\\com\\license\\Print\\ClientInfo.jrxml");
+            JasperReport CommandInvoice = JasperCompileManager.compileReport("D:\\Sapientia\\licencework\\Eclipse\\Szerviz\\src\\main\\java\\com\\license\\Print\\CommandInvoice.jrxml");
+            //JasperReport ClientInfo = JasperCompileManager.compileReport("D:\\Sapientia\\licencework\\Eclipse\\Szerviz\\src\\main\\java\\com\\license\\Print\\ClientInfo.jrxml");
+            //JasperReport CompanyInfo = JasperCompileManager.compileReport("D:\\Sapientia\\licencework\\Eclipse\\Szerviz\\src\\main\\java\\com\\license\\Print\\CompanyInfo.jrxml");
 
             Map<String, Object> parameters = new HashMap<String, Object>();
-			parameters.put("REG_ID", 56);
-			parameters.put("CLIENT_ID", 1);
-			parameters.put("SUB_REPORT", jasperSubReport);
+			parameters.put("REG_ID", 220);
+			/*parameters.put("CLIENT_ID", 3);
+			parameters.put("CLIENT_SUB_REPORT", ClientInfo);
+			parameters.put("OFFICE_ID", 1);
+			parameters.put("OFFICE_SUB_REPORT", CompanyInfo);*/
 
-			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperMasterReport, parameters, conn);
+			JasperPrint jasperPrint = JasperFillManager.fillReport(CommandInvoice, parameters, conn);
 		
-			JasperExportManager.exportReportToPdfStream(jasperPrint, new FileOutputStream(new File("C:\\Users\\egont\\OneDrive\\Documents\\JasperReports\\reporttest1.pdf")));
+			JasperExportManager.exportReportToPdfStream(jasperPrint, new FileOutputStream(new File("C:\\Users\\egont\\OneDrive\\Documents\\JasperReports\\HalfTest1.pdf")));
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         } 

@@ -26,6 +26,12 @@ public class Registration_job {
 	@Column(name="newjobprice")
 	private Float newjobprice;
 	
+	@Column(name="jobname")
+	private String jobname;
+	
+	@Column(name="jobunitename")
+	private String jobunitename;
+	
     @ManyToOne
     @JoinColumn(name="jobsid", insertable = false, updatable = false)
     private Job jobs;
@@ -52,6 +58,25 @@ public class Registration_job {
 		this.registrationsid = registrationsid;
 		this.usersid = usersid;
 		this.newjobprice = newjobprice;
+	}
+	
+	public Registration_job(Integer jobsid, Integer registrationsid, Integer usersid, Float newjobprice,
+			String jobname) {
+		this.jobsid = jobsid;
+		this.registrationsid = registrationsid;
+		this.usersid = usersid;
+		this.newjobprice = newjobprice;
+		this.jobname = jobname;
+	}
+
+	public Registration_job(Integer jobsid, Integer registrationsid, Integer usersid, Float newjobprice, String jobname,
+			String jobunitename) {
+		this.jobsid = jobsid;
+		this.registrationsid = registrationsid;
+		this.usersid = usersid;
+		this.newjobprice = newjobprice;
+		this.jobname = jobname;
+		this.jobunitename = jobunitename;
 	}
 
 	public Integer getJobsid() {
@@ -86,6 +111,22 @@ public class Registration_job {
 		this.newjobprice = newjobprice;
 	}
 
+	public String getJobname() {
+		return jobname;
+	}
+
+	public void setJobname(String jobname) {
+		this.jobname = jobname;
+	}
+
+	public String getJobunitename() {
+		return jobunitename;
+	}
+
+	public void setJobunitename(String jobunitename) {
+		this.jobunitename = jobunitename;
+	}
+
 	public Job getJobs() {
 		return jobs;
 	}
@@ -109,10 +150,11 @@ public class Registration_job {
 	public void setUsers(User users) {
 		this.users = users;
 	}
-	
+
+
 	@Override
 	public String toString() {
-		return "Job_registration [jobsid=" + jobsid + ", registrationsid=" + registrationsid + ", usersid=" + usersid
-				+ ", newjobprice=" + newjobprice + "]";
+		return "Registration_job [jobsid=" + jobsid + ", registrationsid=" + registrationsid + ", usersid=" + usersid
+				+ ", newjobprice=" + newjobprice + ", jobname=" + jobname + ", jobunitename=" + jobunitename + "]";
 	}
 }

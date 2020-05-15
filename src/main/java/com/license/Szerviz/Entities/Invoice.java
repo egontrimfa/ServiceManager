@@ -21,13 +21,22 @@ public class Invoice {
 	@Column(name="id")
 	private Integer id;
 	
-	@OneToOne
-	@JoinColumn(name = "registrationsid")
-	private Registration registrations;
+	@Column(name="usersid")
+	private Integer usersid;
+	
+	@Column(name="registrationsid")
+	private Integer registrationsid;
+	
+	@Column(name="clientsid")
+	private Integer clientsid;
 	
     @ManyToOne
     @JoinColumn(name="usersid", insertable = false, updatable = false)
     private User users;
+	
+	@OneToOne
+	@JoinColumn(name = "registrationsid", insertable = false, updatable = false)
+	private Registration registrations;
     
     @ManyToOne
     @JoinColumn(name="clientsid", insertable = false, updatable = false)
@@ -39,11 +48,10 @@ public class Invoice {
 	public Invoice() {
 	}
 
-	public Invoice(Integer id, Registration registrations, User users, Client clients) {
-		this.id = id;
-		this.registrations = registrations;
-		this.users = users;
-		this.clients = clients;
+	public Invoice(Integer usersid, Integer registrationsid, Integer clientsid) {
+		this.usersid = usersid;
+		this.registrationsid = registrationsid;
+		this.clientsid = clientsid;
 	}
 
 	public Integer getId() {
@@ -54,6 +62,30 @@ public class Invoice {
 		this.id = id;
 	}
 	
+	public Integer getUsersid() {
+		return usersid;
+	}
+
+	public void setUsersid(Integer usersid) {
+		this.usersid = usersid;
+	}
+
+	public Integer getRegistrationsid() {
+		return registrationsid;
+	}
+
+	public void setRegistrationsid(Integer registrationsid) {
+		this.registrationsid = registrationsid;
+	}
+
+	public Integer getClientsid() {
+		return clientsid;
+	}
+
+	public void setClientsid(Integer clientsid) {
+		this.clientsid = clientsid;
+	}
+
 	public Registration getRegistrations() {
 		return registrations;
 	}
@@ -88,7 +120,7 @@ public class Invoice {
 
 	@Override
 	public String toString() {
-		return "Invoice [id=" + id + ", registration=" + registrations + ", users=" + users + ", clients=" + clients
-				+ "]";
-	} 
+		return "Invoice [id=" + id + ", usersid=" + usersid + ", registrationsid=" + registrationsid + ", clientsid="
+				+ clientsid + "]";
+	}
 }
